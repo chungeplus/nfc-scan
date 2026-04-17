@@ -1,0 +1,175 @@
+.write-music {
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 48rpx 36rpx;
+    background: #f5f6f8;
+
+    .write-music__list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .write-music__cell-group {
+        display: flex;
+        flex-direction: column;
+        border-radius: 18rpx;
+        overflow: hidden;
+    }
+
+    .write-music__cell {
+        padding: 32rpx 24rpx;
+        background: #fff;
+        transition: background-color 160ms ease, transform 160ms ease;
+
+        .t-cell__title {
+            margin-right: 0rpx;
+        }
+
+        .t-cell__title,
+        .t-cell__left,
+        .t-cell__right {
+            flex: 0 0 auto;
+            height: 0rpx;
+        }
+    }
+
+    .write-music__actions {
+        margin-top: 12rpx;
+        display: inline-flex;
+        justify-content: flex-end;
+        align-items: center;
+        width: auto;
+        float: right;
+    }
+
+    .write-music__paste {
+        margin: 0;
+        min-width: 180rpx;
+        height: 72rpx;
+        line-height: 72rpx;
+        padding: 0 28rpx;
+        font-size: 28rpx;
+        font-weight: 600;
+        color: #111;
+        background-color: #fff;
+        border: 2rpx solid #111;
+        border-radius: 9999rpx;
+        transition: transform 120ms ease, background-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+        box-sizing: border-box;
+    }
+
+    .write-music__paste:active {
+        transform: translateY(2rpx);
+        background-color: #111;
+        color: #fff;
+        box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.08);
+    }
+
+    .write-music__field {
+        display: flex;
+        align-items: center;
+        width: 100%;
+
+        .write-music__field-value {
+            flex: 1 1 auto;
+        }
+
+        .write-music__field-textarea {
+            flex: 1 1 auto;
+            font-size: 32rpx;
+            color: #2c2c2c;
+            background-color: transparent;
+            border: none;
+            padding: 0rpx;
+        }
+    }
+
+    .write-music__footer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 0 36rpx;
+        box-sizing: border-box;
+        position: fixed;
+        bottom: 28rpx;
+        left: 0;
+        right: 0;
+        padding-bottom: calc(env(safe-area-inset-bottom, 0rpx) + 8rpx);
+    }
+
+    .write-music__submit {
+        height: 92rpx;
+        line-height: 92rpx;
+        font-size: 30rpx;
+        font-weight: 600;
+        color: #fff;
+        background: #000;
+        border-radius: 16rpx;
+        width: 100%;
+        transition: background-color 160ms ease, transform 160ms ease;
+        box-sizing: border-box;
+
+        &::after {
+            content: none;
+            height: 0rpx;
+        }
+    }
+
+    .write-music__submit:active {
+        background: #1a1a1a;
+        transform: translateY(2rpx);
+    }
+
+    .write-music__submit.t-button--disabled {
+        background: #fff;
+        color: #9E9E9E;
+        border-radius: 16rpx;
+        opacity: 1;
+        box-shadow: none;
+        transform: none;
+    }
+
+    .write-music__submit.t-button--disabled:active {
+        background: #fff;
+        transform: none;
+    }
+
+
+}
+
+.write-music__loading-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.42);
+    backdrop-filter: saturate(160%) blur(4rpx);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: env(safe-area-inset-bottom, 0rpx);
+    box-sizing: border-box;
+
+    .write-music__loading {
+        margin-top: 32rpx;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .write-music__loading-text {
+        margin-top: 16rpx;
+        color: #D9D9D9;
+        font-size: 28rpx;
+        font-weight: 600;
+        letter-spacing: 1rpx;
+        margin-left: 0rpx !important;
+    }
+
+    .write-music__loading-indicator {
+        width: 56rpx !important;
+        height: 56rpx !important;
+        color: #D9D9D9;
+    }
+}

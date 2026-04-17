@@ -1,0 +1,35 @@
+<t-toast id="t-toast" />
+<view class="write-app">
+    <view class="write-app__content">
+        <view class="write-app__list">
+            <t-cell-group class="write-app__cell-group">
+                <t-cell class="write-app__cell write-app__field" arrow="{{true}}" bindtap="handleOpenPicker">
+                    <view slot="title" class="write-app__field-label">
+                        <view class="write-app__field-text">应用</view>
+                    </view>
+                    <view slot="note" class="write-app__field-value">
+                        <t-input class="write-app__field-input" value="{{appName}}" placeholder="请选择应用" readonly="{{true}}" />
+                    </view>
+                </t-cell>
+                <t-cell class="write-app__cell write-app__field">
+                    <view slot="title" class="write-app__field-label">
+                        <view class="write-app__field-text">包名</view>
+                    </view>
+                    <view slot="note" class="write-app__field-value">
+                        <t-input class="write-app__field-input" value="{{packageName}}" placeholder="根据应用自动填写包名" disabled="{{!!packageName}}" />
+                    </view>
+                </t-cell>
+            </t-cell-group>
+            <t-picker visible="{{pickerVisible}}" value="{{pickerValue}}" title="选择应用" cancel-btn="取消" confirm-btn="确认" bind:pick="handlePickPicker" bind:confirm="handleConfirmPicker" bind:cancel="handleCancelPicker" bind:visible-change="handleVisibleChangePicker">
+                <t-picker-item options="{{typePickerOptions}}" />
+                <t-picker-item options="{{appPickerOptions}}" />
+            </t-picker>
+        </view>
+    </view>
+    <view class="write-app__footer">
+        <t-button class="write-app__submit" disabled="{{!packageName}}" bindtap="handleOpenScanDialog">
+            写入应用
+        </t-button>
+    </view>
+</view>
+<scan-dialog visible="{{scanVisible}}" records="{{records}}" bind:close="handleCloseScanDialog" />

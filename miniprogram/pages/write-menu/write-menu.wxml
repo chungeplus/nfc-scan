@@ -1,0 +1,66 @@
+<t-toast id="t-toast" />
+
+<view class="write-menu">
+    <view class="write-menu__content">
+        <view class="write-menu__list">
+            <t-cell-group class="write-menu__cell-group">
+                <t-cell t-class="write-menu__cell" bindtap="handleWriteApp">
+                    <view slot="title" class="write-menu__title">
+                        <view class="write-menu__title-icon">
+                            <t-icon name="app-filled"></t-icon>
+                        </view>
+                        <view class="write-menu__title-text">应用</view>
+                    </view>
+                </t-cell>
+                <t-cell t-class="write-menu__cell" bindtap="handleWriteMusic">
+                    <view slot="title" class="write-menu__title">
+                        <view class="write-menu__title-icon">
+                            <t-icon name="file-music-filled"></t-icon>
+                        </view>
+                        <view class="write-menu__title-text">音乐</view>
+                    </view>
+                </t-cell>
+                <t-cell t-class="write-menu__cell" bindtap="handleWriteWeb">
+                    <view slot="title" class="write-menu__title">
+                        <view class="write-menu__title-icon">
+                            <t-icon name="internet-filled"></t-icon>
+                        </view>
+                        <view class="write-menu__title-text">网页</view>
+                    </view>
+                </t-cell>
+                <t-cell t-class="write-menu__cell" bindtap="handleWriteCustomVideo">
+                    <view slot="title" class="write-menu__title">
+                        <view class="write-menu__title-icon">
+                            <t-icon name="video-filled"></t-icon>
+                        </view>
+                        <view class="write-menu__title-text">自定义视频</view>
+                    </view>
+                </t-cell>
+            </t-cell-group>
+        </view>
+    </view>
+</view>
+<t-dialog visible="{{developerPromiseDialogVisible}}" class="write-menu__promise-dialog">
+    <view slot="title" class="write-menu__promise-title">开发者承诺</view>
+    <scroll-view slot="content" type="list">
+        <view class="write-menu__developer-promise">
+            <view class="write-menu__promise-item">
+                1. 本小程序为纯客户端运行程序，无任何后台服务器，不会收集、记录用户NFC卡的任何信息。
+            </view>
+            <view class="write-menu__promise-item">2. 小程序无需注册或登录即可使用，全程不储存用户的个人信息、设备信息及操作记录。</view>
+            <view class="write-menu__promise-item">
+                3. NFC卡写入内容遵循“所见即所得”原则，写入结果实时可见；但需注意，NFC卡储存空间有限，新内容写入后将直接替换原有数据，请谨慎操作。
+            </view>
+        </view>
+    </scroll-view>
+    <view slot="actions" class="write-menu__promise-actions">
+        <t-button class="write-menu__promise-btn write-menu__promise-btn--confirm" bindtap="handleCloseDeveloperPromiseDialog">
+            了解
+        </t-button>
+    </view>
+</t-dialog>
+<t-fab class="write-menu__fab" draggable="vertical">
+    <button class="write-menu__fab-btn" open-type="contact">
+        <t-icon name="service" class="write-menu__fab-icon"></t-icon>
+    </button>
+</t-fab>

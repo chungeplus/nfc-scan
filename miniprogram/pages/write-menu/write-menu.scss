@@ -1,0 +1,193 @@
+.write-menu {
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 40rpx 36rpx;
+    background: #f5f6f8;
+
+    .write-menu__list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .write-menu__cell-group {
+        display: flex;
+        flex-direction: column;
+        gap: 32rpx;
+    }
+
+    .write-menu__cell {
+        padding: 48rpx 40rpx;
+        background: #fff;
+        border-radius: 26rpx;
+        margin-bottom: 0;
+        transition: background-color 160ms ease, transform 160ms ease;
+    }
+
+    .write-menu__cell:active {
+        background: #f7f8fa;
+        transform: translateY(2rpx);
+    }
+
+    .write-menu__cell:last-child {
+        margin-bottom: 0;
+    }
+
+    .write-menu__title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .write-menu__title-icon {
+        width: 88rpx;
+        height: 88rpx;
+        border-radius: 18rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #000;
+        font-size: 72rpx;
+        margin-right: 24rpx;
+    }
+
+    .write-menu__title-text {
+        font-size: 45rpx;
+        font-weight: 600;
+        letter-spacing: 1rpx;
+        color: #1d2129;
+    }
+}
+
+.write-menu__promise-dialog {
+    .t-dialog {
+        border-radius: 16rpx;
+        overflow: hidden;
+    }
+
+    .t-dialog__content {
+        padding: 30rpx 50rpx;
+    }
+
+    .t-dialog__footer {
+        padding: 0;
+    }
+
+    .write-menu__promise-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12rpx 16rpx;
+        color: #111111;
+        font-size: 32rpx;
+        font-weight: 600;
+        line-height: 1.4;
+        letter-spacing: 0.2rpx;
+        background-color: transparent;
+    }
+
+    .write-menu__developer-promise {
+        padding: 24rpx 20rpx;
+        margin: 16rpx 0;
+        border-radius: 12rpx;
+        background-color: #ffffff;
+        border: 1rpx solid #eaeaea;
+        border-left: 6rpx solid #000000;
+    }
+
+    .write-menu__promise-item {
+        color: #1f1f1f;
+        font-size: 28rpx;
+        line-height: 1.7;
+        letter-spacing: 0.2rpx;
+        word-break: break-word;
+        padding-left: 12rpx;
+        margin-bottom: 18rpx;
+    }
+
+    .write-menu__promise-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .write-menu__promise-actions {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 85rpx;
+    }
+
+    .write-menu__promise-btn {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 28rpx;
+        height: 85rpx;
+        line-height: 85rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #FFFFFF;
+        color: #1A1A1A;
+        border-top: 1rpx solid #EDEDED;
+        border-radius: 0rpx;
+        transition: background-color 0.12s ease;
+        padding: 0rpx;
+
+        &::after,
+        &::before {
+            border: none;
+            content: none;
+        }
+
+        &:active {
+            background-color: #F5F5F5;
+        }
+
+        &.is-disabled,
+        &[disabled] {
+            opacity: 0.45;
+        }
+    }
+
+    .write-menu__promise-btn--confirm {
+        background-color: #000000;
+        color: #FFFFFF;
+        border-color: #000000;
+
+        &:active {
+            background-color: #1A1A1A;
+        }
+    }
+}
+
+.write-menu__fab {
+    z-index: 1000; // 保证悬浮在页面元素之上
+    pointer-events: auto;
+}
+
+.write-menu__fab-btn {
+    width: 96rpx;
+    height: 96rpx;
+    padding: 0;
+    border-radius: 50%;
+    background-color: #fff;
+    color: #111;
+    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::after,
+    &::before {
+        border: none;
+        content: none;
+    }
+
+    &:active {
+        background-color: #000; 
+        color: #fff;
+    }
+}
+
+.write-menu__fab-icon {
+    font-size: 50rpx; 
+}

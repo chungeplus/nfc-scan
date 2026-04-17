@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "usingComponents": {
+    "t-dialog": "tdesign-miniprogram/dialog/dialog",
+    "t-button": "tdesign-miniprogram/button/button"
+  },
+  "styleIsolation": "shared"
+}

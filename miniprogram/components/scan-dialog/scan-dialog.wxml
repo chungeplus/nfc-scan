@@ -1,0 +1,75 @@
+
+<t-dialog class="scan-dialog__container" visible="{{visible}}" bind:close="handleClose">
+    <view class="scan-dialog__content" slot="content">
+        <view class="scan-dialog__visual" wx:if="{{scanStatus === 'waiting'}}">
+            <view class="scan-dialog__phone is-tilt"></view>
+            <view class="scan-dialog__waves">
+                <view class="arc-clip clip-1">
+                    <view class="arc arc-1"></view>
+                </view>
+                <view class="arc-clip clip-2">
+                    <view class="arc arc-2"></view>
+                </view>
+                <view class="arc-clip clip-3">
+                    <view class="arc arc-3"></view>
+                </view>
+            </view>
+            <view class="scan-dialog__tag is-stick" bindtap="simulateCardDetected">
+                <view class="tag__chip"></view>
+                <view class="tag__text">NFC</view>
+            </view>
+            <view class="scan-dialog__hint">请将NFC标签贴近手机</view>
+        </view>
+        <view class="scan-dialog__visual scan-dialog__visual--writing" wx:elif="{{scanStatus === 'writing'}}">
+            <view class="scan-dialog__phone is-tilt"></view>
+            <view class="scan-dialog__tag is-attached">
+                <view class="tag__chip"></view>
+                <view class="tag__text">NFC</view>
+            </view>
+            <view class="scan-dialog__loading">
+                <view class="loading__circle"></view>
+            </view>
+            <view class="scan-dialog__hint">NFC信息写入中，请勿移动卡片...</view>
+        </view>
+        <view class="scan-dialog__visual scan-dialog__visual--success" wx:elif="{{scanStatus === 'success'}}">
+            <view class="scan-dialog__phone is-tilt"></view>
+            <view class="scan-dialog__tag is-attached">
+                <view class="tag__chip"></view>
+                <view class="tag__text">NFC</view>
+            </view>
+            <view class="scan-dialog__success-icon">
+                <view class="success-icon__check"></view>
+            </view>
+            <view class="scan-dialog__hint">NFC信息写入成功</view>
+        </view>
+        <view class="scan-dialog__visual scan-dialog__visual--error" wx:elif="{{scanStatus === 'error'}}">
+            <view class="scan-dialog__phone is-tilt"></view>
+            <view class="scan-dialog__tag is-error">
+                <view class="tag__chip"></view>
+                <view class="tag__text">NFC</view>
+            </view>
+            <view class="scan-dialog__error-icon">
+                <view class="error-icon__cross"></view>
+            </view>
+            <view class="scan-dialog__error-msg" wx:if="{{errorMessage}}">{{errorMessage}}</view>
+        </view>
+    </view>
+    <view class="scan-dialog__footer" slot="actions">
+        <block wx:if="{{scanStatus === 'waiting'}}">
+            <t-button class="scan-dialog__btn scan-dialog__btn--cancel" bindtap="handleCancel">取消</t-button>
+        </block>
+
+          <block wx:elif="{{scanStatus === 'writing' }}">
+            <t-button class="scan-dialog__btn scan-dialog__btn--cancel" bindtap="handleCancel">取消</t-button>
+        </block>
+    
+        <block wx:elif="{{scanStatus === 'success'}}">
+            <t-button class="scan-dialog__btn scan-dialog__btn--confirm" bindtap="handleConfirm">确定</t-button>
+        </block>
+    
+        <block wx:elif="{{scanStatus === 'error'}}">
+            <t-button class="scan-dialog__btn scan-dialog__btn--retry" bindtap="handleRetry">重试</t-button>
+            <t-button class="scan-dialog__btn scan-dialog__btn--confirm" bindtap="handleConfirm">确定</t-button>
+        </block>
+    </view>
+</t-dialog>

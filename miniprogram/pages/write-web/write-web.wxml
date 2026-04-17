@@ -1,0 +1,23 @@
+<t-toast id="t-toast" />
+<view class="write-web">
+    <view class="write-web__content">
+        <view class="write-web__list">
+            <t-cell-group class="write-web__cell-group">
+                <t-cell class="write-web__cell write-web__field">
+                    <view slot="note" class="write-web__field-value">
+                        <t-textarea class="write-web__field-textarea" value="{{webUrl}}" placeholder="请输入网页地址，例如：“https://www.baidu.com”" bind:input="handleWebUrlInput" />
+                    </view>
+                </t-cell>
+            </t-cell-group>
+        </view>
+        <view class="write-web__actions">
+            <t-button class="write-web__paste" bind:tap="handlePasteTap">粘贴</t-button>
+        </view>
+    </view>
+    <view class="write-web__footer">
+        <t-button class="write-web__submit" disabled="{{!webUrl}}" bindtap="handleOpenScanDialog">
+            写入网页
+        </t-button>
+    </view>
+</view>
+<scan-dialog visible="{{scanVisible}}" records="{{records}}" bind:close="handleCloseScanDialog" />

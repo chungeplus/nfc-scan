@@ -1,0 +1,17 @@
+{
+  "pages": [
+    "pages/write-menu/write-menu",
+    "pages/write-app/write-app",
+    "pages/write-music/write-music",
+    "pages/write-web/write-web",
+    "pages/write-custom-video/write-custom-video"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "NFC直达",
+    "navigationBarBackgroundColor": "#f5f6f8"
+  },
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}
