@@ -1,0 +1,95 @@
+<pixel-navbar title="首页" theme="home" showBack="{{false}}" showHome="{{false}}" />
+<pixel-toast id="pixel-toast" />
+
+<view class="write-menu" style="height: calc(100vh - {{navHeight}}px);">
+    <view class="write-menu__content">
+        <view class="stack">
+            <view class="card card--orange card--pixel-cut home-main" bindtap="handleWriteApp">
+                <view class="card__bite card__bite--tl"></view>
+                <view class="card__bite card__bite--br"></view>
+                <view class="home-deco home-deco--a"></view>
+                <view class="home-deco home-deco--b"></view>
+                <view class="home-deco home-deco--c"></view>
+                <view class="row">
+                    <view class="home-main__visual">
+                        <view class="home-main__sun"></view>
+                        <view class="home-main__spark home-main__spark--a"></view>
+                        <view class="home-main__spark home-main__spark--b"></view>
+                        <view class="home-main__platform"></view>
+                        <view class="home-main__sprite-wrap">
+                            <pixel-icon name="app" size="56" />
+                        </view>
+                    </view>
+                    <view class="home-main__content">
+                        <view class="card__title">应用专区</view>
+                        <view class="meta">常用应用一碰直达，适合桌面标签、车载支架和办公入口</view>
+                    </view>
+                </view>
+            </view>
+            
+            <view class="home-subgrid">
+                <view class="card card--purple card--pixel-cut home-sub" bindtap="handleWriteMusic">
+                    <view class="card__bite card__bite--tl"></view>
+                    <view class="row">
+                        <view class="home-sub__visual">
+                            <pixel-icon name="music" size="48" />
+                        </view>
+                        <view class="body">
+                            <view class="card__title">音乐专区</view>
+                            <view class="meta">支持网易云 / QQ 音乐分享链接</view>
+                        </view>
+                    </view>
+                </view>
+                
+                <view class="card card--cyan card--pixel-cut home-sub" bindtap="handleWriteWeb">
+                    <view class="card__bite card__bite--br"></view>
+                    <view class="row">
+                        <view class="home-sub__visual">
+                            <pixel-icon name="web" size="48" />
+                        </view>
+                        <view class="body">
+                            <view class="card__title">网页专区</view>
+                            <view class="meta">官网 / 活动页 / 短链都可直达</view>
+                        </view>
+                    </view>
+                </view>
+            </view>
+        </view>
+    </view>
+</view>
+
+<button class="fab" open-type="contact">
+    <pixel-icon name="question" size="44" />
+</button>
+
+<view wx:if="{{developerPromiseDialogVisible}}" class="overlay">
+    <view class="dialog">
+        <view class="dialog__title">开发者承诺</view>
+        <view class="dialog__body">
+            <view class="promise">
+                <view>1. 本小程序仅在本地运行，不保存用户 NFC 内容。</view>
+                <view>2. 无需登录注册，不采集账号信息。</view>
+                <view>3. NFC 写入遵循所见即所得，写入前请确认内容。</view>
+            </view>
+        </view>
+        <view class="dialog__actions dialog__actions--one">
+            <button class="dialog-btn dialog-btn--green" bindtap="handleCloseDeveloperPromiseDialog">了解</button>
+        </view>
+    </view>
+</view>
+
+<view wx:if="{{nfcUnsupportedDialogVisible}}" class="overlay">
+    <view class="dialog">
+        <view class="dialog__title dialog__title--red">NFC 不支持</view>
+        <view class="dialog__body">
+            <view class="stage">
+                <pixel-icon name="phone" size="64" />
+                <view class="hint hint--center hint--red">您的设备不支持 NFC 功能</view>
+                <view class="hint hint--center hint--red">无法使用本小程序的写入功能</view>
+            </view>
+        </view>
+        <view class="dialog__actions dialog__actions--one">
+            <button class="dialog-btn dialog-btn--red" bindtap="handleCloseUnsupportedDialog">我知道了</button>
+        </view>
+    </view>
+</view>
