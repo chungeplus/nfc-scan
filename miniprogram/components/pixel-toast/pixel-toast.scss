@@ -1,0 +1,81 @@
+@import "../../styles/variables.scss";
+
+.pixel-toast {
+    position: fixed;
+    inset: 0rpx;
+    z-index: 800;
+    pointer-events: auto;
+    animation: toastSlideIn 0.2s ease-out;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 174rpx 0rpx 0rpx;
+    box-sizing: border-box;
+    opacity: 0.92;
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pixel-toast__box {
+    width: calc(100vw - 32rpx);
+    min-height: 46px;
+    padding: 12rpx 16rpx;
+    background: $color-yellow;
+    border: $border-width-sm solid $color-ink;
+    border-radius: $radius-sm;
+    box-shadow: $shadow-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.88;
+}
+
+.pixel-toast__text {
+    font-size: $font-size-sm;
+    font-weight: bold;
+    letter-spacing: 1rpx;
+    text-transform: uppercase;
+    color: $color-ink;
+    text-align: center;
+}
+
+.pixel-toast--success .pixel-toast__box {
+    background: $color-green;
+}
+
+.pixel-toast--success .pixel-toast__text {
+    color: $color-ink;
+}
+
+.pixel-toast--warning .pixel-toast__box {
+    background: $color-yellow;
+}
+
+.pixel-toast--warning .pixel-toast__text {
+    color: $color-ink;
+}
+
+.pixel-toast--error .pixel-toast__box {
+    background: $color-red;
+}
+
+.pixel-toast--error .pixel-toast__text {
+    color: $color-white;
+}
+
+.pixel-toast--info .pixel-toast__box {
+    background: $color-paper-2;
+}
+
+.pixel-toast--info .pixel-toast__text {
+    color: $color-ink;
+}

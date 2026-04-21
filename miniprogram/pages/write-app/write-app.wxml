@@ -1,35 +1,59 @@
-<t-toast id="t-toast" />
-<view class="write-app">
-    <view class="write-app__content">
-        <view class="write-app__list">
-            <t-cell-group class="write-app__cell-group">
-                <t-cell class="write-app__cell write-app__field" arrow="{{true}}" bindtap="handleOpenPicker">
-                    <view slot="title" class="write-app__field-label">
-                        <view class="write-app__field-text">应用</view>
-                    </view>
-                    <view slot="note" class="write-app__field-value">
-                        <t-input class="write-app__field-input" value="{{appName}}" placeholder="请选择应用" readonly="{{true}}" />
-                    </view>
-                </t-cell>
-                <t-cell class="write-app__cell write-app__field">
-                    <view slot="title" class="write-app__field-label">
-                        <view class="write-app__field-text">包名</view>
-                    </view>
-                    <view slot="note" class="write-app__field-value">
-                        <t-input class="write-app__field-input" value="{{packageName}}" placeholder="根据应用自动填写包名" disabled="{{!!packageName}}" />
-                    </view>
-                </t-cell>
-            </t-cell-group>
-            <t-picker visible="{{pickerVisible}}" value="{{pickerValue}}" title="选择应用" cancel-btn="取消" confirm-btn="确认" bind:pick="handlePickPicker" bind:confirm="handleConfirmPicker" bind:cancel="handleCancelPicker" bind:visible-change="handleVisibleChangePicker">
-                <t-picker-item options="{{typePickerOptions}}" />
-                <t-picker-item options="{{appPickerOptions}}" />
-            </t-picker>
+<pixel-navbar title="写入应用" theme="app" showBack="{{true}}" showHome="{{false}}" />
+<pixel-toast id="pixel-toast" />
+
+<view class="write-app" style="height: calc(100vh - {{navHeight}}px);">
+    <view class="chips">
+        <view class="{{androidChipClass}}" bindtap="handleSelectPlatform" data-platform="android">
+            <pixel-icon name="android" size="28" />
+            <text>Android</text>
+        </view>
+        <view class="{{iosChipClass}}" bindtap="handleSelectPlatform" data-platform="ios">
+            <pixel-icon name="phone" size="28" />
+            <text>iOS</text>
         </view>
     </view>
-    <view class="write-app__footer">
-        <t-button class="write-app__submit" disabled="{{!packageName}}" bindtap="handleOpenScanDialog">
-            写入应用
-        </t-button>
+    
+    <view class="field">
+        <view class="label">应用类型</view>
+        <view class="box box--select" bindtap="handleOpenPicker">
+            <text class="box__value">{{appTypeLabel}}</text>
+            <text class="box__arrow {{pickerVisible ? 'box__arrow--open' : ''}}">▶</text>
+        </view>
+    </view>
+    
+    <view class="field">
+        <view class="label">应用包名</view>
+        <input class="box box--input" value="{{packageName}}" placeholder="{{packagePlaceholder}}" bindinput="handlePackageNameInput" disabled="{{!allowEditPackageName}}" />
+        <view class="field__error" wx:if="{{packageError}}">{{packageError}}</view>
+    </view>
+    
+    <view class="btn-wrap">
+        <button class="btn" bindtap="handlePasteTap">粘贴</button>
+    </view>
+    
+    <button class="primary-btn" disabled="{{!canWrite}}" bindtap="handleOpenScanDialog">写入 NFC 标签</button>
+</view>
+
+<button class="fab fab--green" open-type="contact">
+    <pixel-icon name="question" size="44" />
+</button>
+
+<view wx:if="{{pickerVisible}}" class="picker-preview" style="top: {{navHeight}}px;" bindtap="handleCancelPicker">
+    <view class="picker-preview__card animate-slideUpFromBottom" catchtap="noop">
+        <view class="picker-preview__title">选择应用</view>
+        <view class="picker-preview__body">
+            <scroll-view class="picker-preview__col" scroll-y>
+                <view wx:for="{{typeViewList}}" wx:key="index" class="{{item.className}}" data-index="{{item.index}}" bindtap="handleSelectType">{{item.typeName}}</view>
+            </scroll-view>
+            <scroll-view class="picker-preview__col" scroll-y>
+                <view wx:for="{{appViewList}}" wx:key="index" class="{{item.className}}" data-index="{{item.index}}" bindtap="handleSelectApp">{{item.appName}}</view>
+            </scroll-view>
+        </view>
+        <view class="picker-preview__actions">
+            <button class="dialog-btn" bindtap="handleCancelPicker">取消</button>
+            <button class="dialog-btn dialog-btn--green" bindtap="handleConfirmPicker">确认</button>
+        </view>
     </view>
 </view>
+
 <scan-dialog visible="{{scanVisible}}" records="{{records}}" bind:close="handleCloseScanDialog" />

@@ -1,5 +1,18 @@
+/**
+ * 应用写入页面
+ * @description 用于写入Android应用包名到NFC标签
+ */
+import { showPixelToast } from '../../utils/pixel-toast';
 Page({
     data: {
+        navHeight: 64,
+        platform: 'android',
+        androidChipClass: 'chip chip--red chip--active',
+        iosChipClass: 'chip chip--blue',
+        appTypeLabel: 'Android 应用',
+        packagePlaceholder: 'com.tencent.mobileqq',
+        canWrite: false,
+        packageError: '',
         APP_DATA: [
             {
                 typeName: "自定义",
@@ -49,7 +62,7 @@ Page({
                     { appName: "元气骑士", packageName: "com.ChillyRoom.DungeonShooter" },
                     { appName: "植物大战僵尸2", packageName: "com.ea.game.pvz2_row" },
                     { appName: "三国杀", packageName: "com.bf.sgs" },
-                    { appName: "创造与魔法", packageName: "com.yingxiong.创造与魔法" },
+                    { appName: "创造与魔法", packageName: "com.hero.sm" },
                     { appName: "明日之后", packageName: "com.netease.mrzh" },
                     { appName: "绝区零", packageName: "com.miHoYo.zenless" },
                     { appName: "无畏契约：源能行动", packageName: "com.tencent.valorant", },
@@ -61,9 +74,9 @@ Page({
                     { appName: "逆水寒", packageName: "com.netease.nsh" },
                     { appName: "我的勇者", packageName: "com.zqgame.myhero" },
                     { appName: "蔚蓝档案", packageName: "com.nexon.bluearchive" },
-                    { appName: "寻道大千", packageName: "com.haowanyou.xd大千" },
-                    { appName: "万龙觉醒", packageName: "com.youzu.wl觉醒" },
-                    { appName: "燕云十六声", packageName: "com.网易.燕云十六声" },
+                    { appName: "寻道大千", packageName: "com.haowanyou.xd" },
+                    { appName: "万龙觉醒", packageName: "com.youzu.wl" },
+                    { appName: "燕云十六声", packageName: "com.netease.yysls" },
                     { appName: "远光84", packageName: "com.netease.yg84" },
                     { appName: "Phira测试服", packageName: "com.philiphub.phira" },
                     { appName: "苍翼：混沌效应", packageName: "com.netease.bbce" },
@@ -129,105 +142,291 @@ Page({
 
         typePickerOptions: [],
         appPickerOptions: [],
+        typeViewList: [],
+        appViewList: [],
         pickerValue: [1, 0],
         pickerVisible: false,
+        tempTypeIndex: 1,
+        tempAppIndex: 0,
 
         appName: "",
         packageName: "",
+        allowEditPackageName: false,
         scanVisible: false,
 
         records: [],
     },
 
+    /**
+     * 页面加载时初始化
+     */
     onLoad() {
+        const systemInfo = wx.getSystemInfoSync();
+        const statusBarHeight = systemInfo.statusBarHeight || 20;
         const { APP_DATA } = this.data;
         const typePickerOptions = APP_DATA.map((typeItem, typeIndex) => ({
             label: typeItem.typeName,
             value: typeIndex,
         }));
         this.setData({
+            navHeight: statusBarHeight + 44,
             typePickerOptions,
         });
 
-        this.handleDefaultPickerValue()
+        this.handleDefaultPickerValue();
+        this.buildPickerViewData();
     },
 
+    /**
+     * 设置默认选择值
+     */
     handleDefaultPickerValue() {
         const { APP_DATA, pickerValue } = this.data;
-
-        const packageName =
-            APP_DATA[pickerValue[0]]?.apps?.[pickerValue[1]]?.packageName || "";
-        const appName =
-            APP_DATA[pickerValue[0]]?.apps?.[pickerValue[1]]?.appName || "";
+        const currentType = APP_DATA[pickerValue[0]] || { apps: [] };
+        const currentApp = currentType.apps[pickerValue[1]] || {};
+        const packageName = currentApp.packageName || '';
+        const appName = currentApp.appName || '';
 
         this.setData({
             packageName,
             appName,
+            allowEditPackageName: pickerValue[0] === 0,
         });
+        this.syncPlatformView();
     },
 
-    handleOpenPicker() {
-        const { APP_DATA, pickerValue } = this.data;
+    /**
+     * 切换平台
+     * @param {Object} event - 事件对象
+     */
+    handleSelectPlatform(event) {
+        const platform = event && event.currentTarget && event.currentTarget.dataset
+            ? event.currentTarget.dataset.platform || 'android'
+            : 'android';
 
-        let appPickerOptions = [];
-
-        if (pickerValue[0] >= 0) {
-            const apps = APP_DATA[pickerValue[0]].apps || [];
-            appPickerOptions = apps.map((appItem, appIndex) => ({
-                label: appItem.appName,
-                value: appIndex,
-            }));
-        } else {
-            const apps = APP_DATA[0].apps || [];
-            appPickerOptions = apps.map((appItem, appIndex) => ({
-                label: appItem.appName,
-                value: appIndex,
-            }));
-        }
-        this.setData({
-            appPickerOptions,
-            pickerVisible: true,
-        });
-    },
-
-    handlePickPicker(event) {
-        const { column, index } = event.detail || {};
-        if (column === 0) {
-            const { APP_DATA } = this.data;
-            const apps = APP_DATA[index].apps || [];
-            const appPickerOptions = apps.map((appItem, appIndex) => ({
-                label: appItem.appName,
-                value: appIndex,
-            }));
+        if (platform === 'ios') {
             this.setData({
-                appPickerOptions,
+                platform,
+                appName: this.data.appName || 'iOS 应用',
+                packageName: '',
+                allowEditPackageName: true,
             });
+            showPixelToast({
+                message: 'iOS 直达能力暂未接入',
+                theme: 'info',
+            });
+            this.syncPlatformView();
+            return;
         }
+
+        this.setData({
+            platform,
+        });
+        this.handleDefaultPickerValue();
     },
 
-    handleConfirmPicker(event) {
-        const { value } = event.detail || {};
-        const pickerValue = value || [];
-        const { APP_DATA } = this.data;
+    /**
+     * 同步平台展示数据
+     * @returns {void}
+     */
+    syncPlatformView() {
+        const platform = this.data.platform;
+        const packageName = (this.data.packageName || '').trim();
+        const isAndroid = platform === 'android';
+        let packageError = '';
 
-        const packageName =
-            APP_DATA[pickerValue[0]]?.apps?.[pickerValue[1]]?.packageName || "";
-        const appName =
-            APP_DATA[pickerValue[0]]?.apps?.[pickerValue[1]]?.appName || "";
+        if (isAndroid && packageName) {
+            const packageRegex = /^[a-zA-Z][\w]*(\.[a-zA-Z][\w]*)+$/;
+            if (!packageRegex.test(packageName)) {
+                packageError = '包名格式不正确';
+            }
+        }
+
+        this.setData({
+            androidChipClass: isAndroid ? 'chip chip--red chip--active' : 'chip chip--red',
+            iosChipClass: isAndroid ? 'chip chip--blue' : 'chip chip--blue chip--active',
+            appTypeLabel: this.data.appName || (isAndroid ? 'Android 应用' : 'iOS 应用'),
+            packagePlaceholder: isAndroid ? 'com.tencent.mobileqq' : 'com.example.iosapp',
+            canWrite: isAndroid ? Boolean(packageName) && !packageError : false,
+            packageError,
+        });
+    },
+
+    /**
+     * 构建选择器视图数据
+     * @returns {void}
+     */
+    buildPickerViewData() {
+        const appData = this.data.APP_DATA;
+        const tempTypeIndex = this.data.tempTypeIndex;
+        const tempAppIndex = this.data.tempAppIndex;
+        const currentType = appData[tempTypeIndex] || { apps: [] };
+
+        const typeViewList = appData.map((item, index) => ({
+            typeName: item.typeName,
+            index,
+            className: index === tempTypeIndex
+                ? 'picker-preview__item picker-preview__item--active'
+                : 'picker-preview__item',
+        }));
+
+        const appViewList = currentType.apps.map((item, index) => ({
+            appName: item.appName,
+            index,
+            className: index === tempAppIndex
+                ? 'picker-preview__item picker-preview__item--subactive'
+                : 'picker-preview__item',
+        }));
+
+        this.setData({
+            typeViewList,
+            appViewList,
+        });
+    },
+
+    /**
+     * 打开应用选择器
+     */
+    handleOpenPicker() {
+        this.setData({
+            pickerVisible: true,
+            tempTypeIndex: this.data.pickerValue[0],
+            tempAppIndex: this.data.pickerValue[1],
+        }, () => {
+            this.buildPickerViewData();
+        });
+    },
+
+    /**
+     * 选择分类
+     * @param {Object} event - 事件对象
+     */
+    handleSelectType(event) {
+        const index = Number(
+            event && event.currentTarget && event.currentTarget.dataset
+                ? event.currentTarget.dataset.index || 0
+                : 0
+        );
+        this.setData({
+            tempTypeIndex: index,
+            tempAppIndex: 0,
+        }, () => {
+            this.buildPickerViewData();
+        });
+    },
+
+    /**
+     * 选择应用
+     * @param {Object} event - 事件对象
+     */
+    handleSelectApp(event) {
+        const index = Number(
+            event && event.currentTarget && event.currentTarget.dataset
+                ? event.currentTarget.dataset.index || 0
+                : 0
+        );
+        this.setData({
+            tempAppIndex: index,
+        }, () => {
+            this.buildPickerViewData();
+        });
+    },
+
+    /**
+     * 确认选择器
+     * @param {Object} event - 事件对象
+     */
+    handleConfirmPicker() {
+        const pickerValue = [this.data.tempTypeIndex, this.data.tempAppIndex];
+        const { APP_DATA } = this.data;
+        const currentType = APP_DATA[pickerValue[0]] || { apps: [] };
+        const currentApp = currentType.apps[pickerValue[1]] || {};
+        const packageName = this.data.platform === 'ios'
+            ? ''
+            : currentApp.packageName || '';
+        const appName = currentApp.appName || '';
 
         this.setData({
             pickerValue,
             packageName,
             appName,
             pickerVisible: false,
+            allowEditPackageName: this.data.platform === 'ios' || pickerValue[0] === 0,
+        }, () => {
+            this.syncPlatformView();
+            this.buildPickerViewData();
         });
     },
 
+    /**
+     * 取消选择器
+     */
     handleCancelPicker() {
         this.setData({ pickerVisible: false });
     },
 
+    /**
+     * 阻止弹框内容点击穿透遮罩
+     * @returns {void}
+     */
+    noop() {},
+
+    /**
+     * 粘贴包名
+     */
+    handlePasteTap() {
+        wx.getClipboardData({
+            success: (res) => {
+                const packageName = res.data || '';
+                this.setData({
+                    packageName,
+                });
+                this.syncPlatformView();
+            },
+        });
+    },
+
+    /**
+     * 包名输入
+     * @param {Object} event - 事件对象
+     */
+    handlePackageNameInput(event) {
+        const packageName = event && event.detail ? event.detail.value || '' : '';
+        this.setData({
+            packageName,
+        });
+        this.syncPlatformView();
+    },
+
+    /**
+     * 打开NFC扫描弹窗
+     */
     handleOpenScanDialog() {
+        if (this.data.platform === 'ios') {
+            showPixelToast({
+                message: 'iOS 直达能力暂未接入',
+                theme: 'warning',
+            });
+            return;
+        }
+
+        const packageName = (this.data.packageName || '').trim();
+        if (!packageName) {
+            showPixelToast({
+                message: '请输入包名',
+                theme: 'warning',
+            });
+            return;
+        }
+
+        if (this.data.packageError) {
+            showPixelToast({
+                message: this.data.packageError,
+                theme: 'warning',
+            });
+            return;
+        }
+
         this.setData({
             scanVisible: true,
             records: [
@@ -235,12 +434,15 @@ Page({
                     tnf: 4,
                     id: "pkg",
                     type: "android.com:pkg",
-                    payload: this.data.packageName,
+                    payload: packageName,
                 },
             ],
         });
     },
 
+    /**
+     * 关闭NFC扫描弹窗
+     */
     handleCloseScanDialog() {
         this.setData({
             scanVisible: false,

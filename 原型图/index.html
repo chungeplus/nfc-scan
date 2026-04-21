@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NFC直达 - 交互原型图</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .prototype-title {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .prototype-title h1 {
+            font-size: 28px;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .prototype-title p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .phone-container {
+            perspective: 1000px;
+        }
+
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: #1a1a2e;
+            border-radius: 50px;
+            padding: 12px;
+            box-shadow: 
+                0 50px 100px rgba(0,0,0,0.3),
+                inset 0 -2px 6px rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .phone-notch {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background: #1a1a2e;
+            border-radius: 0 0 20px 20px;
+            z-index: 100;
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #f4edd6;
+            border-radius: 40px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            background: #f4edd6;
+        }
+
+        .page.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            height: 44px;
+            padding: 12px 24px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d2d2d;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            height: 56px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+        }
+
+        .navbar--home {
+            background: linear-gradient(180deg, #ff8a7a 0%, #ef665b 100%);
+        }
+
+        .navbar--app {
+            background: linear-gradient(180deg, #f1cb4b 0%, #e1b12e 100%);
+            color: #2d2d2d;
+        }
+
+        .navbar--music {
+            background: linear-gradient(180deg, #226c60 0%, #184e45 100%);
+        }
+
+        .navbar--web {
+            background: linear-gradient(180deg, #334b93 0%, #26386f 100%);
+        }
+
+        .nav-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:active {
+            transform: scale(0.9);
+            background: rgba(255,255,255,0.3);
+        }
+
+        .nav-title {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .nav-placeholder {
+            width: 32px;
+        }
+
+        .navbar--center {
+            justify-content: center;
+        }
+
+        /* 页面内容 */
+        .page-content {
+            flex: 1;
+            padding: 20px 16px 40px;
+            overflow-y: auto;
+        }
+
+        .page-content--home {
+            padding: 20px 16px 40px;
+        }
+
+        /* 首页卡片 */
+        .home-card {
+            background: linear-gradient(180deg, #ffd884 0%, #f0bf66 100%);
+            border: 4px solid #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 5px 5px 0 rgba(0,0,0,0.16);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .home-card:active {
+            transform: translate(4px, 4px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,0.16);
+        }
+
+        .home-card--main {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .home-card--purple {
+            background: linear-gradient(180deg, #e4ccff 0%, #ceb0ef 100%);
+        }
+
+        .home-card--cyan {
+            background: linear-gradient(180deg, #bde8ed 0%, #9fd9df 100%);
+        }
+
+        .card-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.5);
+            border: 3px solid #2d2d2d;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            flex-shrink: 0;
+        }
+
+        .card-icon--small {
+            width: 60px;
+            height: 60px;
+            font-size: 30px;
+        }
+
+        .card-content {
+            flex: 1;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #2d2d2d;
+        }
+
+        .card-tag {
+            display: inline-block;
+            background: rgba(255,255,255,0.7);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2d2d2d;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: #626262;
+            line-height: 1.5;
+        }
+
+        .home-sub-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* 底部TabBar */
+        .tabbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 84px;
+            background: #efe5c6;
+            border-top: 4px solid #2d2d2d;
+            display: flex;
+            padding: 8px 16px;
+            gap: 10px;
+        }
+
+        .tab-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #626262;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .tab-item.active {
+            background: #efd86c;
+            color: #2d2d2d;
+        }
+
+        .tab-icon {
+            font-size: 24px;
+        }
+
+        /* 悬浮按钮 */
+        .fab {
+            position: absolute;
+            right: 16px;
+            bottom: 40px;
+            width: 48px;
+            height: 48px;
+            background: #efd86c;
+            border: 3px solid #2d2d2d;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.16);
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .fab:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,0.16);
+        }
+
+        .fab--green {
+            background: #b8d98b;
+        }
+
+        /* 表单页面 */
+        .form-section {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #626262;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-input-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        .form-input {
+            flex: 1;
+            min-height: 48px;
+            padding: 12px;
+            background: #efe5c6;
+            border: 3px solid #2d2d2d;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #2d2d2d;
+            box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1);
+            margin-bottom: 12px;
+        }
+
+        .form-input--tall {
+            min-height: 144px;
+            height: 144px;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #9fd9df;
+        }
+
+        .form-input.error {
+            border-color: #e86a58;
+        }
+
+        .form-btn {
+            min-width: 60px;
+            height: 48px;
+            background: #efd86c;
+            border: 3px solid #2d2d2d;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.14);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,0.14);
+        }
+
+        .picker-preview {
+            position: absolute;
+            top: 100px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(38, 45, 30, 0.34);
+            display: flex;
+            align-items: flex-end;
+            justify-content: stretch;
+            padding: 0;
+        }
+
+        .picker-preview__card {
+            width: 100%;
+            max-height: 100%;
+            display: flex;
+            flex-direction: column;
+            border-top: 4px solid #2d2d2d;
+            border-left: 4px solid #2d2d2d;
+            border-right: 4px solid #2d2d2d;
+            border-bottom: 4px solid #2d2d2d;
+            background: #f4edd6;
+            box-shadow: 0 -6px 0 rgba(0, 0, 0, 0.16);
+        }
+
+        .picker-preview__title {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 3px solid #2d2d2d;
+            background: #efd86c;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .picker-preview__body {
+            display: grid;
+            grid-template-columns: 108px 1fr;
+            height: 320px;
+            min-height: 320px;
+            max-height: 320px;
+        }
+
+        .picker-preview__col {
+            max-height: 100%;
+            overflow-y: auto;
+        }
+
+        .picker-preview__col + .picker-preview__col {
+            border-left: 3px solid #2d2d2d;
+        }
+
+        .picker-preview__item {
+            min-height: 42px;
+            padding: 10px 12px;
+            border-bottom: 2px solid rgba(45, 45, 45, 0.12);
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1.4;
+            background: rgba(255, 255, 255, 0.55);
+            display: flex;
+            align-items: center;
+        }
+
+        .picker-preview__item--active {
+            background: #efd86c;
+        }
+
+        .picker-preview__item--subactive {
+            background: rgba(159, 217, 223, 0.5);
+        }
+
+        .picker-preview__actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
+            border-top: 3px solid #2d2d2d;
+            background: #f4edd6;
+        }
+
+        .form-error {
+            color: #be4a3a;
+            font-size: 12px;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .primary-btn {
+            width: 100%;
+            height: 52px;
+            background: #6f87d4;
+            border: 4px solid #2d2d2d;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            cursor: pointer;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.16);
+            transition: all 0.2s;
+            margin-top: 16px;
+        }
+
+        .primary-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: none;
+        }
+
+        .primary-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .primary-btn--green {
+            background: #6ea85e;
+        }
+
+        /* 标签选择器 */
+        .tag-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .tag {
+            flex: 1;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: 3px solid #2d2d2d;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tag--red {
+            background: #e86a58;
+            color: white;
+        }
+
+        .tag--blue {
+            background: #9fd9df;
+        }
+
+        .tag.active {
+            box-shadow: inset 2px 2px 0 rgba(0,0,0,0.2);
+        }
+
+        /* Toast */
+        .toast {
+            position: absolute;
+            top: 72px;
+            left: 16px;
+            right: 16px;
+            padding: 12px 16px;
+            background: #efd86c;
+            border: 3px solid #2d2d2d;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            z-index: 200;
+            display: none;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.16);
+        }
+
+        .toast.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .toast--success {
+            background: #b8d98b;
+        }
+
+        .toast--error {
+            background: #e86a58;
+            color: white;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 弹窗遮罩 */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(38, 45, 30, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 150;
+            padding: 24px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal {
+            width: 100%;
+            background: #f4edd6;
+            border: 4px solid #2d2d2d;
+            border-radius: 8px;
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.18);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            height: 52px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #efd86c;
+            border-bottom: 3px solid #2d2d2d;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .modal-header--red {
+            background: #e86a58;
+            color: white;
+        }
+
+        .modal-body {
+            padding: 24px 16px;
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 0 16px 16px;
+        }
+
+        .modal-actions--single {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-btn {
+            height: 44px;
+            background: #efe5c6;
+            border: 3px solid #2d2d2d;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.14);
+            transition: all 0.2s;
+        }
+
+        .modal-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0 rgba(0,0,0,0.14);
+        }
+
+        .modal-btn--green {
+            background: #b8d98b;
+        }
+
+        .modal-btn--red {
+            background: #e86a58;
+            color: white;
+        }
+
+        .modal-btn--center {
+            grid-column: 1 / -1;
+            justify-self: center;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        /* NFC弹窗内容 */
+        .nfc-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0;
+        }
+
+        .nfc-phone {
+            width: 80px;
+            height: 120px;
+            background: #9fd9df;
+            border: 3px solid #2d2d2d;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+        }
+
+        .nfc-tag {
+            width: 100px;
+            height: 50px;
+            background: #efd86c;
+            border: 3px solid #2d2d2d;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .nfc-hint {
+            font-size: 14px;
+            color: #626262;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .nfc-hint--success {
+            color: #6ea85e;
+            font-weight: 700;
+        }
+
+        .nfc-hint--error {
+            color: #be4a3a;
+            font-weight: 700;
+        }
+
+        /* 加载动画 */
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #2d2d2d;
+            border-top-color: #6ea85e;
+            background: #b8d98b;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 图标 */
+        .icon {
+            font-style: normal;
+        }
+
+        /* 承诺内容 */
+        .promise-content {
+            font-size: 13px;
+            line-height: 1.8;
+            color: #2d2d2d;
+            padding: 12px;
+            background: #efe5c6;
+            border: 3px solid #2d2d2d;
+            border-radius: 4px;
+            box-shadow: inset 2px 2px 0 rgba(0,0,0,0.1);
+        }
+
+        /* 底部指示器 */
+        .page-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .indicator-dot {
+            width: 8px;
+            height: 8px;
+            background: rgba(45, 45, 45, 0.3);
+            border-radius: 50%;
+        }
+
+        .indicator-dot.active {
+            background: #2d2d2d;
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        /* 页面标题提示 */
+        .page-label {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .page-label.show {
+            opacity: 1;
+        }
+
+        /* 操作提示 */
+        .interaction-hint {
+            background: #fff3cd;
+            border: 2px dashed #ffc107;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .interaction-hint-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #856404;
+            margin-bottom: 8px;
+        }
+
+        .interaction-hint-content {
+            font-size: 11px;
+            color: #856404;
+            line-height: 1.6;
+        }
+
+        /* 点击效果 */
+        .click-effect {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: ripple 0.6s ease-out forwards;
+            z-index: 300;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        .page {
+            overflow-y: hidden;
+        }
+
+        @keyframes slideUpFromBottom {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .animate-slideUpFromBottom {
+            animation: slideUpFromBottom 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            transform-origin: bottom center;
+        }
+    </style>
+</head>
+<body>
+    <div class="prototype-title">
+        <h1>📱 NFC直达 - 交互原型图</h1>
+        <p>点击页面中的按钮和卡片，体验完整的用户流程</p>
+    </div>
+
+    <div class="phone-container">
+        <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+                
+                <!-- 页面标签提示 -->
+                <div class="page-label" id="pageLabel"></div>
+
+                <!-- ========== 首页 ========== -->
+                <div class="page active" id="page-home">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>▂▃▅ 90%</span>
+                    </div>
+                    <div class="navbar navbar--home navbar--center">
+                        <div class="nav-title">首页</div>
+                    </div>
+                    <div class="page-content page-content--home">
+                        <!-- 应用卡片 -->
+                        <div class="home-card home-card--main" onclick="goToPage('app')">
+                            <div class="card-icon">📱</div>
+                            <div class="card-content">
+                                <div class="card-title">应用专区</div>
+                                <div class="card-desc">常用应用一碰直达，适合桌面标签、车载支架和办公入口</div>
+                            </div>
+                        </div>
+                        <!-- 音乐和网页卡片 -->
+                        <div class="home-sub-grid">
+                            <div class="home-card home-card--purple" onclick="goToPage('music')">
+                                <div class="card-icon card-icon--small">🎵</div>
+                                <div class="card-title" style="font-size: 16px;">音乐专区</div>
+                                <div class="card-desc" style="font-size: 11px;">支持网易云 / QQ 音乐</div>
+                            </div>
+                            <div class="home-card home-card--cyan" onclick="goToPage('web')">
+                                <div class="card-icon card-icon--small">🌐</div>
+                                <div class="card-title" style="font-size: 16px;">网页专区</div>
+                                <div class="card-desc" style="font-size: 11px;">官网 / 活动页 / 短链</div>
+                            </div>
+                        </div>
+                        
+                        <div class="fab" onclick="showToast('即将跳转微信客服...')">💬</div>
+                        
+                        <div class="interaction-hint">
+                            <div class="interaction-hint-title">💡 点击体验</div>
+                            <div class="interaction-hint-content">
+                                • 点击"应用专区"卡片 → 进入应用写入页<br>
+                                • 点击"音乐专区"卡片 → 进入音乐写入页<br>
+                                • 点击"网页专区"卡片 → 进入网页写入页
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== 应用写入页 ========== -->
+                <div class="page" id="page-app">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>▂▃▅ 90%</span>
+                    </div>
+                    <div class="navbar navbar--app">
+                        <div class="nav-btn" onclick="goToPage('home')">←</div>
+                        <div class="nav-title">写入应用</div>
+                        <div class="nav-placeholder"></div>
+                    </div>
+                    <div class="page-content">
+                        <div class="tag-selector">
+                            <div class="tag tag--red active" onclick="selectTag(this, 'app')">
+                                <span>🤖</span> Android
+                            </div>
+                            <div class="tag tag--blue" onclick="selectTag(this, 'app')">
+                                <span>📱</span> iOS
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <label class="form-label">应用类型</label>
+                            <div class="form-input" onclick="openAppPicker()" style="cursor: pointer;">
+                                Android 应用 ▼
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <label class="form-label">应用包名</label>
+                            <input type="text" class="form-input" id="appPackage" placeholder="com.tencent.mobileqq" oninput="validatePackage(this)">
+                            <div class="form-btn" onclick="pasteFromClipboard('appPackage')">📋 粘贴</div>
+                            <div class="form-error" id="appError" style="display: none;">包名格式不正确</div>
+                        </div>
+                        
+                        <button class="primary-btn primary-btn--green" onclick="openNfcDialog('app')" id="appWriteBtn">
+                            写入 NFC 标签
+                        </button>
+                        
+                        <div class="fab fab--green" onclick="showToast('客服帮助')">💬</div>
+                        
+                        <div class="interaction-hint">
+                            <div class="interaction-hint-title">💡 点击体验</div>
+                            <div class="interaction-hint-content">
+                                • 输入包名测试格式校验<br>
+                                • 点击"粘贴"模拟粘贴功能<br>
+                                • 点击"写入NFC标签" → 进入NFC写入流程
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== 应用选择页（Android） ========== -->
+                <div class="page" id="page-app-picker-android">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>▂▃▅ 90%</span>
+                    </div>
+                    <div class="navbar navbar--app">
+                        <div class="nav-btn" onclick="goToPage('app')">←</div>
+                        <div class="nav-title">写入应用</div>
+                        <div class="nav-placeholder"></div>
+                    </div>
+                    <div class="page-content">
+                        <div class="tag-selector">
+                            <div class="tag tag--red active">
+                                <span>🤖</span> Android
+                            </div>
+                            <div class="tag tag--blue">
+                                <span>📱</span> iOS
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <label class="form-label">应用类型</label>
+                            <div class="form-input" style="cursor: pointer;">
+                                社交 / QQ ▼
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <label class="form-label">应用包名</label>
+                            <input type="text" class="form-input" id="appPackagePickerAndroid" value="com.tencent.mobileqq">
+                            <div class="form-btn">📋 粘贴</div>
+                        </div>
+                    </div>
+                    <div class="picker-preview">
+                        <div class="picker-preview__card animate-slideUpFromBottom">
+                            <div class="picker-preview__title">选择应用</div>
+                            <div class="picker-preview__body">
+                                <div class="picker-preview__col">
+                                    <div class="picker-preview__item">自定义</div>
+                                    <div class="picker-preview__item picker-preview__item--active">社交</div>
+                                    <div class="picker-preview__item">游戏</div>
+                                    <div class="picker-preview__item">影音娱乐</div>
+                                    <div class="picker-preview__item">工具</div>
+                                </div>
+                                <div class="picker-preview__col">
+                                    <div class="picker-preview__item">微信</div>
+                                    <div class="picker-preview__item picker-preview__item--subactive">QQ</div>
+                                    <div class="picker-preview__item">微博</div>
+                                    <div class="picker-preview__item">抖音</div>
+                                    <div class="picker-preview__item">知乎</div>
+                                </div>
+                            </div>
+                            <div class="picker-preview__actions">
+                                <button class="form-btn" style="width: 100%;">取消</button>
+                                <button class="form-btn" style="width: 100%; background: #b8d98b;">确认</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== 应用选择页（iOS） ========== -->
+                <div class="page" id="page-app-picker-ios">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>▂▃▅ 90%</span>
+                    </div>
+                    <div class="navbar navbar--app">
+                        <div class="nav-btn" onclick="goToPage('app')">←</div>
+                        <div class="nav-title">写入应用</div>
+                        <div class="nav-placeholder"></div>
+                    </div>
+                    <div class="page-content">
+                        <div class="tag-selector">
+                            <div class="tag tag--red">
+                                <span>🤖</span> Android
+                            </div>
+                            <div class="tag tag--blue active">
+                                <span>📱</span> iOS
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <label class="form-label">应用类型</label>
+                            <div class="form-input" style="cursor: pointer;">
+                                社交 / QQ ▼
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <label class="form-label">应用包名</label>
+                            <input type="text" class="form-input" id="appPackagePickerIos" value="com.tencent.mobileqq">
+                            <div class="form-btn">📋 粘贴</div>
+                        </div>
+                    </div>
+                    <div class="picker-preview">
+                        <div class="picker-preview__card animate-slideUpFromBottom">
+                            <div class="picker-preview__title">选择应用</div>
+                            <div class="picker-preview__body">
+                                <div class="picker-preview__col">
+                                    <div class="picker-preview__item">自定义</div>
+                                    <div class="picker-preview__item picker-preview__item--active">社交</div>
+                                    <div class="picker-preview__item">游戏</div>
+                                    <div class="picker-preview__item">影音娱乐</div>
+                                    <div class="picker-preview__item">工具</div>
+                                </div>
+                                <div class="picker-preview__col">
+                                    <div class="picker-preview__item">微信</div>
+                                    <div class="picker-preview__item picker-preview__item--subactive">QQ</div>
+                                    <div class="picker-preview__item">微博</div>
+                                    <div class="picker-preview__item">抖音</div>
+                                    <div class="picker-preview__item">知乎</div>
+                                </div>
+                            </div>
+                            <div class="picker-preview__actions">
+                                <button class="form-btn" style="width: 100%;">取消</button>
+                                <button class="form-btn" style="width: 100%; background: #b8d98b;">确认</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== 音乐写入页 ========== -->
+                <div class="page" id="page-music">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>▂▃▅ 90%</span>
+                    </div>
+                    <div class="navbar navbar--music">
+                        <div class="nav-btn" onclick="goToPage('home')">←</div>
+                        <div class="nav-title">写入音乐</div>
+                        <div class="nav-placeholder"></div>
+                    </div>
+                    <div class="page-content">
+                        <div class="form-section">
+                            <label class="form-label">分享链接</label>
+                            <textarea class="form-input form-input--tall" id="musicLink" placeholder="https://y.music.163.com/m/song/186145" oninput="parseMusicLink(this)"></textarea>
+                            <div class="form-btn" onclick="pasteFromClipboard('musicLink')">📋 粘贴</div>
+                        </div>
+                        
+                        <button class="primary-btn primary-btn--green" onclick="openNfcDialog('music')" id="musicWriteBtn" disabled>
+                            写入 NFC 标签
+                        </button>
+                        
+                        <div class="fab" onclick="showToast('客服帮助')">💬</div>
+                        
+                        <div class="interaction-hint">
+                            <div class="interaction-hint-title">💡 点击体验</div>
+                            <div class="interaction-hint-content">
+                                • 输入网易云/QQ音乐链接测试解析<br>
+                                • 示例：https://y.music.163.com/m/song/186145<br>
+                                • 解析成功后点击"写入NFC标签"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== 网页写入页 ========== -->
+                <div class="page" id="page-web">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>▂▃▅ 90%</span>
+                    </div>
+                    <div class="navbar navbar--web">
+                        <div class="nav-btn" onclick="goToPage('home')">←</div>
+                        <div class="nav-title">写入网页</div>
+                        <div class="nav-placeholder"></div>
+                    </div>
+                    <div class="page-content">
+                        <div class="form-section">
+                            <label class="form-label">网址链接</label>
+                            <textarea class="form-input form-input--tall" id="webUrl" placeholder="https://github.com" oninput="validateUrl(this)"></textarea>
+                            <div class="form-btn" onclick="pasteFromClipboard('webUrl')">📋 粘贴</div>
+                            <div class="form-error" id="urlError" style="display: none;">请输入有效的网址</div>
+                        </div>
+                        
+                        <button class="primary-btn primary-btn--green" onclick="openNfcDialog('web')" id="webWriteBtn" disabled>
+                            写入 NFC 标签
+                        </button>
+                        
+                        <div class="fab" onclick="showToast('客服帮助')">💬</div>
+                        
+                        <div class="interaction-hint">
+                            <div class="interaction-hint-title">💡 点击体验</div>
+                            <div class="interaction-hint-content">
+                                • 输入URL测试格式校验<br>
+                                • 支持自动补全 https:// 的域名输入<br>
+                                • 格式正确后点击"写入NFC标签"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== Toast提示 ========== -->
+                <div class="toast" id="toast"></div>
+
+                <!-- ========== 开发者承诺弹窗 ========== -->
+                <div class="modal-overlay" id="promiseModal">
+                    <div class="modal">
+                        <div class="modal-header">开发者承诺</div>
+                        <div class="modal-body">
+                            <div class="promise-content">
+                                1. 本小程序仅在本地运行，不保存用户 NFC 内容。<br>
+                                2. 无需登录注册，不采集账号信息。<br>
+                                3. NFC 写入遵循所见即所得，写入前请确认内容。
+                            </div>
+                        </div>
+                        <div class="modal-actions modal-actions--single">
+                            <button class="modal-btn modal-btn--green modal-btn--center" onclick="closePromiseModal()">了解</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== NFC不支持弹窗 ========== -->
+                <div class="modal-overlay" id="nfcBlockModal">
+                    <div class="modal">
+                        <div class="modal-header modal-header--red">NFC 不支持</div>
+                        <div class="modal-body">
+                            <div class="nfc-stage">
+                                <div class="nfc-phone">📱</div>
+                                <div class="nfc-hint nfc-hint--error">
+                                    您的设备不支持 NFC 功能<br>
+                                    无法使用本小程序的写入功能
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-actions modal-actions--single">
+                            <button class="modal-btn modal-btn--red modal-btn--center" onclick="closeNfcBlockModal()">确认</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ========== NFC写入弹窗 ========== -->
+                <div class="modal-overlay" id="nfcModal">
+                    <div class="modal">
+                        <div class="modal-header" id="nfcModalTitle">等待贴近标签</div>
+                        <div class="modal-body">
+                            <div class="nfc-stage" id="nfcStage">
+                                <!-- 动态内容 -->
+                            </div>
+                        </div>
+                        <div class="modal-actions" id="nfcModalActions">
+                            <!-- 动态按钮 -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * NFC直达 - 交互原型图核心脚本
+         * 实现页面跳转、表单验证、弹窗交互等功能
+         */
+
+        // 当前页面状态
+        let currentPage = 'home';
+        let nfcState = 'waiting'; // waiting, writing, success, error
+        let toastTimeout = null;
+        let appPlatform = 'android';
+
+        // 页面名称映射
+        const pageNames = {
+            'home': '首页',
+            'app': '应用写入页',
+            'app-picker-android': '应用选择页',
+            'app-picker-ios': '应用选择页',
+            'music': '音乐写入页',
+            'web': '网页写入页'
+        };
+
+        /**
+         * 跳转到指定页面
+         * @param {string} page - 目标页面ID
+         */
+        function goToPage(page) {
+            // 隐藏当前页面
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+            });
+
+            // 显示目标页面
+            const targetPage = document.getElementById(`page-${page}`);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                currentPage = page;
+
+                // 更新指示器
+                updateIndicator(page);
+
+                // 显示页面标签
+                showPageLabel(pageNames[page] || '页面预览');
+            }
+        }
+
+        /**
+         * 返回上一页
+         */
+        function goBack() {
+            if (currentPage === 'home') {
+                showToast('已经是首页了');
+            } else {
+                goToPage('home');
+            }
+        }
+
+        /**
+         * 更新页面指示器
+         * @param {string} page - 当前页面ID
+         */
+        function updateIndicator(page) {
+            const dots = document.querySelectorAll('.indicator-dot');
+            const normalizedPage = page.startsWith('app-picker') ? 'app' : page;
+            const pageIndex = ['home', 'app', 'music', 'web'].indexOf(normalizedPage);
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === pageIndex);
+            });
+        }
+
+        /**
+         * 显示页面标签提示
+         * @param {string} name - 页面名称
+         */
+        function showPageLabel(name) {
+            const label = document.getElementById('pageLabel');
+            label.textContent = name;
+            label.classList.add('show');
+            setTimeout(() => {
+                label.classList.remove('show');
+            }, 1000);
+        }
+
+        /**
+         * 显示Toast提示
+         * @param {string} message - 提示文本
+         * @param {string} type - 提示类型 (default, success, error)
+         */
+        function showToast(message, type = 'default') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show';
+            
+            if (type === 'success') {
+                toast.classList.add('toast--success');
+            } else if (type === 'error') {
+                toast.classList.add('toast--error');
+            }
+
+            if (toastTimeout) {
+                clearTimeout(toastTimeout);
+            }
+
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        /**
+         * 选择标签（Android/iOS）
+         * @param {HTMLElement} element - 被点击的元素
+         * @param {string} type - 页面类型
+         */
+        function selectTag(element, type) {
+            const siblings = element.parentElement.children;
+            for (let sibling of siblings) {
+                sibling.classList.remove('active');
+            }
+            element.classList.add('active');
+
+            if (type === 'app') {
+                appPlatform = element.textContent.includes('iOS') ? 'ios' : 'android';
+            }
+        }
+
+        /**
+         * 打开应用选择弹框页
+         */
+        function openAppPicker() {
+            const targetPage = appPlatform === 'ios' ? 'app-picker-ios' : 'app-picker-android';
+            goToPage(targetPage);
+        }
+
+        /**
+         * 从剪贴板粘贴（模拟）
+         * @param {string} inputId - 输入框ID
+         */
+        function pasteFromClipboard(inputId) {
+            const input = document.getElementById(inputId);
+            
+            // 模拟粘贴不同内容
+            if (inputId === 'appPackage') {
+                input.value = 'com.tencent.mobileqq';
+                validatePackage(input);
+            } else if (inputId === 'musicLink') {
+                input.value = 'https://y.music.163.com/m/song/186145';
+                parseMusicLink(input);
+            } else if (inputId === 'webUrl') {
+                input.value = 'https://github.com';
+                validateUrl(input);
+            }
+            
+            showToast('已粘贴');
+        }
+
+        /**
+         * 验证应用包名格式
+         * @param {HTMLInputElement} input - 输入框元素
+         */
+        function validatePackage(input) {
+            const value = input.value.trim();
+            const errorEl = document.getElementById('appError');
+            const writeBtn = document.getElementById('appWriteBtn');
+            
+            // 包名格式：com.xx.xx 或 com.xx.xx.xx
+            const isValid = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/i.test(value);
+            
+            if (value && !isValid) {
+                input.classList.add('error');
+                errorEl.style.display = 'block';
+                writeBtn.disabled = true;
+            } else {
+                input.classList.remove('error');
+                errorEl.style.display = 'none';
+                writeBtn.disabled = !value;
+            }
+        }
+
+        /**
+         * 解析音乐链接
+         * @param {HTMLInputElement} input - 输入框元素
+         */
+        function parseMusicLink(input) {
+            const value = input.value.trim();
+            const resultEl = document.getElementById('musicResult');
+            const infoEl = document.getElementById('musicInfo');
+            const writeBtn = document.getElementById('musicWriteBtn');
+            
+            if (!value) {
+                resultEl.style.display = 'none';
+                writeBtn.disabled = true;
+                return;
+            }
+            
+            // 模拟解析不同平台链接
+            let info = '';
+            if (value.includes('y.music.163.com') || value.includes('music.163.com')) {
+                info = '🎵 歌曲：晴天<br>👤 歌手：周杰伦<br>📦 平台：网易云音乐';
+                writeBtn.disabled = false;
+            } else if (value.includes('y.qq.com')) {
+                info = '🎵 歌曲：告白气球<br>👤 歌手：周杰伦<br>📦 平台：QQ音乐';
+                writeBtn.disabled = false;
+            } else {
+                info = '';
+                writeBtn.disabled = true;
+                showToast('暂不支持该链接格式', 'error');
+            }
+            
+            if (info) {
+                infoEl.innerHTML = '解析结果：<br>' + info;
+                resultEl.style.display = 'block';
+            } else {
+                resultEl.style.display = 'none';
+            }
+        }
+
+        /**
+         * 验证URL格式
+         * @param {HTMLInputElement} input - 输入框元素
+         */
+        function validateUrl(input) {
+            const value = input.value.trim();
+            const errorEl = document.getElementById('urlError');
+            const writeBtn = document.getElementById('webWriteBtn');
+            
+            // URL格式验证
+            const isValid = /^https?:\/\/.+\..+/i.test(value);
+            
+            if (value && !isValid) {
+                input.classList.add('error');
+                errorEl.style.display = 'block';
+                writeBtn.disabled = true;
+            } else {
+                input.classList.remove('error');
+                errorEl.style.display = 'none';
+                writeBtn.disabled = !value;
+            }
+        }
+
+        /**
+         * 打开NFC写入弹窗
+         * @param {string} source - 来源页面
+         */
+        function openNfcDialog(source) {
+            nfcState = 'waiting';
+            updateNfcDialog();
+            
+            const modal = document.getElementById('nfcModal');
+            modal.classList.add('show');
+        }
+
+        /**
+         * 更新NFC弹窗内容
+         */
+        function updateNfcDialog() {
+            const title = document.getElementById('nfcModalTitle');
+            const stage = document.getElementById('nfcStage');
+            const actions = document.getElementById('nfcModalActions');
+            
+            switch (nfcState) {
+                case 'waiting':
+                    title.textContent = '等待贴近标签';
+                    stage.innerHTML = `
+                        <div class="nfc-phone">📱</div>
+                        <div class="nfc-tag">🏷️ NFC</div>
+                        <div class="nfc-hint">请将 NFC 标签贴近手机</div>
+                    `;
+                    actions.innerHTML = `
+                        <button class="modal-btn" onclick="closeNfcDialog()">取消</button>
+                        <button class="modal-btn modal-btn--green" onclick="simulateNfcWrite()">模拟贴近</button>
+                    `;
+                    break;
+                    
+                case 'writing':
+                    title.textContent = '写入中';
+                    stage.innerHTML = `
+                        <div class="spinner"></div>
+                        <div class="nfc-hint" style="color: #6ea85e; font-weight: 700;">写入中，请勿移动标签</div>
+                    `;
+                    actions.innerHTML = '';
+                    // 自动进入下一个状态
+                    setTimeout(() => {
+                        // 模拟成功或失败（80%成功率）
+                        nfcState = Math.random() > 0.2 ? 'success' : 'error';
+                        updateNfcDialog();
+                    }, 2000);
+                    break;
+                    
+                case 'success':
+                    title.textContent = '写入成功';
+                    title.style.background = '#6ea85e';
+                    title.style.color = 'white';
+                    stage.innerHTML = `
+                        <div style="font-size: 64px;">✅</div>
+                        <div class="nfc-hint nfc-hint--success">NFC 标签写入完成<br>可贴近手机验证</div>
+                    `;
+                    actions.innerHTML = `
+                        <button class="modal-btn modal-btn--green modal-btn--center" onclick="closeNfcDialog(); showToast('写入成功！', 'success');">确认</button>
+                    `;
+                    break;
+                    
+                case 'error':
+                    title.textContent = '写入失败';
+                    title.style.background = '#e86a58';
+                    title.style.color = 'white';
+                    stage.innerHTML = `
+                        <div style="font-size: 64px;">❌</div>
+                        <div class="nfc-hint nfc-hint--error">标签损坏或容量不足<br>请更换后重试</div>
+                    `;
+                    actions.innerHTML = `
+                        <button class="modal-btn" onclick="nfcState='waiting'; updateNfcDialog();">重试</button>
+                        <button class="modal-btn modal-btn--red modal-btn--center" onclick="closeNfcDialog()">确认</button>
+                    `;
+                    break;
+            }
+            
+            // 重置标题样式
+            if (nfcState === 'waiting') {
+                title.style.background = '#efd86c';
+                title.style.color = '#2d2d2d';
+            }
+        }
+
+        /**
+         * 模拟NFC写入
+         */
+        function simulateNfcWrite() {
+            nfcState = 'writing';
+            updateNfcDialog();
+        }
+
+        /**
+         * 关闭NFC弹窗
+         */
+        function closeNfcDialog() {
+            const modal = document.getElementById('nfcModal');
+            modal.classList.remove('show');
+            nfcState = 'waiting';
+            
+            // 重置标题样式
+            const title = document.getElementById('nfcModalTitle');
+            title.style.background = '';
+            title.style.color = '';
+        }
+
+        /**
+         * 关闭开发者承诺弹窗
+         */
+        function closePromiseModal() {
+            const modal = document.getElementById('promiseModal');
+            modal.classList.remove('show');
+            localStorage.setItem('nfc_promise_accepted', 'true');
+        }
+
+        /**
+         * 关闭NFC不支持弹窗
+         */
+        function closeNfcBlockModal() {
+            const modal = document.getElementById('nfcBlockModal');
+            modal.classList.remove('show');
+        }
+
+        /**
+         * 初始化原型
+         */
+        function init() {
+            // 检查是否首次进入
+            if (!localStorage.getItem('nfc_promise_accepted')) {
+                setTimeout(() => {
+                    const modal = document.getElementById('promiseModal');
+                    modal.classList.add('show');
+                }, 500);
+            }
+
+            // 显示欢迎提示
+            setTimeout(() => {
+                showPageLabel('NFC直达');
+            }, 300);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+
+        // 添加点击涟漪效果
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('.home-card, .modal-btn, .primary-btn, .tag, .form-btn');
+            if (target) {
+                const ripple = document.createElement('div');
+                ripple.className = 'click-effect';
+                const rect = target.getBoundingClientRect();
+                ripple.style.left = (e.clientX - rect.left - 25) + 'px';
+                ripple.style.top = (e.clientY - rect.top - 25) + 'px';
+                target.style.position = 'relative';
+                target.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            }
+        });
+
+        console.log('🎉 NFC直达交互原型图已加载');
+        console.log('💡 提示：点击页面中的卡片和按钮，体验完整的用户流程');
+    </script>
+</body>
+</html>

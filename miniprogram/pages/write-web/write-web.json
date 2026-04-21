@@ -1,10 +1,9 @@
 {
+  "navigationStyle": "custom",
   "usingComponents": {
-    "t-toast": "tdesign-miniprogram/toast/toast",
-    "t-cell": "tdesign-miniprogram/cell/cell",
-    "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
-    "t-button": "tdesign-miniprogram/button/button",
-    "t-textarea": "tdesign-miniprogram/textarea/textarea",
+    "pixel-navbar": "/components/pixel-navbar/pixel-navbar",
+    "pixel-toast": "/components/pixel-toast/pixel-toast",
+    "pixel-icon": "/components/pixel-icon/pixel-icon",
     "scan-dialog": "/components/scan-dialog/scan-dialog"
   }
 }

@@ -1,543 +1,235 @@
-.scan-dialog__visual--writing,
-.scan-dialog__visual--success,
-.scan-dialog__visual--error {
-    animation: fade-in 0.3s ease-out;
-}
+@import "../../styles/variables.scss";
 
-.scan-dialog__tag.is-attached {
-    position: absolute;
-    right: 149rpx;
-    top: 12rpx;
-    width: 160rpx;
-    height: 220rpx;
-    background: #ffffff;
-    border-radius: 18rpx;
-    box-shadow: 0 12rpx 24rpx rgba(0, 0, 0, 0.14);
-    transform: translate3d(90rpx, 0rpx, 0) rotate(-2deg) scale(1);
-    z-index: 2;
-}
-
-.scan-dialog__tag.is-error {
-    position: absolute;
-    right: 149rpx;
-    top: 12rpx;
-    width: 160rpx;
-    height: 220rpx;
-    background: #ffffff;
-    border-radius: 18rpx;
-    box-shadow: 0 12rpx 24rpx rgba(0, 0, 0, 0.14);
-    transform: translate3d(90rpx, 0rpx, 0) rotate(-2deg) scale(1);
-    z-index: 2;
-    animation: shake 0.6s cubic-bezier(.36, .07, .19, .97) both;
-}
-
-.scan-dialog__loading {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10;
-}
-
-.loading__circle {
-    width: 80rpx;
-    height: 80rpx;
-    border: 6rpx solid rgba(43, 93, 245, 0.2);
-    border-top: 6rpx solid #2b5df5;
-    border-radius: 50%;
-    animation: spin 1.2s linear infinite;
-}
-
-.scan-dialog__success-icon {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10;
-    width: 80rpx;
-    height: 80rpx;
-    background: #2b5df5;
-    border-radius: 50%;
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: $z-index-modal;
+    background: rgba(38, 45, 30, 0.88);
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    padding: $spacing-sm;
 }
 
-.success-icon__check {
-    width: 32rpx;
-    height: 20rpx;
-    border-left: 4rpx solid #fff;
-    border-bottom: 4rpx solid #fff;
-    transform: rotate(-45deg) translate(2rpx, -4rpx);
-}
-
-.scan-dialog__error-icon {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10;
-    width: 80rpx;
-    height: 80rpx;
-    background: #ff4d4f;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.error-icon__cross {
-    position: relative;
-    width: 40rpx;
-    height: 40rpx;
-}
-
-.error-icon__cross::before,
-.error-icon__cross::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 36rpx;
-    height: 4rpx;
-    background: #fff;
-}
-
-.error-icon__cross::before {
-    transform: translate(-50%, -50%) rotate(45deg);
-}
-
-.error-icon__cross::after {
-    transform: translate(-50%, -50%) rotate(-45deg);
-}
-
-.scan-dialog__error-msg {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -20rpx;
-    text-align: center;
-    font-size: 28rpx;
-    color: #ff4d4f;
-}
-
-
-
-.scan-dialog__footer {
-    display: flex;
-    align-items: center;
+.dialog {
     width: 100%;
-    height: 85rpx;
+    max-width: 560rpx;
+    background: $color-paper;
+    border: $border-width solid $color-ink;
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
+    overflow: hidden;
 
-    .scan-dialog__btn {
-        flex: 1 1 auto;
-        min-width: 0;
-        font-size: 28rpx;
-        height: 85rpx;
-        line-height: 85rpx;
+    &__title {
+        height: 48px;
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: #FFFFFF;
-        color: #1A1A1A;
-        border-top: 1rpx solid #EDEDED;
-        border-radius: 0rpx;
-        transition: background-color 0.12s ease;
-        padding: 0rpx;
+        background: $color-yellow;
+        border-bottom: $border-width-sm solid $color-ink;
+        font-size: 14px;
+        font-weight: bold;
+        letter-spacing: 2rpx;
 
-        &::after,
-        &::before {
-            border: none;
-            content: none;
+        &--success {
+            background: $color-green;
         }
 
-        &:active {
-            background-color: #F5F5F5;
+        &--error {
+            background: $color-red;
+            color: $color-white;
         }
 
-        &.is-disabled,
-        &[disabled] {
-            opacity: 0.45;
+        &--writing {
+            background: $color-yellow;
         }
     }
 
-    .scan-dialog__btn--cancel {
-        background-color: #FFFFFF;
-        color: #1A1A1A;
-        border-color: #EDEDED;
-
-        &:active {
-            background-color: #F5F5F5;
-        }
+    &__body {
+        padding: 18px 16px;
     }
 
-    .scan-dialog__btn--confirm {
-        background-color: #000000;
-        color: #FFFFFF;
-        border-color: #000000;
+    &__actions {
+        display: grid;
+        gap: 10rpx;
+        padding: 0 16px 16px;
 
-        &:active {
-            background-color: #1A1A1A;
+        &--one {
+            grid-template-columns: 1fr;
         }
-    }
 
-    .scan-dialog__btn--retry {
-        background-color: #FFFFFF;
-        color: #1A1A1A;
-        border-color: #EDEDED;
-
-        &:active {
-            background-color: #F5F5F5;
+        &--two {
+            grid-template-columns: repeat(2, 1fr);
         }
     }
 }
 
+.stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12rpx;
+    min-height: 168px;
+    justify-content: center;
+}
 
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
+.stage--waiting {
+    gap: 10px;
+}
+
+.detect-scene {
+    position: relative;
+    width: 186px;
+    height: 112px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -24px;
+}
+
+.stage--writing {
+    gap: 16px;
+}
+
+.stage--success,
+.stage--error {
+    gap: 14px;
+}
+
+.nphone {
+    width: 90px;
+    height: 126px;
+    border: $border-width-sm solid $color-ink;
+    background: $color-cyan;
+    border-radius: $radius-sm;
+    box-shadow: $shadow-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nphone--detect {
+    position: absolute;
+    top: -10px;
+    left: 4px;
+    animation: phonePulse 1.6s ease-in-out infinite;
+}
+
+.ntag {
+    width: 82px;
+    height: 44px;
+    border: $border-width-sm solid $color-ink;
+    background: $color-yellow;
+    border-radius: $radius-sm;
+    box-shadow: $shadow-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6rpx;
+    font-size: $font-size-xs;
+    font-weight: bold;
+}
+
+.ntag--detect {
+    position: absolute;
+    right: 8px;
+    top: 18px;
+    animation: tagApproach 1.6s ease-in-out infinite;
+}
+
+.hint {
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.7;
+    color: $color-muted;
+    max-width: 300rpx;
+
+    &--center {
+        text-align: center;
     }
 
-    100% {
+    &--green {
+        color: $color-green-deep;
+        font-weight: bold;
+    }
+
+    &--red {
+        color: $color-red-deep;
+        font-weight: bold;
+    }
+}
+
+.spin {
+    width: 34px;
+    height: 34px;
+    border: $border-width solid $color-ink;
+    border-top-color: $color-green-deep;
+    background: $color-green;
+    animation: spin 0.8s steps(8) infinite;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.14);
+}
+
+@keyframes spin {
+    to {
         transform: rotate(360deg);
     }
 }
 
-@keyframes pop-in {
+@keyframes tagApproach {
     0% {
-        transform: translate(-50%, -50%) scale(0);
+        transform: translate(10px, 8px) scale(0.92);
+        opacity: 0.68;
     }
 
-    70% {
-        transform: translate(-50%, -50%) scale(1.2);
-    }
-
-    100% {
-        transform: translate(-50%, -50%) scale(1);
-    }
-}
-
-@keyframes fade-in {
-    0% {
-        opacity: 0;
-    }
-
-    100% {
+    55% {
+        transform: translate(-26px, -10px) scale(1);
         opacity: 1;
     }
-}
 
-@keyframes shake {
-
-    10%,
-    90% {
-        transform: translate3d(91rpx, 0rpx, 0) rotate(-2deg) scale(1);
-    }
-
-    20%,
-    80% {
-        transform: translate3d(87rpx, 0rpx, 0) rotate(-2deg) scale(1);
-    }
-
-    30%,
-    50%,
-    70% {
-        transform: translate3d(94rpx, 0rpx, 0) rotate(-2deg) scale(1);
-    }
-
-    40%,
-    60% {
-        transform: translate3d(86rpx, 0rpx, 0) rotate(-2deg) scale(1);
+    100% {
+        transform: translate(10px, 8px) scale(0.92);
+        opacity: 0.68;
     }
 }
 
-.scan-dialog__content {
-    max-width: 86vw;
-    padding: 32rpx 28rpx;
-    box-sizing: border-box;
-    text-align: center;
-}
-
-.scan-dialog__visual {
-    position: relative;
-    height: 320rpx;
-    margin: 8rpx auto 20rpx;
-    padding-bottom: 60rpx;
-}
-
-.scan-dialog__phone.is-tilt {
-    position: absolute;
-    left: 66rpx;
-    top: 10rpx;
-    width: 140rpx;
-    height: 260rpx;
-    border-radius: 26rpx;
-    background: linear-gradient(180deg, #171a20 0%, #1f2330 100%);
-    box-shadow: 0 12rpx 24rpx rgba(0, 0, 0, 0.18);
-    transform: rotate(-14deg);
-    z-index: 1;
-}
-
-/* 波纹容器左移并提高层级 */
-.scan-dialog__waves {
-    position: absolute;
-    left: 200rpx;
-    top: 88rpx;
-    transform: rotate(-10deg) translateY(-6rpx);
-    transform-origin: left center;
-    z-index: 3;
-    width: 240rpx;
-    height: 200rpx;
-    z-index: 3;
-    overflow: visible;
-    pointer-events: none;
-}
-
-/* 小圆弧裁剪与层叠 */
-.arc-clip {
-    position: absolute;
-    width: 240rpx;
-    height: 96rpx;
-    overflow: hidden;
-}
-
-.clip-1 {
-    left: 0rpx;
-    top: -12rpx;
-}
-
-.clip-2 {
-    left: 0rpx;
-    top: -12rpx;
-}
-
-.clip-3 {
-    left: 0rpx;
-    top: -12rpx;
-}
-
-.arc {
-    position: absolute;
-    border-radius: 50%;
-    border-right: 6rpx solid #2b5df5;
-    border-left: 6rpx solid transparent;
-    border-top: 6rpx solid transparent;
-    border-bottom: 6rpx solid transparent;
-    opacity: 0;
-    transform-origin: center center;
-    animation: arcBlink 1.8s ease-out infinite;
-    will-change: transform, opacity;
-}
-
-/* 依次扩大且前一圈在最上层 */
-.arc-1 {
-    left: -60rpx;
-    top: -44rpx;
-    width: 120rpx;
-    height: 120rpx;
-    z-index: 13;
-    animation-delay: 0s;
-}
-
-.arc-2 {
-    left: -80rpx;
-    top: -64rpx;
-    width: 160rpx;
-    height: 160rpx;
-    animation-delay: 0.35s;
-    z-index: 12;
-}
-
-.arc-3 {
-    left: -100rpx;
-    top: -84rpx;
-    width: 200rpx;
-    height: 200rpx;
-    animation-delay: 0.7s;
-    z-index: 11;
-}
-
-@keyframes arcBlink {
-    0% {
-        opacity: 0;
-        transform: scale(1);
-    }
-
-    10% {
-        opacity: 0.3;
-        transform: scale(1.01);
-    }
-
-    20% {
-        opacity: 0.7;
-        transform: scale(1.02);
-    }
-
-    30% {
-        opacity: 0.9;
-        transform: scale(1.03);
+@keyframes phonePulse {
+    0%,
+    100% {
+        box-shadow: $shadow-sm;
     }
 
     50% {
-        opacity: 0.7;
-        transform: scale(1.02);
-    }
-
-    70% {
-        opacity: 0.5;
-        transform: scale(1.01);
-    }
-
-    100% {
-        opacity: 0;
-        transform: scale(1);
+        box-shadow: 0 0 0 6rpx rgba(159, 217, 223, 0.18), $shadow-sm;
     }
 }
 
-.wave-clip {
-    position: absolute;
-    width: 240rpx;
-    height: 120rpx;
-    overflow: hidden;
-}
+.dialog-btn {
+    height: 42px;
+    background: $color-paper-2;
+    color: $color-ink;
+    border: $border-width-sm solid $color-ink;
+    border-radius: $radius-sm;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: $shadow-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-.wave {
-    position: absolute;
-    left: -60rpx;
-    top: 0rpx;
-    width: 120rpx;
-    height: 120rpx;
-    border: 6rpx solid #2b5df5;
-    border-radius: 50%;
-    opacity: 0;
-    animation: wave-expand 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    box-shadow: 0 0 0 2rpx rgba(43, 93, 245, 0.18);
-}
-
-.wave-2 {
-    animation-delay: 0.35s;
-    left: -74rpx;
-    top: -14rpx;
-    width: 148rpx;
-    height: 148rpx;
-}
-
-.wave-3 {
-    animation-delay: 0.7s;
-    left: -88rpx;
-    top: -28rpx;
-    width: 176rpx;
-    height: 176rpx;
-}
-
-.scan-dialog__tag.is-stick {
-    position: absolute;
-    right: 149rpx;
-    top: 12rpx;
-    width: 160rpx;
-    height: 220rpx;
-    background: #ffffff;
-    border-radius: 18rpx;
-    box-shadow: 0 12rpx 24rpx rgba(0, 0, 0, 0.14);
-    /* 初始 X 在弹层内侧，避免首帧越界 */
-    transform: translate3d(160rpx, -14rpx, 0) rotate(-6deg) scale(0.94);
-    animation: approach-stick 2.2s cubic-bezier(0.25, 0.1, 0.25, 1) infinite;
-    animation-fill-mode: both;
-    will-change: transform;
-    backface-visibility: hidden;
-}
-
-.tag__chip {
-    position: absolute;
-    left: 50%;
-    top: 60rpx;
-    width: 64rpx;
-    height: 64rpx;
-    transform: translateX(-50%);
-    border-radius: 50%;
-    background: radial-gradient(circle at 50% 50%, #2b5df5 0%, #304ef1 52%, #2846d8 100%);
-    box-shadow: 0 6rpx 12rpx rgba(43, 93, 245, 0.35);
-    animation: chipPulse 2s ease-in-out infinite;
-}
-
-.tag__text {
-    position: absolute;
-    bottom: 24rpx;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-size: 26rpx;
-    font-weight: 600;
-    color: #2b5df5;
-    letter-spacing: 2rpx;
-}
-
-.scan-dialog__hint {
-    font-size: 28rpx;
-    color: rgba(0, 0, 0, 0.78);
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -20rpx;
-    text-align: center;
-}
-
-@keyframes wave-expand {
-    0% {
-        transform: scale(0.7);
-        opacity: 0.85;
+    &::after {
+        border: none;
     }
 
-    60% {
-        transform: scale(1.35);
-        opacity: 0.3;
+    &:active {
+        transform: translate(3rpx, 3rpx);
+        box-shadow: none;
     }
 
-    100% {
-        transform: scale(1.6);
-        opacity: 0;
-    }
-}
-
-@keyframes approach-stick {
-    0% {
-        transform: translate3d(160rpx, -14rpx, 0) rotate(-6deg) scale(0.94);
-        opacity: 0;
+    &--green {
+        background: $color-green;
     }
 
-    100% {
-        transform: translate3d(90rpx, 0rpx, 0) rotate(-2deg) scale(1);
-        opacity: 1;
-    }
-}
-
-@keyframes chipPulse {
-    0% {
-        transform: translateX(-50%) scale(1);
-        box-shadow: 0 6rpx 12rpx rgba(43, 93, 245, 0.35);
-    }
-
-    50% {
-        transform: translateX(-50%) scale(1.08);
-        box-shadow: 0 8rpx 16rpx rgba(43, 93, 245, 0.5);
-    }
-
-    100% {
-        transform: translateX(-50%) scale(1);
-        box-shadow: 0 6rpx 12rpx rgba(43, 93, 245, 0.35);
-    }
-}
-
-
-.scan-dialog__container {
-    .t-dialog__content {
-        padding: 0px;
-    }
-
-    .t-dialog__footer {
-        margin-top: 0;
-        padding-top: 0;
+    &--red {
+        background: $color-red;
+        color: $color-white;
     }
 }

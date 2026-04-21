@@ -1,33 +1,30 @@
-<t-toast id="t-toast" />
-<view class="write-music">
-    <view class="write-music__content">
-        <view class="write-music__list">
-            <t-cell-group class="write-music__cell-group">
-                <t-cell class="write-music__cell write-music__field">
-                    <view slot="note" class="write-music__field-value">
-                        <t-textarea class="write-music__field-textarea" value="{{shareUrl}}" placeholder="请输入分享链接，例如：“分享暗杠的单曲《童话镇》: https://163cn.tv/LTppLNM (来自@网易云音乐)”" bind:change="handleShareUrlChange" />
-                    </view>
-                </t-cell>
-            </t-cell-group>
-        </view>
-        <view class="write-music__actions">
-            <t-button class="write-music__paste" bind:tap="handlePasteTap">粘贴</t-button>
-        </view>
+<pixel-navbar title="写入音乐" theme="music" showBack="{{true}}" showHome="{{false}}" />
+<pixel-toast id="pixel-toast" />
+
+<view class="write-music" style="height: calc(100vh - {{navHeight}}px);">
+    <view class="field">
+        <view class="label">分享链接</view>
+        <textarea
+            class="box box--tall box--textarea"
+            value="{{shareUrl}}"
+            placeholder="https://y.music.163.com/m/song/186145"
+            maxlength="-1"
+            bindinput="handleShareUrlInput"
+        ></textarea>
     </view>
-    <view class="write-music__footer">
-        <block wx:if="{{ writeStatus === 'input' }}">
-            <t-button class="write-music__submit" disabled="{{!shareUrl}}" bindtap="handleOpenScanDialog">
-                写入音乐
-            </t-button>
-        </block>
-        <block wx:if="{{ writeStatus === 'parsing' }}">
-            <t-button class="write-music__submit" loading disabled="{{true}}">解析中</t-button>
-        </block>
+    
+    <view class="btn-wrap">
+        <button class="btn" bindtap="handlePasteTap">粘贴</button>
     </view>
+    
+    <button class="primary-btn" disabled="{{!canSubmit || writeStatus !== 'input'}}" bindtap="handleOpenScanDialog">
+        <text wx:if="{{writeStatus === 'input'}}">写入 NFC 标签</text>
+        <text wx:elif="{{writeStatus === 'parsing'}}">解析中...</text>
+    </button>
 </view>
-<view wx:if="{{parsingLoading}}" class="write-music__loading-mask">
-    <t-loading t-class="write-music__loading" t-class-indicator="write-music__loading-indicator" t-class-text="write-music__loading-text">
-        <text slot="text">解析中</text>
-    </t-loading>
-</view>
+
+<button class="fab" open-type="contact">
+    <pixel-icon name="question" size="44" />
+</button>
+
 <scan-dialog visible="{{scanVisible}}" records="{{records}}" bind:close="handleCloseScanDialog" />

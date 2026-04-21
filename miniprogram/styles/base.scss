@@ -1,0 +1,18 @@
+@import "./variables.scss";
+@import "./mixins.scss";
+
+page {
+    background: $color-paper;
+    min-height: 100vh;
+    box-sizing: border-box;
+    font-family: $font-family-pixel;
+    color: $color-ink;
+    font-size: $font-size-md;
+    line-height: $line-height-normal;
+}
+
+view, scroll-view, swiper, button, input, textarea, label, navigator, image {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}

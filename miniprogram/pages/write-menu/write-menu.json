@@ -1,11 +1,8 @@
 {
+  "navigationStyle": "custom",
   "usingComponents": {
-    "t-icon": "tdesign-miniprogram/icon/icon",
-    "t-cell": "tdesign-miniprogram/cell/cell",
-    "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
-    "t-toast": "tdesign-miniprogram/toast/toast",
-    "t-dialog": "tdesign-miniprogram/dialog/dialog",
-    "t-fab": "tdesign-miniprogram/fab/fab",
-    "t-navbar": "tdesign-miniprogram/navbar/navbar"
+    "pixel-navbar": "/components/pixel-navbar/pixel-navbar",
+    "pixel-toast": "/components/pixel-toast/pixel-toast",
+    "pixel-icon": "/components/pixel-icon/pixel-icon"
   }
 }

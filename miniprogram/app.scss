@@ -1,9 +1,13 @@
+@import "./styles/base.scss";
+
 page {
-    background: #f5f6f8;
+    background: #f4edd6;
     min-height: 100vh;
     box-sizing: border-box;
+    position: relative;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 .custom-navbar {
-    background: #f5f6f8 !important;
+    background: transparent !important;
 }

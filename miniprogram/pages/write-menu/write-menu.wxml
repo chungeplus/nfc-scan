@@ -1,66 +1,95 @@
-<t-toast id="t-toast" />
+<pixel-navbar title="首页" theme="home" showBack="{{false}}" showHome="{{false}}" />
+<pixel-toast id="pixel-toast" />
 
-<view class="write-menu">
+<view class="write-menu" style="height: calc(100vh - {{navHeight}}px);">
     <view class="write-menu__content">
-        <view class="write-menu__list">
-            <t-cell-group class="write-menu__cell-group">
-                <t-cell t-class="write-menu__cell" bindtap="handleWriteApp">
-                    <view slot="title" class="write-menu__title">
-                        <view class="write-menu__title-icon">
-                            <t-icon name="app-filled"></t-icon>
+        <view class="stack">
+            <view class="card card--orange card--pixel-cut home-main" bindtap="handleWriteApp">
+                <view class="card__bite card__bite--tl"></view>
+                <view class="card__bite card__bite--br"></view>
+                <view class="home-deco home-deco--a"></view>
+                <view class="home-deco home-deco--b"></view>
+                <view class="home-deco home-deco--c"></view>
+                <view class="row">
+                    <view class="home-main__visual">
+                        <view class="home-main__sun"></view>
+                        <view class="home-main__spark home-main__spark--a"></view>
+                        <view class="home-main__spark home-main__spark--b"></view>
+                        <view class="home-main__platform"></view>
+                        <view class="home-main__sprite-wrap">
+                            <pixel-icon name="app" size="56" />
                         </view>
-                        <view class="write-menu__title-text">应用</view>
                     </view>
-                </t-cell>
-                <t-cell t-class="write-menu__cell" bindtap="handleWriteMusic">
-                    <view slot="title" class="write-menu__title">
-                        <view class="write-menu__title-icon">
-                            <t-icon name="file-music-filled"></t-icon>
+                    <view class="home-main__content">
+                        <view class="card__title">应用专区</view>
+                        <view class="meta">常用应用一碰直达，适合桌面标签、车载支架和办公入口</view>
+                    </view>
+                </view>
+            </view>
+            
+            <view class="home-subgrid">
+                <view class="card card--purple card--pixel-cut home-sub" bindtap="handleWriteMusic">
+                    <view class="card__bite card__bite--tl"></view>
+                    <view class="row">
+                        <view class="home-sub__visual">
+                            <pixel-icon name="music" size="48" />
                         </view>
-                        <view class="write-menu__title-text">音乐</view>
-                    </view>
-                </t-cell>
-                <t-cell t-class="write-menu__cell" bindtap="handleWriteWeb">
-                    <view slot="title" class="write-menu__title">
-                        <view class="write-menu__title-icon">
-                            <t-icon name="internet-filled"></t-icon>
+                        <view class="body">
+                            <view class="card__title">音乐专区</view>
+                            <view class="meta">支持网易云 / QQ 音乐分享链接</view>
                         </view>
-                        <view class="write-menu__title-text">网页</view>
                     </view>
-                </t-cell>
-                <t-cell t-class="write-menu__cell" bindtap="handleWriteCustomVideo">
-                    <view slot="title" class="write-menu__title">
-                        <view class="write-menu__title-icon">
-                            <t-icon name="video-filled"></t-icon>
+                </view>
+                
+                <view class="card card--cyan card--pixel-cut home-sub" bindtap="handleWriteWeb">
+                    <view class="card__bite card__bite--br"></view>
+                    <view class="row">
+                        <view class="home-sub__visual">
+                            <pixel-icon name="web" size="48" />
                         </view>
-                        <view class="write-menu__title-text">自定义视频</view>
+                        <view class="body">
+                            <view class="card__title">网页专区</view>
+                            <view class="meta">官网 / 活动页 / 短链都可直达</view>
+                        </view>
                     </view>
-                </t-cell>
-            </t-cell-group>
+                </view>
+            </view>
         </view>
     </view>
 </view>
-<t-dialog visible="{{developerPromiseDialogVisible}}" class="write-menu__promise-dialog">
-    <view slot="title" class="write-menu__promise-title">开发者承诺</view>
-    <scroll-view slot="content" type="list">
-        <view class="write-menu__developer-promise">
-            <view class="write-menu__promise-item">
-                1. 本小程序为纯客户端运行程序，无任何后台服务器，不会收集、记录用户NFC卡的任何信息。
-            </view>
-            <view class="write-menu__promise-item">2. 小程序无需注册或登录即可使用，全程不储存用户的个人信息、设备信息及操作记录。</view>
-            <view class="write-menu__promise-item">
-                3. NFC卡写入内容遵循“所见即所得”原则，写入结果实时可见；但需注意，NFC卡储存空间有限，新内容写入后将直接替换原有数据，请谨慎操作。
+
+<button class="fab" open-type="contact">
+    <pixel-icon name="question" size="44" />
+</button>
+
+<view wx:if="{{developerPromiseDialogVisible}}" class="overlay">
+    <view class="dialog">
+        <view class="dialog__title">开发者承诺</view>
+        <view class="dialog__body">
+            <view class="promise">
+                <view>1. 本小程序仅在本地运行，不保存用户 NFC 内容。</view>
+                <view>2. 无需登录注册，不采集账号信息。</view>
+                <view>3. NFC 写入遵循所见即所得，写入前请确认内容。</view>
             </view>
         </view>
-    </scroll-view>
-    <view slot="actions" class="write-menu__promise-actions">
-        <t-button class="write-menu__promise-btn write-menu__promise-btn--confirm" bindtap="handleCloseDeveloperPromiseDialog">
-            了解
-        </t-button>
+        <view class="dialog__actions dialog__actions--one">
+            <button class="dialog-btn dialog-btn--green" bindtap="handleCloseDeveloperPromiseDialog">了解</button>
+        </view>
     </view>
-</t-dialog>
-<t-fab class="write-menu__fab" draggable="vertical">
-    <button class="write-menu__fab-btn" open-type="contact">
-        <t-icon name="service" class="write-menu__fab-icon"></t-icon>
-    </button>
-</t-fab>
+</view>
+
+<view wx:if="{{nfcUnsupportedDialogVisible}}" class="overlay">
+    <view class="dialog">
+        <view class="dialog__title dialog__title--red">NFC 不支持</view>
+        <view class="dialog__body">
+            <view class="stage">
+                <pixel-icon name="phone" size="64" />
+                <view class="hint hint--center hint--red">您的设备不支持 NFC 功能</view>
+                <view class="hint hint--center hint--red">无法使用本小程序的写入功能</view>
+            </view>
+        </view>
+        <view class="dialog__actions dialog__actions--one">
+            <button class="dialog-btn dialog-btn--red" bindtap="handleCloseUnsupportedDialog">我知道了</button>
+        </view>
+    </view>
+</view>

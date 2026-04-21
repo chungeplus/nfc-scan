@@ -3,13 +3,13 @@
     "pages/write-menu/write-menu",
     "pages/write-app/write-app",
     "pages/write-music/write-music",
-    "pages/write-web/write-web",
-    "pages/write-custom-video/write-custom-video"
+    "pages/write-web/write-web"
   ],
   "window": {
-    "navigationBarTextStyle": "black",
+    "navigationBarTextStyle": "white",
     "navigationBarTitleText": "NFC直达",
-    "navigationBarBackgroundColor": "#f5f6f8"
+    "navigationBarBackgroundColor": "#ff665b",
+    "navigationStyle": "custom"
   },
   "componentFramework": "glass-easel",
   "sitemapLocation": "sitemap.json",

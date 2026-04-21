@@ -1,0 +1,1448 @@
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFC直达 - 像素风UI原型</title>
+    <style>
+        :root {
+            --scene: #88aa67;
+            --scene-grid: rgba(30, 40, 20, 0.08);
+            --paper: #f4edd6;
+            --paper-2: #efe5c6;
+            --ink: #2d2d2d;
+            --muted: #626262;
+            --orange: #f0bf66;
+            --purple: #ceb0ef;
+            --cyan: #9fd9df;
+            --green: #b8d98b;
+            --green-deep: #6ea85e;
+            --red: #e86a58;
+            --red-deep: #be4a3a;
+            --yellow: #efd86c;
+            --blue: #6f87d4;
+            --blue-deep: #4e63ad;
+            --white: #ffffff;
+            --stroke: 4px;
+            --stroke-sm: 3px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            padding: 28px;
+            font-family: "Courier New", Courier, monospace;
+            color: var(--ink);
+            image-rendering: pixelated;
+            background-color: var(--scene);
+            background-image:
+                radial-gradient(circle at 16px 16px, rgba(255, 255, 255, 0.1) 0 2px, transparent 2px),
+                repeating-linear-gradient(0deg, var(--scene-grid) 0 2px, transparent 2px 10px),
+                repeating-linear-gradient(90deg, var(--scene-grid) 0 2px, transparent 2px 10px);
+            background-size: 40px 40px, 10px 10px, 10px 10px;
+        }
+        .canvas {
+            border: 6px solid var(--ink);
+            background: var(--paper);
+            box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.18);
+            overflow: hidden;
+        }
+        .canvas__bar {
+            height: 48px;
+            padding: 10px 14px;
+            border-bottom: var(--stroke) solid var(--ink);
+            background: linear-gradient(180deg, #87abcf 0%, #7197bf 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .canvas__brand {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--paper);
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.25);
+        }
+        .window-dots { display: flex; gap: 6px; }
+        .window-dots span {
+            width: 22px;
+            height: 22px;
+            border: var(--stroke-sm) solid var(--ink);
+            background: var(--paper);
+            box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.16);
+        }
+        .window-dots span:last-child { background: var(--red); }
+        .canvas__body {
+            padding: 24px;
+            background:
+                radial-gradient(circle at 12px 12px, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px),
+                radial-gradient(circle at 30px 20px, rgba(0, 0, 0, 0.04) 0 1px, transparent 1px),
+                var(--paper);
+            background-size: 42px 42px, 66px 66px, auto;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        .panel-title {
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .phone {
+            width: 320px;
+            height: 680px;
+            margin: 0 auto;
+            padding: 10px;
+            border: 5px solid var(--ink);
+            border-radius: 26px;
+            background: #273240;
+            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        .phone__notch {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            width: 108px;
+            height: 18px;
+            transform: translateX(-50%);
+            background: #141b24;
+            border-radius: 0 0 10px 10px;
+            z-index: 2;
+        }
+        .phone__screen {
+            width: 100%;
+            height: 100%;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 4px solid #141b24;
+            position: relative;
+            background: var(--paper);
+            background-image:
+                radial-gradient(circle at 8px 8px, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px),
+                radial-gradient(circle at 22px 18px, rgba(0, 0, 0, 0.04) 0 1px, transparent 1px);
+            background-size: 28px 28px, 44px 44px;
+        }
+        .top {
+            height: 82px;
+            padding: 12px 16px 10px;
+            border-bottom: var(--stroke) solid var(--ink);
+            color: var(--white);
+        }
+        .top--red { background: linear-gradient(180deg, #ff8070 0%, #ef675b 100%); }
+        .top--green { background: linear-gradient(180deg, #226c60 0%, #184e45 100%); }
+        .top--yellow { background: linear-gradient(180deg, #f1cb4b 0%, #e1b12e 100%); color: var(--ink); }
+        .top--blue { background: linear-gradient(180deg, #334b93 0%, #26386f 100%); }
+        .top--home { background: linear-gradient(180deg, #ff8a7a 0%, #ef665b 100%); }
+        .status {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 10px;
+        }
+        .top__row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .top__placeholder { width: 28px; height: 28px; }
+        .top__title {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+        }
+        .top--yellow .top__title { text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.5); }
+        .ibox {
+            width: 28px;
+            height: 28px;
+            border: var(--stroke-sm) solid currentColor;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.14);
+        }
+        .page { padding: 18px 16px 90px; }
+        .page--home { padding: 20px 16px 86px; }
+        .home-main { min-height: 176px; padding: 20px 16px 18px; }
+        .home-main .row { align-items: flex-start; gap: 12px; }
+        .home-main .card__title { margin-bottom: 6px; font-size: 20px; letter-spacing: 2px; line-height: 1.15; }
+        .home-main .mini { min-width: 92px; height: 32px; font-size: 11px; }
+        .home-main .meta { font-size: 10px; line-height: 1.55; }
+        .home-main__visual {
+            width: 98px;
+            height: 108px;
+            border: var(--stroke-sm) solid var(--ink);
+            background: linear-gradient(180deg, #f8e7a8 0%, #efcf74 58%, #e7b45c 58%, #d89d53 100%);
+            box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.14);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .home-main__visual::before {
+            content: "";
+            position: absolute;
+            inset: 7px;
+            background:
+                linear-gradient(90deg, rgba(255, 255, 255, 0.18) 0 2px, transparent 2px 14px),
+                linear-gradient(0deg, rgba(255, 255, 255, 0.18) 0 2px, transparent 2px 14px);
+            background-size: 14px 14px, 14px 14px;
+            border: 2px dashed rgba(45, 45, 45, 0.16);
+        }
+        .home-main__visual::after {
+            content: "";
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: 14px;
+            height: 14px;
+            background: linear-gradient(90deg, #9ac27a 0 10px, #7eb063 10px 20px, #9ac27a 20px 30px, #7eb063 30px 40px, #9ac27a 40px 50px, #7eb063 50px 60px, #9ac27a 60px 70px, #7eb063 70px 100%);
+        }
+        .home-main__content { flex: 1; min-width: 0; position: relative; z-index: 1; }
+        .home-subgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .home-sub { min-height: 154px; padding: 12px; }
+        .home-sub.card--purple { background: linear-gradient(180deg, #ead8ff 0%, #d8c1f2 100%); }
+        .home-sub.card--cyan { background: linear-gradient(180deg, #caedf1 0%, #b8dde1 100%); }
+        .home-sub .row { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .home-sub__visual {
+            width: 74px;
+            height: 74px;
+            border: var(--stroke-sm) solid var(--ink);
+            background: rgba(255, 255, 255, 0.28);
+            box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.14);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .home-sub .card__title { margin-bottom: 6px; font-size: 15px; }
+        .home-sub .mini { min-width: 84px; height: 26px; font-size: 10px; }
+        .home-sub .meta { font-size: 10px; line-height: 1.5; }
+        .card--pixel-cut {
+            clip-path: polygon(
+                0 10px, 10px 10px, 10px 0,
+                calc(100% - 18px) 0, calc(100% - 18px) 6px, calc(100% - 8px) 6px, calc(100% - 8px) 0,
+                100% 0, 100% calc(100% - 14px), calc(100% - 10px) calc(100% - 14px), calc(100% - 10px) 100%,
+                14px 100%, 14px calc(100% - 8px), 6px calc(100% - 8px), 6px 100%, 0 100%
+            );
+        }
+        .card__bite { position: absolute; width: 12px; height: 12px; background: var(--paper); z-index: 2; }
+        .card__bite--tl { top: -4px; left: 18px; box-shadow: 0 4px 0 var(--ink), 4px 0 0 var(--ink); }
+        .card__bite--br { right: 24px; bottom: -4px; box-shadow: 0 -4px 0 var(--ink), -4px 0 0 var(--ink); }
+        .home-deco {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--ink);
+            background: rgba(255, 255, 255, 0.6);
+            box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.12);
+        }
+        .home-deco--a { top: 12px; right: 18px; background: #fff1b7; }
+        .home-deco--b { bottom: 14px; left: 18px; background: #ffd4a6; }
+        .home-deco--c { top: 18px; left: 86px; width: 8px; height: 8px; background: #fff; }
+        .home-main__sun {
+            position: absolute;
+            top: 14px;
+            right: 12px;
+            width: 22px;
+            height: 22px;
+            background: #fff3b1;
+            border: 2px solid rgba(45, 45, 45, 0.18);
+            box-shadow: 0 0 0 4px rgba(255, 241, 183, 0.5), -26px 30px 0 -8px rgba(255, 255, 255, 0.4);
+        }
+        .home-main__spark {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #fff;
+            box-shadow: 6px 0 0 #fff, 0 6px 0 #fff, 6px 6px 0 #fff;
+            opacity: 0.75;
+        }
+        .home-main__spark--a { top: 18px; left: 16px; }
+        .home-main__spark--b { right: 26px; top: 46px; }
+        .home-main__sprite-wrap {
+            position: relative;
+            z-index: 1;
+            width: 56px;
+            height: 56px;
+            margin-top: -6px;
+            border: 3px solid rgba(45, 45, 45, 0.28);
+            background: rgba(255, 250, 223, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 6px 6px 0 rgba(255, 255, 255, 0.38);
+        }
+        .home-main__platform {
+            position: absolute;
+            left: 10px;
+            bottom: 26px;
+            width: 42px;
+            height: 8px;
+            background: #2d2d2d;
+            box-shadow: 8px 0 0 #2d2d2d, 16px 0 0 #2d2d2d;
+            opacity: 0.15;
+        }
+        .stack { display: flex; flex-direction: column; gap: 14px; }
+        .card {
+            position: relative;
+            padding: 14px;
+            border: var(--stroke) solid var(--ink);
+            box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.16);
+            overflow: hidden;
+        }
+        .card--orange { background: linear-gradient(180deg, #ffd884 0%, var(--orange) 100%); }
+        .card--purple { background: linear-gradient(180deg, #e4ccff 0%, var(--purple) 100%); }
+        .card--cyan { background: linear-gradient(180deg, #bde8ed 0%, var(--cyan) 100%); }
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 8px;
+            border: 2px dashed rgba(45, 45, 45, 0.2);
+        }
+        .card::after {
+            content: "";
+            position: absolute;
+            right: 12px;
+            bottom: 10px;
+            width: 40px;
+            height: 8px;
+            background: linear-gradient(90deg, transparent 0 4px, rgba(45, 45, 45, 0.28) 4px 8px, transparent 8px 12px, rgba(45, 45, 45, 0.28) 12px 16px, transparent 16px 20px, rgba(45, 45, 45, 0.28) 20px 24px, transparent 24px 100%);
+        }
+        .row { display: flex; align-items: center; gap: 14px; }
+        .body { flex: 1; }
+        .card__title { margin-bottom: 8px; font-size: 16px; letter-spacing: 1px; font-weight: 700; }
+        .mini {
+            display: inline-flex;
+            min-width: 90px;
+            height: 28px;
+            padding: 0 10px;
+            align-items: center;
+            justify-content: center;
+            border: var(--stroke-sm) solid var(--ink);
+            background: rgba(255, 255, 255, 0.72);
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.12);
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .meta { margin-top: 6px; font-size: 10px; color: var(--muted); }
+        .bottom {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 74px;
+            padding: 8px 10px;
+            border-top: var(--stroke) solid var(--ink);
+            background: var(--paper-2);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .nav {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .nav--active {
+            background: var(--yellow);
+            border: var(--stroke-sm) solid var(--ink);
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.14);
+        }
+        .field { margin-bottom: 14px; }
+        .label {
+            margin-bottom: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--muted);
+        }
+        .box {
+            min-height: 46px;
+            padding: 10px 12px;
+            border: var(--stroke-sm) solid var(--ink);
+            background: var(--paper-2);
+            box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.12), 3px 3px 0 rgba(0, 0, 0, 0.14);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .box--tall {
+            min-height: 138px;
+            height: 138px;
+        }
+        .field__error {
+            margin-top: 4px;
+            font-size: 10px;
+            color: var(--red-deep);
+            font-weight: 700;
+        }
+        .btn {
+            min-width: 74px;
+            height: 46px;
+            border: var(--stroke-sm) solid var(--ink);
+            background: var(--yellow);
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.14);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .primary-btn {
+            width: 100%;
+            height: 52px;
+            margin-top: 16px;
+            border: var(--stroke) solid var(--ink);
+            box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.16);
+            background: var(--blue);
+            color: var(--white);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.26);
+        }
+        .primary-btn--green { background: var(--green-deep); }
+        .chips { display: flex; gap: 10px; margin-bottom: 12px; }
+        .chip {
+            flex: 1;
+            height: 42px;
+            border: var(--stroke-sm) solid var(--ink);
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.16);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .chip--red { background: var(--red); color: var(--white); }
+        .chip--blue { background: var(--cyan); }
+        .overlay {
+            position: absolute;
+            inset: 0;
+            padding: 24px;
+            background: rgba(38, 45, 30, 0.34);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .dialog {
+            width: 100%;
+            border: var(--stroke) solid var(--ink);
+            box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.18);
+            background: var(--paper);
+        }
+        .dialog__title {
+            height: 48px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: var(--stroke-sm) solid var(--ink);
+            background: var(--yellow);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        .dialog__title--red { background: var(--red); color: var(--white); }
+        .dialog__body { padding: 18px 16px; }
+        .dialog__actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            padding: 0 16px 16px;
+        }
+        .dialog__actions--one { grid-template-columns: 1fr; }
+        .dialog-btn {
+            height: 42px;
+            border: var(--stroke-sm) solid var(--ink);
+            background: var(--paper-2);
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.14);
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .dialog-btn--green { background: var(--green); }
+        .dialog-btn--red { background: var(--red); color: var(--white); }
+        .nfc-block-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(38, 45, 30, 0.88);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+        .nfc-block__dialog {
+            width: 92%;
+            border: var(--stroke) solid var(--ink);
+            box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
+            background: var(--paper);
+        }
+        .picker-preview {
+            position: absolute;
+            top: 82px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(38, 45, 30, 0.34);
+            display: flex;
+            align-items: flex-end;
+            justify-content: stretch;
+            padding: 0;
+        }
+        .picker-preview__card {
+            width: 100%;
+            max-height: 100%;
+            display: flex;
+            flex-direction: column;
+            border-top: var(--stroke) solid var(--ink);
+            border-left: var(--stroke) solid var(--ink);
+            border-right: var(--stroke) solid var(--ink);
+            background: var(--paper);
+            box-shadow: 0 -6px 0 rgba(0, 0, 0, 0.16);
+        }
+        .picker-preview__title {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: var(--stroke-sm) solid var(--ink);
+            background: var(--yellow);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+        .picker-preview__body { display: grid; grid-template-columns: 108px 1fr; height: 320px; min-height: 320px; max-height: 320px; }
+        .picker-preview__col { max-height: 100%; overflow-y: auto; }
+        .picker-preview__col + .picker-preview__col { border-left: var(--stroke-sm) solid var(--ink); }
+        .picker-preview__item {
+            min-height: 42px;
+            padding: 10px 12px;
+            border-bottom: 2px solid rgba(45, 45, 45, 0.12);
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1.4;
+            background: rgba(255, 255, 255, 0.55);
+            display: flex;
+            align-items: center;
+        }
+        .picker-preview__item--active { background: var(--yellow); }
+        .picker-preview__item--subactive { background: rgba(159, 217, 223, 0.5); }
+        .picker-preview__actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
+            border-top: var(--stroke-sm) solid var(--ink);
+            background: var(--paper);
+        }
+        .promise {
+            padding: 12px;
+            border: var(--stroke-sm) solid var(--ink);
+            background: var(--paper-2);
+            box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.12);
+            font-size: 11px;
+            line-height: 1.8;
+        }
+        .stage { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .detect-scene {
+            position: relative;
+            width: 186px;
+            height: 112px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: -24px;
+        }
+        .nphone {
+            width: 90px;
+            height: 126px;
+            border: var(--stroke-sm) solid var(--ink);
+            background: var(--cyan);
+            box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.14);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .nphone--detect {
+            position: absolute;
+            top: -10px;
+            left: 4px;
+            animation: phonePulse 1.6s ease-in-out infinite;
+        }
+        .ntag {
+            width: 82px;
+            height: 44px;
+            border: var(--stroke-sm) solid var(--ink);
+            background: var(--yellow);
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.14);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .ntag--detect {
+            position: absolute;
+            right: 8px;
+            top: 18px;
+            animation: tagApproach 1.6s ease-in-out infinite;
+        }
+        .hint { text-align: center; font-size: 12px; line-height: 1.7; color: var(--muted); }
+        .hint--green { color: var(--green-deep); font-weight: 700; }
+        .hint--red { color: var(--red-deep); font-weight: 700; }
+        .hint--center { text-align: center; }
+        .spin {
+            width: 34px;
+            height: 34px;
+            border: var(--stroke) solid var(--ink);
+            border-top-color: var(--green-deep);
+            background: var(--green);
+            animation: spin 0.8s steps(8) infinite;
+        }
+        .toast {
+            min-height: 46px;
+            border: var(--stroke-sm) solid var(--ink);
+            box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.16);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        @keyframes tagApproach {
+            0% {
+                transform: translate(10px, 8px) scale(0.92);
+                opacity: 0.68;
+            }
+            55% {
+                transform: translate(-26px, -10px) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(10px, 8px) scale(0.92);
+                opacity: 0.68;
+            }
+        }
+        @keyframes phonePulse {
+            0%, 100% { box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.14); }
+            50% { box-shadow: 0 0 0 6px rgba(159, 217, 223, 0.18), 4px 4px 0 rgba(0, 0, 0, 0.14); }
+        }
+        .toast--success { background: var(--green); }
+        .toast--warn { background: var(--yellow); }
+        .toast--error { background: var(--red); color: var(--white); }
+        .sprite {
+            --s: 6px;
+            display: grid;
+            grid-template-columns: repeat(8, var(--s));
+            grid-template-rows: repeat(8, var(--s));
+            flex-shrink: 0;
+        }
+        .sprite--lg { --s: 8px; }
+        .cell { width: var(--s); height: var(--s); }
+        .fab {
+            position: absolute;
+            right: 16px;
+            bottom: 88px;
+            width: 44px;
+            height: 44px;
+            border: var(--stroke-sm) solid var(--ink);
+            background: var(--yellow);
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+        .fab--green {
+            background: var(--green);
+        }
+        .phone__screen {
+            overflow: hidden;
+        }
+        .page {
+            overflow-y: hidden;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes slideUpFromBottom {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .animate-slideUpFromBottom {
+            animation: slideUpFromBottom 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            transform-origin: bottom center;
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas">
+        <div class="canvas__bar">
+            <div class="canvas__brand">微信小程序</div>
+            <div class="window-dots"><span></span><span></span><span></span></div>
+        </div>
+        <div class="canvas__body">
+            <div class="grid">
+
+                <section>
+                    <div class="panel-title">首页 · 首次进入弹窗</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--home">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">首页</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page page--home">
+                                <div class="stack">
+                                    <article class="card card--orange card--pixel-cut home-main">
+                                        <span class="card__bite card__bite--tl"></span>
+                                        <span class="card__bite card__bite--br"></span>
+                                        <span class="home-deco home-deco--a"></span>
+                                        <span class="home-deco home-deco--b"></span>
+                                        <span class="home-deco home-deco--c"></span>
+                                        <div class="row">
+                                            <div class="home-main__visual">
+                                                <span class="home-main__sun"></span>
+                                                <span class="home-main__spark home-main__spark--a"></span>
+                                                <span class="home-main__spark home-main__spark--b"></span>
+                                                <span class="home-main__platform"></span>
+                                                <div class="home-main__sprite-wrap">
+                                                    <div class="sprite sprite--lg" data-sprite="app"></div>
+                                                </div>
+                                            </div>
+                                            <div class="home-main__content">
+                                                <div class="card__title">应用专区</div>
+                                                <div class="meta">常用应用一碰直达，适合桌面标签、车载支架和办公入口</div>
+                                            </div>
+                                        </div>
+                                    </article>
+                                    <div class="home-subgrid">
+                                        <article class="card card--purple card--pixel-cut home-sub">
+                                            <span class="card__bite card__bite--tl"></span>
+                                            <div class="row">
+                                                <div class="home-sub__visual">
+                                                    <div class="sprite sprite--lg" data-sprite="music"></div>
+                                                </div>
+                                                <div class="body">
+                                                    <div class="card__title">音乐专区</div>
+                                                    <div class="meta">支持网易云 / QQ 音乐分享链接</div>
+                                                </div>
+                                            </div>
+                                        </article>
+                                        <article class="card card--cyan card--pixel-cut home-sub">
+                                            <span class="card__bite card__bite--br"></span>
+                                            <div class="row">
+                                                <div class="home-sub__visual">
+                                                    <div class="sprite sprite--lg" data-sprite="web"></div>
+                                                </div>
+                                                <div class="body">
+                                                    <div class="card__title">网页专区</div>
+                                                    <div class="meta">官网 / 活动页 / 短链都可直达</div>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    </div>
+                                </div>
+                                <div class="fab"><div class="sprite" data-sprite="question"></div></div>
+                            </div>
+                            <div class="overlay">
+                                <div class="dialog">
+                                    <div class="dialog__title">开发者承诺</div>
+                                    <div class="dialog__body">
+                                        <div class="promise">1. 本小程序仅在本地运行，不保存用户 NFC 内容。<br>2. 无需登录注册，不采集账号信息。<br>3. NFC 写入遵循所见即所得，写入前请确认内容。</div>
+                                    </div>
+                                    <div class="dialog__actions dialog__actions--one">
+                                        <button class="dialog-btn dialog-btn--green">了解</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="panel-title">首页 · NFC不支持（弹窗阻塞入口点击）</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--home">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">首页</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page page--home">
+                                <div class="stack">
+                                    <article class="card card--orange card--pixel-cut home-main">
+                                        <span class="card__bite card__bite--tl"></span>
+                                        <span class="card__bite card__bite--br"></span>
+                                        <span class="home-deco home-deco--a"></span>
+                                        <span class="home-deco home-deco--b"></span>
+                                        <span class="home-deco home-deco--c"></span>
+                                        <div class="row">
+                                            <div class="home-main__visual">
+                                                <span class="home-main__sun"></span>
+                                                <span class="home-main__spark home-main__spark--a"></span>
+                                                <span class="home-main__spark home-main__spark--b"></span>
+                                                <span class="home-main__platform"></span>
+                                                <div class="home-main__sprite-wrap">
+                                                    <div class="sprite sprite--lg" data-sprite="app"></div>
+                                                </div>
+                                            </div>
+                                            <div class="home-main__content">
+                                                <div class="card__title">应用专区</div>
+                                                <div class="meta">常用应用一碰直达，适合桌面标签、车载支架和办公入口</div>
+                                            </div>
+                                        </div>
+                                    </article>
+                                    <div class="home-subgrid">
+                                        <article class="card card--purple card--pixel-cut home-sub">
+                                            <span class="card__bite card__bite--tl"></span>
+                                            <div class="row">
+                                                <div class="home-sub__visual">
+                                                    <div class="sprite sprite--lg" data-sprite="music"></div>
+                                                </div>
+                                                <div class="body">
+                                                    <div class="card__title">音乐专区</div>
+                                                    <div class="meta">支持网易云 / QQ 音乐分享链接</div>
+                                                </div>
+                                            </div>
+                                        </article>
+                                        <article class="card card--cyan card--pixel-cut home-sub">
+                                            <span class="card__bite card__bite--br"></span>
+                                            <div class="row">
+                                                <div class="home-sub__visual">
+                                                    <div class="sprite sprite--lg" data-sprite="web"></div>
+                                                </div>
+                                                <div class="body">
+                                                    <div class="card__title">网页专区</div>
+                                                    <div class="meta">官网 / 活动页 / 短链都可直达</div>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    </div>
+                                </div>
+                                <div class="fab"><div class="sprite" data-sprite="question"></div></div>
+                            </div>
+                            <div class="nfc-block-overlay">
+                                <div class="nfc-block__dialog">
+                                    <div class="dialog__title dialog__title--red">NFC 不支持</div>
+                                    <div class="dialog__body">
+                                        <div class="stage">
+                                            <div class="sprite sprite--lg" data-sprite="phone"></div>
+                                            <div class="hint hint--center" style="color: var(--red-deep);">您的设备不支持 NFC 功能<br>无法使用本小程序的写入功能</div>
+                                        </div>
+                                    </div>
+                                    <div class="dialog__actions dialog__actions--one">
+                                        <button class="dialog-btn dialog-btn--red">我知道了</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="panel-title">首页 · 像素卡片入口</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--home">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">首页</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page page--home">
+                                <div class="stack">
+                                    <article class="card card--orange card--pixel-cut home-main">
+                                        <span class="card__bite card__bite--tl"></span>
+                                        <span class="card__bite card__bite--br"></span>
+                                        <span class="home-deco home-deco--a"></span>
+                                        <span class="home-deco home-deco--b"></span>
+                                        <span class="home-deco home-deco--c"></span>
+                                        <div class="row">
+                                            <div class="home-main__visual">
+                                                <span class="home-main__sun"></span>
+                                                <span class="home-main__spark home-main__spark--a"></span>
+                                                <span class="home-main__spark home-main__spark--b"></span>
+                                                <span class="home-main__platform"></span>
+                                                <div class="home-main__sprite-wrap">
+                                                    <div class="sprite sprite--lg" data-sprite="app"></div>
+                                                </div>
+                                            </div>
+                                            <div class="home-main__content">
+                                                <div class="card__title">应用专区</div>
+                                                <div class="meta">常用应用一碰直达，适合桌面标签、车载支架和办公入口</div>
+                                            </div>
+                                        </div>
+                                    </article>
+                                    <div class="home-subgrid">
+                                        <article class="card card--purple card--pixel-cut home-sub">
+                                            <span class="card__bite card__bite--tl"></span>
+                                            <div class="row">
+                                                <div class="home-sub__visual">
+                                                    <div class="sprite sprite--lg" data-sprite="music"></div>
+                                                </div>
+                                                <div class="body">
+                                                    <div class="card__title">音乐专区</div>
+                                                    <div class="meta">支持网易云 / QQ 音乐分享链接</div>
+                                                </div>
+                                            </div>
+                                        </article>
+                                        <article class="card card--cyan card--pixel-cut home-sub">
+                                            <span class="card__bite card__bite--br"></span>
+                                            <div class="row">
+                                                <div class="home-sub__visual">
+                                                    <div class="sprite sprite--lg" data-sprite="web"></div>
+                                                </div>
+                                                <div class="body">
+                                                    <div class="card__title">网页专区</div>
+                                                    <div class="meta">官网 / 活动页 / 短链都可直达</div>
+                                                </div>
+                                            </div>
+                                        </article>
+                                    </div>
+                                </div>
+                                <div class="fab"><div class="sprite" data-sprite="question"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="panel-title">应用写入 · 表单页</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--yellow">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">写入应用</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page">
+                                <div class="chips">
+                                    <div class="chip chip--red"><div class="sprite" data-sprite="android"></div><span>Android</span></div>
+                                    <div class="chip chip--blue"><div class="sprite" data-sprite="phone"></div><span>iOS</span></div>
+                                </div>
+                                <div class="field">
+                                    <div class="label">应用类型</div>
+                                    <div class="box">Android 应用 ▼</div>
+                                </div>
+                                <div class="field">
+                                    <div class="label">应用包名</div>
+                                    <div class="box" style="margin-bottom: 12px;">com.tencent.mobileqq</div>
+                                    <div class="btn">粘贴</div>
+                                </div>
+                                <button class="primary-btn primary-btn--green">写入 NFC 标签</button>
+                                <div class="fab fab--green"><div class="sprite" data-sprite="question"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="panel-title">应用写入 · 包名格式错误</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--yellow">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">写入应用</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page">
+                                <div class="chips">
+                                    <div class="chip chip--red"><div class="sprite" data-sprite="android"></div><span>Android</span></div>
+                                    <div class="chip chip--blue"><div class="sprite" data-sprite="phone"></div><span>iOS</span></div>
+                                </div>
+                                <div class="field">
+                                    <div class="label">应用类型</div>
+                                    <div class="box">Android 应用 ▼</div>
+                                </div>
+                                <div class="field">
+                                    <div class="label">应用包名</div>
+                                    <div class="box" style="margin-bottom: 12px;">xxx.invalid.package</div>
+                                    <div class="btn">粘贴</div>
+                                    <div class="field__error">包名格式不正确</div>
+                                </div>
+                                <button class="primary-btn primary-btn--green">写入 NFC 标签</button>
+                                <div class="fab fab--green"><div class="sprite" data-sprite="question"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="panel-title">应用选择 · Picker 弹框</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--yellow">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">写入应用</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page">
+                                <div class="chips">
+                                    <div class="chip chip--red"><div class="sprite" data-sprite="android"></div><span>Android</span></div>
+                                    <div class="chip chip--blue"><div class="sprite" data-sprite="phone"></div><span>iOS</span></div>
+                                </div>
+                                <div class="field">
+                                    <div class="label">应用类型</div>
+                                    <div class="box">社交 / QQ ▼</div>
+                                </div>
+                                <div class="field">
+                                    <div class="label">应用包名</div>
+                                    <div class="box" style="margin-bottom: 12px;">com.tencent.mobileqq</div>
+                                    <div class="btn">粘贴</div>
+                                </div>
+                            </div>
+                            <div class="picker-preview">
+                                <div class="picker-preview__card animate-slideUpFromBottom">
+                                    <div class="picker-preview__title">选择应用</div>
+                                    <div class="picker-preview__body">
+                                        <div class="picker-preview__col">
+                                            <div class="picker-preview__item">自定义</div>
+                                            <div class="picker-preview__item picker-preview__item--active">社交</div>
+                                            <div class="picker-preview__item">游戏</div>
+                                            <div class="picker-preview__item">影音娱乐</div>
+                                            <div class="picker-preview__item">工具</div>
+                                        </div>
+                                        <div class="picker-preview__col">
+                                            <div class="picker-preview__item">微信</div>
+                                            <div class="picker-preview__item picker-preview__item--subactive">QQ</div>
+                                            <div class="picker-preview__item">微博</div>
+                                            <div class="picker-preview__item">抖音</div>
+                                            <div class="picker-preview__item">知乎</div>
+                                        </div>
+                                    </div>
+                                    <div class="picker-preview__actions">
+                                        <button class="dialog-btn">取消</button>
+                                        <button class="dialog-btn dialog-btn--green">确认</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="panel-title">应用选择 · iOS 同样弹框</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--yellow">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">写入应用</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page">
+                                <div class="chips">
+                                    <div class="chip chip--red"><div class="sprite" data-sprite="android"></div><span>Android</span></div>
+                                    <div class="chip chip--blue" style="box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.2);"><div class="sprite" data-sprite="phone"></div><span>iOS</span></div>
+                                </div>
+                                <div class="field">
+                                    <div class="label">应用类型</div>
+                                    <div class="box">社交 / QQ ▼</div>
+                                </div>
+                                <div class="field">
+                                    <div class="label">应用包名</div>
+                                    <div class="box" style="margin-bottom: 12px;">com.tencent.mobileqq</div>
+                                    <div class="btn">粘贴</div>
+                                </div>
+                            </div>
+                            <div class="picker-preview">
+                                <div class="picker-preview__card animate-slideUpFromBottom">
+                                    <div class="picker-preview__title">选择应用</div>
+                                    <div class="picker-preview__body">
+                                        <div class="picker-preview__col">
+                                            <div class="picker-preview__item">自定义</div>
+                                            <div class="picker-preview__item picker-preview__item--active">社交</div>
+                                            <div class="picker-preview__item">游戏</div>
+                                            <div class="picker-preview__item">影音娱乐</div>
+                                            <div class="picker-preview__item">工具</div>
+                                        </div>
+                                        <div class="picker-preview__col">
+                                            <div class="picker-preview__item">微信</div>
+                                            <div class="picker-preview__item picker-preview__item--subactive">QQ</div>
+                                            <div class="picker-preview__item">微博</div>
+                                            <div class="picker-preview__item">抖音</div>
+                                            <div class="picker-preview__item">知乎</div>
+                                        </div>
+                                    </div>
+                                    <div class="picker-preview__actions">
+                                        <button class="dialog-btn">取消</button>
+                                        <button class="dialog-btn dialog-btn--green">确认</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="panel-title">音乐写入 · 表单页</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--green">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">写入音乐</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page">
+                                <div class="field">
+                                    <div class="label">分享链接</div>
+                                    <div class="box box--tall" style="margin-bottom: 12px;">https://y.music.163.com/m/song/186145</div>
+                                    <div class="btn">粘贴</div>
+                                </div>
+                                <button class="primary-btn primary-btn--green">写入 NFC 标签</button>
+                                <div class="fab"><div class="sprite" data-sprite="question"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="panel-title">音乐写入 · 解析失败</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--green">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">写入音乐</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page">
+                                <div class="field">
+                                    <div class="label">分享链接</div>
+                                    <div class="box box--tall" style="margin-bottom: 12px;">https://invalid.link/song/123</div>
+                                    <div class="btn">粘贴</div>
+                                </div>
+                                <div class="toast toast--warn">暂不支持该链接格式</div>
+                                <button class="primary-btn primary-btn--green">写入 NFC 标签</button>
+                                <div class="fab"><div class="sprite" data-sprite="question"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="panel-title">网页写入 · 表单页</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--blue">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">写入网页</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page">
+                                <div class="field">
+                                    <div class="label">网址链接</div>
+                                    <div class="box box--tall" style="margin-bottom: 12px;">https://github.com</div>
+                                    <div class="btn">粘贴</div>
+                                </div>
+                                <button class="primary-btn primary-btn--green">写入 NFC 标签</button>
+                                <div class="fab"><div class="sprite" data-sprite="question"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="panel-title">网页写入 · URL格式错误</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--blue">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">写入网页</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page">
+                                <div class="field">
+                                    <div class="label">网址链接</div>
+                                    <div class="box box--tall" style="margin-bottom: 12px;">invalid-url</div>
+                                    <div class="btn">粘贴</div>
+                                    <div class="field__error">请输入有效的网址</div>
+                                </div>
+                                <button class="primary-btn primary-btn--green">写入 NFC 标签</button>
+                                <div class="fab"><div class="sprite" data-sprite="question"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="panel-title">NFC 弹窗 · 等待状态</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--yellow">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">写入中</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page">
+                                <div class="overlay" style="top: 0; padding: 18px;">
+                                    <div class="dialog">
+                                        <div class="dialog__title">等待贴近标签</div>
+                                        <div class="dialog__body">
+                                            <div class="stage">
+                                                <div class="detect-scene">
+                                                    <div class="nphone nphone--detect"><div class="sprite sprite--lg" data-sprite="phone"></div></div>
+                                                    <div class="ntag ntag--detect"><div class="sprite" data-sprite="nfc"></div><span>NFC</span></div>
+                                                </div>
+                                                <div class="hint">请将 NFC 标签贴近手机</div>
+                                            </div>
+                                        </div>
+                                        <div class="dialog__actions dialog__actions--one">
+                                            <button class="dialog-btn">取消</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="panel-title">NFC 弹窗 · 写入中</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--green">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">写入音乐</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page">
+                                <div class="field">
+                                    <div class="label">分享链接</div>
+                                    <div class="box box--tall" style="margin-bottom: 12px;">https://y.music.163.com/m/song/186145</div>
+                                    <div class="btn">粘贴</div>
+                                </div>
+                                <div class="overlay" style="top: 0; padding: 18px;">
+                                    <div class="dialog">
+                                        <div class="dialog__title">写入中</div>
+                                        <div class="dialog__body">
+                                            <div class="stage">
+                                                <div class="spin"></div>
+                                                <div class="hint hint--green">写入中，请勿移动标签</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="panel-title">NFC 弹窗 · 写入成功</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--green">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">写入音乐</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page">
+                                <div class="field">
+                                    <div class="label">分享链接</div>
+                                    <div class="box box--tall" style="margin-bottom: 12px;">https://y.music.163.com/m/song/186145</div>
+                                    <div class="btn">粘贴</div>
+                                </div>
+                                <div class="overlay" style="top: 0; padding: 18px;">
+                                    <div class="dialog">
+                                        <div class="dialog__title">写入成功</div>
+                                        <div class="dialog__body">
+                                            <div class="stage">
+                                                <div class="sprite sprite--lg" data-sprite="check"></div>
+                                                <div class="hint hint--green">NFC 标签写入完成<br>可贴近手机验证</div>
+                                            </div>
+                                        </div>
+                                        <div class="dialog__actions dialog__actions--one">
+                                            <button class="dialog-btn dialog-btn--green">确定返回</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section>
+                    <div class="panel-title">NFC 弹窗 · 写入失败</div>
+                    <div class="phone">
+                        <div class="phone__notch"></div>
+                        <div class="phone__screen">
+                            <div class="top top--blue">
+                                <div class="status"><span>9:41</span><span>▂▃▅ 90%</span></div>
+                                <div class="top__row">
+                                    <div class="ibox">&lt;</div>
+                                    <div class="top__title">写入网页</div>
+                                    <div class="top__placeholder"></div>
+                                </div>
+                            </div>
+                            <div class="page">
+                                <div class="field">
+                                    <div class="label">网址链接</div>
+                                    <div class="box box--tall" style="margin-bottom: 12px;">https://github.com</div>
+                                    <div class="btn">粘贴</div>
+                                </div>
+                                <div class="overlay" style="top: 0; padding: 18px;">
+                                    <div class="dialog">
+                                        <div class="dialog__title dialog__title--red">写入失败</div>
+                                        <div class="dialog__body">
+                                            <div class="stage">
+                                                <div class="sprite sprite--lg" data-sprite="error"></div>
+                                                <div class="hint hint--red">标签损坏或容量不足，请更换后重试</div>
+                                            </div>
+                                        </div>
+                                        <div class="dialog__actions">
+                                            <button class="dialog-btn">重试</button>
+                                            <button class="dialog-btn dialog-btn--red">确定</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </div>
+    <script>
+        const SPRITES = {
+            home: ['00111000', '01111100', '11111110', '11111110', '11011010', '11000010', '11111110', '00000000'],
+            heart: ['01100110', '11111111', '11111111', '11111111', '01111110', '00111100', '00011000', '00000000'],
+            user: ['00111100', '01111110', '01111110', '00111100', '00111100', '01111110', '11111111', '00000000'],
+            question: ['00111100', '01111110', '01111110', '01100110', '00100100', '00100100', '00011000', '00000000'],
+            app: ['01111110', '11000011', '10111101', '10100101', '10111101', '10100101', '11000011', '01111110'],
+            music: ['00011110', '00011110', '00010010', '00010010', '00110010', '01110000', '11100000', '01100000'],
+            web: ['00111100', '01111110', '11100111', '11111111', '11111111', '11100111', '01111110', '00111100'],
+            globe: ['00111100', '01111110', '11100111', '11111111', '11111111', '11100111', '01111110', '00111100'],
+            nfc: ['01111110', '11000011', '10111101', '10100101', '10111101', '10100101', '11000011', '01111110'],
+            note: ['00011110', '00011110', '00010010', '00010010', '00110010', '01110000', '11100000', '01100000'],
+            record: ['00111100', '01111110', '11111111', '11100111', '11100111', '11111111', '01111110', '00111100'],
+            phone: ['00111100', '01111110', '01000010', '01000010', '01000010', '01000010', '01111110', '00111100'],
+            android: ['00111100', '01111110', '11011011', '11111111', '11111111', '10111101', '10100101', '00000000'],
+            check: ['00111100', '01111110', '11101111', '11111111', '11111111', '11111110', '01111100', '00111000'],
+            orange: ['00011000', '00111100', '01111110', '01111110', '01111110', '01111110', '00111100', '00011000'],
+            ticket: ['11111111', '11000011', '11111111', '00111100', '00111100', '11111111', '11000011', '11111111'],
+            drink: ['00011000', '00111100', '00111100', '00111100', '00111100', '00111100', '00011000', '00111100'],
+            error: ['11000011', '01100110', '00111100', '00011000', '00011000', '00111100', '01100110', '11000011']
+        };
+
+        const COLORS = {
+            home: '#2d2d2d',
+            heart: '#e86a58',
+            user: '#2d2d2d',
+            question: '#2d2d2d',
+            app: '#6ea85e',
+            music: '#a77bd8',
+            web: '#4e63ad',
+            globe: '#4e63ad',
+            nfc: '#2d2d2d',
+            note: '#a77bd8',
+            record: '#d79143',
+            phone: '#2d2d2d',
+            android: '#6ea85e',
+            check: '#6ea85e',
+            orange: '#d79143',
+            ticket: '#a77bd8',
+            drink: '#5ea8b7',
+            error: '#be4a3a'
+        };
+
+        /**
+         * 渲染页面中的像素图标
+         * @returns {void}
+         */
+        function renderSprites() {
+            const nodes = document.querySelectorAll('[data-sprite]');
+            nodes.forEach((node) => {
+                const name = node.getAttribute('data-sprite');
+                const rows = SPRITES[name];
+                if (!rows) {
+                    return;
+                }
+                node.innerHTML = '';
+                rows.join('').split('').forEach((value) => {
+                    const cell = document.createElement('span');
+                    cell.className = 'cell';
+                    cell.style.background = value === '1' ? COLORS[name] : 'transparent';
+                    node.appendChild(cell);
+                });
+            });
+        }
+
+        renderSprites();
+    </script>
+</body>
+</html>
