@@ -1,0 +1,22 @@
+<view class="pixel-navbar pixel-navbar--{{theme}}">
+    <view class="pixel-navbar__placeholder" style="height: {{navHeight}}px;"></view>
+    <view class="pixel-navbar__fixed">
+        <view class="pixel-navbar__status-bar" style="height: {{statusBarHeight}}px;"></view>
+        <view class="pixel-navbar__content" style="height: 44px;">
+            <view class="pixel-navbar__left">
+                <view class="pixel-navbar__btn pixel-navbar__btn--back" bindtap="goBack" wx:if="{{showBack}}">
+                    <pixel-icon name="back" size="18" />
+                </view>
+                <view class="pixel-navbar__btn pixel-navbar__btn--home" bindtap="goHome" wx:if="{{showHome}}">
+                    <pixel-icon name="home" size="18" />
+                </view>
+            </view>
+            <view class="pixel-navbar__title">
+                <text class="pixel-navbar__title-text">{{title}}</text>
+            </view>
+            <view class="pixel-navbar__right">
+                <slot name="right"></slot>
+            </view>
+        </view>
+    </view>
+</view>

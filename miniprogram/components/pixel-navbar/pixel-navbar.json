@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "pixel-icon": "/components/pixel-icon/pixel-icon"
+  }
+}
