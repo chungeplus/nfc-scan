@@ -1,0 +1,72 @@
+<pixel-navbar title="应用写入" theme="app" showBack="{{true}}" showHome="{{false}}" />
+<pixel-toast id="pixel-toast" />
+<scan-dialog visible="{{scanVisible}}" records="{{records}}" bind:close="handleCloseScanDialog" />
+
+<view class="page" style="padding-top: {{navHeight}}px;">
+    <view class="page__content">
+        <view class="section">
+            <view class="section__title">选择平台</view>
+            <view class="chip-group">
+                <view class="chip {{platform === 'android' ? 'chip--red chip--active' : 'chip--red'}}" bindtap="handleSelectPlatform" data-platform="android">
+                    <pixel-icon name="android" size="16" />
+                    <text>Android</text>
+                </view>
+                <view class="chip {{platform === 'ios' ? 'chip--blue chip--active' : 'chip--blue'}}" bindtap="handleSelectPlatform" data-platform="ios">
+                    <pixel-icon name="app" size="16" />
+                    <text>iOS</text>
+                </view>
+            </view>
+        </view>
+
+        <view class="section">
+            <view class="section__title">选择应用</view>
+            <view class="app-card" bindtap="handleOpenPicker">
+                <view class="app-card__icon">
+                    <pixel-icon name="app" size="40" />
+                </view>
+                <view class="app-card__info">
+                    <view class="app-card__name">{{appName || '请选择应用'}}</view>
+                    <view class="app-card__pkg">{{packageName || '包名：' + packagePlaceholder}}</view>
+                </view>
+                <pixel-icon name="back" size="20" />
+            </view>
+            <view class="error-text" wx:if="{{packageError}}">{{packageError}}</view>
+        </view>
+
+        <view class="section">
+            <view class="section__title">包名输入</view>
+            <view class="input-group">
+                <input class="input" value="{{packageName}}" placeholder="{{packagePlaceholder}}" bindinput="handlePackageNameInput" disabled="{{!allowEditPackageName}}" />
+                <view class="input-action" bindtap="handlePasteTap">
+                    <pixel-icon name="record" size="20" />
+                    <text>粘贴</text>
+                </view>
+            </view>
+        </view>
+
+        <button class="btn btn--primary" bindtap="handleOpenScanDialog" disabled="{{!canWrite}}">开始写入 NFC</button>
+    </view>
+</view>
+
+<view wx:if="{{pickerVisible}}" class="overlay">
+    <view class="picker-panel">
+        <view class="picker-panel__header">
+            <text class="picker-panel__title">选择应用</text>
+            <view class="picker-panel__close" bindtap="handleCancelPicker">
+                <pixel-icon name="back" size="20" />
+            </view>
+        </view>
+        <view class="picker-panel__body">
+            <view class="type-list">
+                <view wx:for="{{typeViewList}}" wx:key="index" class="type-item {{item.className}}" bindtap="handleSelectType" data-index="{{item.index}}">{{item.typeName}}</view>
+            </view>
+            <view class="app-list">
+                <view wx:for="{{appViewList}}" wx:key="index" class="app-item {{item.className}}" bindtap="handleSelectApp" data-index="{{item.index}}">{{item.appName}}</view>
+            </view>
+        </view>
+        <view class="picker-panel__footer">
+            <button class="btn btn--secondary" bindtap="handleCancelPicker">取消</button>
+            <button class="btn btn--primary" bindtap="handleConfirmPicker">确定</button>
+        </view>
+    </view>
+</view>
