@@ -1,0 +1,26 @@
+<pixel-navbar title="网页写入" theme="web" showBack="{{true}}" showHome="{{false}}" />
+<pixel-toast id="pixel-toast" />
+<scan-dialog visible="{{scanVisible}}" records="{{records}}" bind:close="handleCloseScanDialog" />
+
+<view class="page" style="padding-top: {{navHeight}}px;">
+    <view class="page__content">
+        <view class="section">
+            <view class="section__title">网页地址</view>
+            <view class="textarea-group">
+                <textarea class="textarea" value="{{webUrl}}" placeholder="输入或粘贴网页链接，如 https://example.com" bindinput="handleWebUrlInput" maxlength="500" />
+                <view class="textarea-action" bindtap="handlePasteTap">
+                    <pixel-icon name="record" size="20" />
+                    <text>粘贴</text>
+                </view>
+            </view>
+            <view class="error-text" wx:if="{{urlError}}">{{urlError}}</view>
+        </view>
+
+        <view class="tips">
+            <pixel-icon name="question" size="16" />
+            <text>支持 https:// 和 http:// 开头的网址</text>
+        </view>
+
+        <button class="btn btn--primary" bindtap="handleOpenScanDialog" disabled="{{!canSubmit}}">开始写入 NFC</button>
+    </view>
+</view>
