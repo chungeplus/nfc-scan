@@ -1,0 +1,112 @@
+// 场景色
+$color-scene: #88aa67;
+$color-scene-grid: rgba(30, 40, 20, 0.08);
+
+// 纸张色
+$color-paper: #f4edd6;
+$color-paper-2: #efe5c6;
+
+// 基础色
+$color-ink: #2d2d2d;
+$color-muted: #626262;
+
+// 功能色
+$color-orange: #f0bf66;
+$color-purple: #ceb0ef;
+$color-cyan: #9fd9df;
+$color-green: #b8d98b;
+$color-green-deep: #6ea85e;
+$color-red: #e86a58;
+$color-red-deep: #be4a3a;
+$color-yellow: #efd86c;
+$color-blue: #6f87d4;
+$color-blue-deep: #4e63ad;
+$color-white: #ffffff;
+
+// 兼容旧版变量
+$color-bg: #f4edd6;
+$color-background: #f4edd6;
+$color-surface: #ffffff;
+$color-surface-light: #efe5c6;
+$color-border: #2d2d2d;
+$color-border-dark: #111111;
+$color-border-light: #444444;
+$color-text: #2d2d2d;
+$color-text-secondary: #626262;
+$color-text-muted: #888888;
+$color-text-accent: #6ea85e;
+
+// 霓虹色
+$color-neon-green: #6ea85e;
+$color-neon-pink: #a77bd8;
+$color-neon-cyan: #9fd9df;
+$color-neon-yellow: #efd86c;
+$color-neon-red: #e86a58;
+$color-neon-blue: #6f87d4;
+
+$color-success: #6ea85e;
+$color-warning: #efd86c;
+$color-error: #e86a58;
+$color-info: #9fd9df;
+
+// 边框系统
+$border-width: 4rpx;
+$border-width-sm: 3rpx;
+$border-width-thick: 5px;
+
+// 阴影系统
+$shadow-sm: 4rpx 4rpx 0 rgba(0, 0, 0, 0.14);
+$shadow-md: 5rpx 5rpx 0 rgba(0, 0, 0, 0.16);
+$shadow-lg: 6rpx 6rpx 0 rgba(0, 0, 0, 0.18);
+$shadow-xl: 8rpx 8rpx 0 rgba(0, 0, 0, 0.2);
+
+// 内阴影
+$shadow-inset: inset 2rpx 2rpx 0 rgba(0, 0, 0, 0.12);
+
+// 间距系统
+$spacing-xs: 8rpx;
+$spacing-sm: 16rpx;
+$spacing-md: 24rpx;
+$spacing-lg: 32rpx;
+$spacing-xl: 48rpx;
+$spacing-xxl: 64rpx;
+
+// 圆角系统
+$radius-sm: 4rpx;
+$radius-md: 8rpx;
+$radius-lg: 12rpx;
+$radius-xl: 16rpx;
+$radius-phone: 26px;
+
+// 字体系统
+$font-size-xs: 20rpx;
+$font-size-sm: 22rpx;
+$font-size-md: 24rpx;
+$font-size-lg: 28rpx;
+$font-size-xl: 32rpx;
+$font-size-xxl: 36rpx;
+$font-size-pixel: 40rpx;
+
+$font-family-pixel: 'Courier New', Courier, monospace;
+
+// 行高系统
+$line-height-tight: 1.1;
+$line-height-normal: 1.4;
+$line-height-loose: 1.6;
+
+// 动画时长
+$transition-fast: 80ms;
+$transition-normal: 160ms;
+$transition-slow: 320ms;
+$transition-pixel: 100ms;
+
+// z-index层级
+$z-index-dropdown: 100;
+$z-index-sticky: 200;
+$z-index-fixed: 300;
+$z-index-modal-backdrop: 400;
+$z-index-modal: 500;
+$z-index-popover: 600;
+$z-index-tooltip: 700;
+$z-index-toast: 800;
+$z-index-navbar: 1000;

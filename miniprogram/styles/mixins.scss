@@ -1,0 +1,231 @@
+@import "./variables.scss";
+
+@mixin pixel-button-primary($bg-color: $color-blue, $text-color: $color-white) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $bg-color;
+    color: $text-color;
+    border: $border-width solid $color-ink;
+    border-radius: $radius-sm;
+    font-size: $font-size-md;
+    font-weight: bold;
+    letter-spacing: 2rpx;
+    text-shadow: 2rpx 2rpx 0 rgba(0, 0, 0, 0.26);
+    transition: all $transition-pixel;
+    box-shadow: $shadow-sm;
+    cursor: pointer;
+
+    &:active {
+        transform: translate(4rpx, 4rpx);
+        box-shadow: none;
+    }
+}
+
+@mixin pixel-button-secondary($bg-color: $color-yellow, $text-color: $color-ink) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $bg-color;
+    color: $text-color;
+    border: $border-width-sm solid $color-ink;
+    border-radius: $radius-sm;
+    font-size: $font-size-sm;
+    font-weight: bold;
+    transition: all $transition-pixel;
+    box-shadow: $shadow-sm;
+    cursor: pointer;
+
+    &:active {
+        transform: translate(3rpx, 3rpx);
+        box-shadow: none;
+    }
+}
+
+@mixin pixel-input {
+    min-height: 46px;
+    padding: 10rpx 12rpx;
+    background: $color-paper-2;
+    border: $border-width-sm solid $color-ink;
+    border-radius: $radius-sm;
+    font-size: $font-size-sm;
+    color: $color-ink;
+    font-family: $font-family-pixel;
+    transition: all $transition-pixel;
+    box-shadow: $shadow-inset, $shadow-sm;
+
+    &::placeholder {
+        color: $color-muted;
+    }
+
+    &:focus {
+        outline: none;
+        border-color: $color-blue-deep;
+    }
+}
+
+@mixin pixel-card($bg-color: $color-orange, $shadow: $shadow-md) {
+    background: $bg-color;
+    border: $border-width solid $color-ink;
+    border-radius: $radius-sm;
+    box-shadow: $shadow;
+}
+
+@mixin pixel-container {
+    padding: $spacing-md;
+    background: $color-paper;
+    border: $border-width solid $color-ink;
+    box-shadow: $shadow-xl;
+}
+
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin flex-center-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin safe-area-bottom {
+    padding-bottom: constant(safe-area-inset-bottom);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+@mixin safe-area-top {
+    padding-top: constant(safe-area-inset-top);
+    padding-top: env(safe-area-inset-top);
+}
+
+@mixin neon-glow($color: $color-neon-green) {
+    color: $color;
+    text-shadow: 2rpx 2rpx 0 $color-border-dark, -2rpx -2rpx 0 $color-border-dark;
+}
+
+@mixin chip-button($bg-color: $color-red, $text-color: $color-white) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8rpx;
+    flex: 1;
+    height: 42px;
+    background: $bg-color;
+    color: $text-color;
+    border: $border-width-sm solid $color-ink;
+    border-radius: $radius-sm;
+    font-size: $font-size-sm;
+    font-weight: bold;
+    box-shadow: $shadow-sm;
+    cursor: pointer;
+    transition: all $transition-pixel;
+
+    &:active {
+        transform: translate(3rpx, 3rpx);
+        box-shadow: none;
+    }
+
+    &.active {
+        box-shadow: inset 2rpx 2rpx 0 rgba(0, 0, 0, 0.2);
+    }
+}
+
+@mixin dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(38, 45, 30, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: $z-index-modal;
+}
+
+@mixin dialog-box {
+    width: 100%;
+    margin: 0 $spacing-md;
+    background: $color-paper;
+    border: $border-width solid $color-ink;
+    border-radius: $radius-sm;
+    box-shadow: $shadow-lg;
+    overflow: hidden;
+}
+
+@mixin dialog-title($bg-color: $color-yellow) {
+    height: 48px;
+    padding: 0 $spacing-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $bg-color;
+    border-bottom: $border-width-sm solid $color-ink;
+    font-size: $font-size-lg;
+    font-weight: bold;
+    letter-spacing: 2rpx;
+}
+
+@mixin dialog-actions($columns: 2) {
+    display: grid;
+    grid-template-columns: repeat($columns, 1fr);
+    gap: 10rpx;
+    padding: 0 $spacing-sm $spacing-sm;
+
+    &--one {
+        grid-template-columns: 1fr;
+    }
+}
+
+@mixin dialog-button($bg-color: $color-paper-2, $text-color: $color-ink) {
+    height: 42px;
+    background: $bg-color;
+    color: $text-color;
+    border: $border-width-sm solid $color-ink;
+    border-radius: $radius-sm;
+    font-size: $font-size-sm;
+    font-weight: bold;
+    box-shadow: $shadow-sm;
+    cursor: pointer;
+    transition: all $transition-pixel;
+
+    &:active {
+        transform: translate(3rpx, 3rpx);
+        box-shadow: none;
+    }
+}
+
+@mixin pixel-cut {
+    clip-path: polygon(
+        0 10px, 10px 10px, 10px 0,
+        calc(100% - 18px) 0, calc(100% - 18px) 6px, calc(100% - 8px) 6px, calc(100% - 8px) 0,
+        100% 0, 100% calc(100% - 14px), calc(100% - 10px) calc(100% - 14px), calc(100% - 10px) 100%,
+        14px 100%, 14px calc(100% - 8px), 6px calc(100% - 8px), 6px 100%, 0 100%
+    );
+}
+
+@mixin fab-button($bg-color: $color-yellow) {
+    position: fixed;
+    right: $spacing-md;
+    bottom: 88px;
+    width: 44px;
+    height: 44px;
+    background: $bg-color;
+    border: $border-width-sm solid $color-ink;
+    border-radius: $radius-sm;
+    box-shadow: $shadow-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: $z-index-fixed;
+    cursor: pointer;
+    transition: all $transition-pixel;
+
+    &:active {
+        transform: translate(3rpx, 3rpx);
+        box-shadow: none;
+    }
+}
