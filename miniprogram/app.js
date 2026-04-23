@@ -1,16 +1,27 @@
+import { CLOUD_ENV_ID } from './utils/cloud-config';
+
 App({
-    /**
-     * 小程序启动时执行
-     * @returns {void}
-     */
+    globalData: {
+        cloudEnvId: CLOUD_ENV_ID,
+        pendingAudioRecord: null,
+    },
+
     onLaunch() {
+        this.initCloud();
         this.checkForMiniProgramUpdate();
     },
 
-    /**
-     * 检查小程序版本更新
-     * @returns {void}
-     */
+    initCloud() {
+        if (!wx.cloud) {
+            return;
+        }
+
+        wx.cloud.init({
+            env: CLOUD_ENV_ID,
+            traceUser: true,
+        });
+    },
+
     checkForMiniProgramUpdate() {
         if (!wx.canIUse || !wx.canIUse('getUpdateManager')) {
             return;
@@ -18,16 +29,10 @@ App({
 
         const updateManager = wx.getUpdateManager();
 
-        updateManager.onCheckForUpdate((result) => {
-            if (!result || !result.hasUpdate) {
-                return;
-            }
-        });
-
         updateManager.onUpdateReady(() => {
             wx.showModal({
                 title: '发现新版本',
-                content: '新版本已准备好，是否立即重启更新？',
+                content: '新版本已经准备好了，是否立即重启更新？',
                 confirmText: '立即更新',
                 cancelText: '稍后',
                 success: (res) => {

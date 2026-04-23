@@ -6,7 +6,7 @@
             <text wx:elif="{{scanStatus === 'success'}}">写入成功</text>
             <text wx:elif="{{scanStatus === 'error'}}">写入失败</text>
         </view>
-        
+
         <view class="dialog__body">
             <view class="stage stage--{{scanStatus}}">
                 <view class="detect-scene" wx:if="{{scanStatus === 'waiting'}}">
@@ -19,29 +19,42 @@
                     </view>
                 </view>
                 <view class="hint hint--center" wx:if="{{scanStatus === 'waiting'}}">请将 NFC 标签贴近手机</view>
-                
+
                 <view class="spin" wx:if="{{scanStatus === 'writing'}}"></view>
                 <view class="hint hint--center hint--green" wx:if="{{scanStatus === 'writing'}}">写入中，请勿移动标签</view>
-                
+
                 <pixel-icon name="check" size="64" wx:if="{{scanStatus === 'success'}}" />
-                <view class="hint hint--center hint--green" wx:if="{{scanStatus === 'success'}}">NFC 标签写入完成</view>
-                <view class="hint hint--center hint--green" wx:if="{{scanStatus === 'success'}}">可贴近手机验证</view>
-                
+                <view class="hint hint--center hint--green" wx:if="{{scanStatus === 'success'}}">{{successMessage}}</view>
+                <view class="hint hint--center hint--green" wx:if="{{scanStatus === 'success'}}">{{successSubMessage}}</view>
+
                 <pixel-icon name="error" size="64" wx:if="{{scanStatus === 'error'}}" />
                 <view class="hint hint--center hint--red" wx:if="{{scanStatus === 'error' && errorMessage}}">{{errorMessage}}</view>
                 <view class="hint hint--center hint--red" wx:if="{{scanStatus === 'error' && !errorMessage}}">标签损坏或容量不足</view>
-                <view class="hint hint--center hint--red" wx:if="{{scanStatus === 'error'}}">请更换后重试</view>
+                <view class="hint hint--center hint--red" wx:if="{{scanStatus === 'error'}}">请更换标签后重试</view>
             </view>
         </view>
-        
-        <view class="dialog__actions dialog__actions--one" wx:if="{{scanStatus !== 'error'}}">
-            <button class="dialog-btn" bindtap="handleCancel" wx:if="{{scanStatus === 'waiting' || scanStatus === 'writing'}}">取消</button>
-            <button class="dialog-btn dialog-btn--green" bindtap="handleConfirm" wx:if="{{scanStatus === 'success'}}">确定</button>
+
+        <view class="dialog__actions dialog__actions--one" wx:if="{{scanStatus === 'waiting' || scanStatus === 'writing'}}">
+            <button class="dialog-btn" bindtap="handleCancel">取消</button>
+        </view>
+
+        <view
+            class="dialog__actions {{successSecondaryText ? 'dialog__actions--two' : 'dialog__actions--one'}}"
+            wx:if="{{scanStatus === 'success'}}"
+        >
+            <button class="dialog-btn" bindtap="handlePrimaryAction">{{successPrimaryText}}</button>
+            <button
+                wx:if="{{successSecondaryText}}"
+                class="dialog-btn dialog-btn--green"
+                bindtap="handleSecondaryAction"
+            >
+                {{successSecondaryText}}
+            </button>
         </view>
 
         <view class="dialog__actions dialog__actions--two" wx:if="{{scanStatus === 'error'}}">
-            <button class="dialog-btn dialog-btn--red" bindtap="handleRetry" wx:if="{{scanStatus === 'error'}}">重试</button>
-            <button class="dialog-btn dialog-btn--green" bindtap="handleConfirm">确定</button>
+            <button class="dialog-btn dialog-btn--red" bindtap="handleRetry">重试</button>
+            <button class="dialog-btn dialog-btn--green" bindtap="handlePrimaryAction">确定</button>
         </view>
     </view>
 </view>

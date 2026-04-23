@@ -1,8 +1,4 @@
-/**
- * NFC扫描弹窗组件
- * @description 用于检测和写入NFC标签
- */
-import { string2ArrayBuffer, bytesToString, encodeNdefUriPayload } from '../../utils/convert';
+import { string2ArrayBuffer, encodeNdefUriPayload } from '../../utils/convert';
 
 Component({
     properties: {
@@ -13,7 +9,23 @@ Component({
         records: {
             type: Array,
             value: [],
-        }
+        },
+        successMessage: {
+            type: String,
+            value: 'NFC 标签写入完成',
+        },
+        successSubMessage: {
+            type: String,
+            value: '可贴近手机验证',
+        },
+        successPrimaryText: {
+            type: String,
+            value: '确定',
+        },
+        successSecondaryText: {
+            type: String,
+            value: '',
+        },
     },
 
     data: {
@@ -41,42 +53,10 @@ Component({
             } else {
                 this.onClose();
             }
-        }
+        },
     },
 
     methods: {
-        /**
-         * 模拟发现NFC标签（仅用于动效演示）
-         */
-        simulateCardDetected() {
-            if (this.data.scanStatus !== 'waiting') {
-                return;
-            }
-
-            this.setData({
-                scanStatus: 'writing',
-                errorMessage: '',
-            });
-
-            setTimeout(() => {
-                const hasRecords = Array.isArray(this.properties.records) && this.properties.records.length > 0;
-
-                if (hasRecords) {
-                    this.setData({
-                        scanStatus: 'success',
-                    });
-                } else {
-                    this.setData({
-                        scanStatus: 'error',
-                        errorMessage: '无写入数据',
-                    });
-                }
-            }, 800);
-        },
-
-        /**
-         * 显示弹窗时初始化NFC
-         */
         onShow() {
             if (this.data.resetTimer) {
                 clearTimeout(this.data.resetTimer);
@@ -95,36 +75,36 @@ Component({
             this.setData({
                 scanStatus: 'waiting',
                 errorMessage: '',
-                baseNfcAdapter: baseNfcAdapter,
+                baseNfcAdapter,
                 writingLock: false,
                 resetTimer: null,
             });
-            this.data.baseNfcAdapter.startDiscovery({
+
+            baseNfcAdapter.startDiscovery({
                 success: () => {
-                    this.data.baseNfcAdapter.offDiscovered(this.data.handleDiscoveredWrap);
-                    this.data.baseNfcAdapter.onDiscovered(this.data.handleDiscoveredWrap);
+                    baseNfcAdapter.offDiscovered(this.data.handleDiscoveredWrap);
+                    baseNfcAdapter.onDiscovered(this.data.handleDiscoveredWrap);
                 },
                 fail: () => {
                     this.setData({
                         scanStatus: 'error',
-                        errorMessage: '发现NFC设备失败，请重试',
+                        errorMessage: '发现 NFC 设备失败，请重试',
                         baseNfcAdapter: null,
                         writingLock: false,
                     });
-                }
+                },
             });
         },
 
-        /**
-         * 关闭弹窗时清理NFC
-         */
         onClose() {
             if (this.data.resetTimer) {
                 clearTimeout(this.data.resetTimer);
             }
+
             if (this.data.runNfcAdapter) {
                 this.data.runNfcAdapter.close();
             }
+
             if (this.data.baseNfcAdapter) {
                 this.data.baseNfcAdapter.offDiscovered(this.data.handleDiscoveredWrap);
                 this.data.baseNfcAdapter.stopDiscovery();
@@ -146,16 +126,12 @@ Component({
             });
         },
 
-        /**
-         * 处理NFC标签发现事件
-         * @param {Object} res - NFC发现事件响应
-         */
         handleDiscovered(res) {
             if (this.data.writingLock) {
                 return;
             }
 
-            if (res.stopDefault) {
+            if (res && typeof res.stopDefault === 'function') {
                 res.stopDefault();
             }
 
@@ -168,43 +144,37 @@ Component({
 
             if (techs.includes('NDEF')) {
                 this.ndefAdapterWrite();
-            } else {
-                this.setData({
-                    scanStatus: 'error',
-                    errorMessage: '不支持的标签技术',
-                    writingLock: false,
-                });
+                return;
             }
+
+            this.setData({
+                scanStatus: 'error',
+                errorMessage: '当前标签类型暂不支持',
+                writingLock: false,
+            });
         },
 
-        /**
-         * 使用NDEF方式写入NFC标签
-         */
         ndefAdapterWrite() {
             const runNfcAdapter = this.data.baseNfcAdapter.getNdef();
 
             this.setData({
-                runNfcAdapter: runNfcAdapter,
+                runNfcAdapter,
             });
 
             const writeRecords = () => {
-                this.data.runNfcAdapter.writeNdefMessage({
-                    records: [
-                        ...this.properties.records.map((recordItem) => {
-                            let payload = new ArrayBuffer(0);
-                            if (recordItem.tnf === 1 && recordItem.type === "U") {
-                                payload = encodeNdefUriPayload(recordItem.payload);
-                            } else {
-                                payload = string2ArrayBuffer(recordItem.payload);
-                            }
-                            return {
-                                tnf: recordItem.tnf,
-                                id: string2ArrayBuffer(recordItem.id),
-                                type: string2ArrayBuffer(recordItem.type),
-                                payload: payload,
-                            };
-                        })
-                    ],
+                runNfcAdapter.writeNdefMessage({
+                    records: this.properties.records.map((recordItem) => {
+                        const payload = recordItem.tnf === 1 && recordItem.type === 'U'
+                            ? encodeNdefUriPayload(recordItem.payload)
+                            : string2ArrayBuffer(recordItem.payload);
+
+                        return {
+                            tnf: recordItem.tnf,
+                            id: string2ArrayBuffer(recordItem.id),
+                            type: string2ArrayBuffer(recordItem.type),
+                            payload,
+                        };
+                    }),
                     success: () => {
                         this.setData({
                             scanStatus: 'success',
@@ -217,51 +187,48 @@ Component({
                             errorMessage: '写入失败，请重试',
                             writingLock: false,
                         });
-                    }
+                    },
                 });
             };
 
-            this.data.runNfcAdapter.connect({
+            runNfcAdapter.connect({
                 success: writeRecords,
                 fail: (error) => {
                     const errCode = error ? error.errCode : undefined;
                     const errMsg = error ? error.errMsg || '' : '';
-                    const already = errCode === 13022 || /already\s+co?connected/i.test(errMsg);
-                    if (already) {
+                    const alreadyConnected = errCode === 13022 || /already\s+co?connected/i.test(errMsg);
+
+                    if (alreadyConnected) {
                         writeRecords();
-                    } else {
-                        this.setData({
-                            scanStatus: 'error',
-                            errorMessage: '连接失败，请重试',
-                            writingLock: false,
-                        });
+                        return;
                     }
-                }
+
+                    this.setData({
+                        scanStatus: 'error',
+                        errorMessage: '连接标签失败，请重试',
+                        writingLock: false,
+                    });
+                },
             });
         },
 
-        /**
-         * 取消操作
-         */
         handleCancel() {
             this.triggerEvent('close');
         },
 
-        /**
-         * 确认操作
-         */
-        handleConfirm() {
+        handlePrimaryAction() {
             this.triggerEvent('close');
         },
 
-        /**
-         * 重试操作
-         */
+        handleSecondaryAction() {
+            this.triggerEvent('secondaryaction');
+        },
+
         handleRetry() {
             this.onClose();
             setTimeout(() => {
                 this.onShow();
             }, 80);
-        }
-    }
+        },
+    },
 });

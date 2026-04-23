@@ -1,15 +1,30 @@
 {
   "pages": [
     "pages/write-menu/write-menu",
+    "pages/my-files/my-files",
     "pages/write-app/write-app",
     "pages/write-music/write-music",
-    "pages/write-web/write-web"
+    "pages/write-web/write-web",
+    "pages/write-local-audio/write-local-audio"
   ],
   "window": {
     "navigationBarTextStyle": "white",
-    "navigationBarTitleText": "NFC直达",
+    "navigationBarTitleText": "NFC卡片助手",
     "navigationBarBackgroundColor": "#ff665b",
     "navigationStyle": "custom"
+  },
+  "tabBar": {
+    "custom": true,
+    "list": [
+      {
+        "pagePath": "pages/write-menu/write-menu",
+        "text": "NFC"
+      },
+      {
+        "pagePath": "pages/my-files/my-files",
+        "text": "我的文件"
+      }
+    ]
   },
   "componentFramework": "glass-easel",
   "sitemapLocation": "sitemap.json",

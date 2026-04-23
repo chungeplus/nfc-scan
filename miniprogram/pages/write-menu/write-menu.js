@@ -1,7 +1,3 @@
-/**
- * 首页 - NFC写入功能选择页面
- * @description 提供多种NFC写入方式的入口
- */
 import { showPixelToast } from '../../utils/pixel-toast';
 
 const DEVELOPER_PROMISE_ACK_KEY = 'developerPromiseAcknowledged';
@@ -14,9 +10,6 @@ Page({
         nfcUnsupportedDialogVisible: false,
     },
 
-    /**
-     * 页面加载时执行
-     */
     onLoad() {
         const systemInfo = wx.getSystemInfoSync();
         const statusBarHeight = systemInfo.statusBarHeight || 20;
@@ -27,10 +20,20 @@ Page({
         this.checkDeviceProcessNFC();
     },
 
-    /**
-     * 判断是否需要展示开发者承诺弹窗
-     * @returns {boolean} 是否展示弹窗
-     */
+    onShow() {
+        this.syncCustomTabBar();
+    },
+
+    syncCustomTabBar() {
+        const tabBar = this.getTabBar && this.getTabBar();
+
+        if (tabBar && tabBar.setData) {
+            tabBar.setData({
+                selected: 0,
+            });
+        }
+    },
+
     shouldShowDeveloperPromiseDialog() {
         try {
             return !Boolean(wx.getStorageSync(DEVELOPER_PROMISE_ACK_KEY));
@@ -39,15 +42,8 @@ Page({
         }
     },
 
-    /**
-     * 检测设备是否支持NFC功能
-     */
     checkDeviceProcessNFC() {
-        let nfcAdapter = null;
-
-        if (wx.getNFCAdapter) {
-            nfcAdapter = wx.getNFCAdapter();
-        }
+        const nfcAdapter = wx.getNFCAdapter ? wx.getNFCAdapter() : null;
 
         this.setData({
             canDeviceProcessNFC: nfcAdapter !== null,
@@ -55,15 +51,20 @@ Page({
         });
     },
 
-    /**
-     * 跳转至应用写入页面
-     */
+    ensureNfcSupport() {
+        if (this.data.canDeviceProcessNFC) {
+            return true;
+        }
+
+        showPixelToast({
+            message: '当前设备暂不支持 NFC',
+            theme: 'warning',
+        });
+        return false;
+    },
+
     handleWriteApp() {
-        if (!this.data.canDeviceProcessNFC) {
-            showPixelToast({
-                message: '设备不支持NFC功能',
-                theme: 'warning',
-            });
+        if (!this.ensureNfcSupport()) {
             return;
         }
 
@@ -72,15 +73,8 @@ Page({
         });
     },
 
-    /**
-     * 跳转至音乐写入页面
-     */
     handleWriteMusic() {
-        if (!this.data.canDeviceProcessNFC) {
-            showPixelToast({
-                message: '设备不支持NFC功能',
-                theme: 'warning',
-            });
+        if (!this.ensureNfcSupport()) {
             return;
         }
 
@@ -89,15 +83,8 @@ Page({
         });
     },
 
-    /**
-     * 跳转至网页写入页面
-     */
     handleWriteWeb() {
-        if (!this.data.canDeviceProcessNFC) {
-            showPixelToast({
-                message: '设备不支持NFC功能',
-                theme: 'warning',
-            });
+        if (!this.ensureNfcSupport()) {
             return;
         }
 
@@ -106,9 +93,12 @@ Page({
         });
     },
 
-    /**
-     * 关闭开发者承诺弹窗
-     */
+    handleWriteLocalAudio() {
+        wx.navigateTo({
+            url: '/pages/write-local-audio/write-local-audio',
+        });
+    },
+
     handleCloseDeveloperPromiseDialog() {
         try {
             wx.setStorageSync(DEVELOPER_PROMISE_ACK_KEY, true);
@@ -120,9 +110,6 @@ Page({
         });
     },
 
-    /**
-     * 关闭 NFC 不支持弹窗
-     */
     handleCloseUnsupportedDialog() {
         this.setData({
             nfcUnsupportedDialogVisible: false,

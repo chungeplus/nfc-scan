@@ -1,0 +1,202 @@
+@import "../../styles/variables.scss";
+
+.my-files {
+    padding: $spacing-md $spacing-sm 180rpx;
+    background: $color-paper;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.summary-card {
+    padding: 14px 12px;
+    background: linear-gradient(180deg, #fff4c6 0%, #f2df8a 100%);
+    border: $border-width solid $color-ink;
+    box-shadow: $shadow-sm;
+}
+
+.summary-card__label {
+    font-size: 10px;
+    color: $color-muted;
+}
+
+.summary-card__value {
+    margin-top: 8px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.state-card,
+.file-card {
+    padding: 14px 12px;
+    background: $color-paper-2;
+    border: $border-width solid $color-ink;
+    box-shadow: $shadow-sm;
+}
+
+.state-card__title {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.state-card__desc {
+    margin-top: 8px;
+    font-size: 11px;
+    line-height: 1.7;
+    color: $color-muted;
+}
+
+.state-card__btn {
+    width: 100%;
+    height: 42px;
+    margin-top: 14px;
+    background: $color-green;
+    border: $border-width-sm solid $color-ink;
+    box-shadow: $shadow-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.state-card__btn::after {
+    border: none;
+}
+
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.file-card__title {
+    font-size: 13px;
+    font-weight: bold;
+    word-break: break-all;
+}
+
+.file-card__meta {
+    margin-top: 8px;
+    font-size: 10px;
+    color: $color-muted;
+}
+
+.file-card__link {
+    margin-top: 12px;
+    padding: 10px;
+    background: #fff7d5;
+    border: $border-width-sm solid $color-ink;
+    box-shadow: $shadow-inset;
+    font-size: 10px;
+    line-height: 1.6;
+    word-break: break-all;
+}
+
+.file-card__warn {
+    margin-top: 10px;
+    font-size: 10px;
+    line-height: 1.6;
+    color: $color-red-deep;
+    font-weight: bold;
+}
+
+.file-card__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.secondary-btn,
+.dialog-btn {
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 12px;
+    font-weight: bold;
+    border: $border-width-sm solid $color-ink;
+    box-shadow: $shadow-sm;
+}
+
+.secondary-btn::after,
+.dialog-btn::after {
+    border: none;
+}
+
+.secondary-btn--green {
+    background: $color-green;
+}
+
+.secondary-btn--danger,
+.dialog-btn--red {
+    background: $color-red;
+    color: $color-white;
+}
+
+.secondary-btn[disabled],
+.dialog-btn[disabled] {
+    opacity: 0.5;
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: $z-index-modal;
+    background: rgba(38, 45, 30, 0.48);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.dialog {
+    width: 100%;
+    max-width: 560rpx;
+    background: $color-paper;
+    border: $border-width solid $color-ink;
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+}
+
+.dialog__title {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $color-yellow;
+    border-bottom: $border-width-sm solid $color-ink;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.dialog__title--red {
+    background: $color-red;
+    color: $color-white;
+}
+
+.dialog__body {
+    padding: 18px 16px;
+}
+
+.dialog__copy {
+    padding: 12rpx;
+    background: $color-paper-2;
+    border: $border-width-sm solid $color-ink;
+    box-shadow: $shadow-inset;
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+.dialog__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10rpx;
+    padding: 0 16px 16px;
+}

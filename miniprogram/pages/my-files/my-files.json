@@ -1,0 +1,9 @@
+{
+  "navigationStyle": "custom",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "pixel-navbar": "/components/pixel-navbar/pixel-navbar",
+    "pixel-toast": "/components/pixel-toast/pixel-toast",
+    "pixel-icon": "/components/pixel-icon/pixel-icon"
+  }
+}

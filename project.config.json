@@ -44,7 +44,11 @@
     ],
     "condition": false,
     "swc": false,
-    "disableSWC": true
+    "disableSWC": true,
+    "sassSetting": {
+      "sassCommonUseFilePath": "global.sass",
+      "scssCommonUseFilePath": "global.scss"
+    }
   },
   "appid": "wxcff5fe58e2bb4ec4",
   "projectname": "quickstart-wx-cloud",

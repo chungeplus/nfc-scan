@@ -136,6 +136,21 @@
     }
 }
 
+.pixel-navbar--audio {
+    .pixel-navbar__fixed {
+        background: linear-gradient(180deg, #7ab275 0%, #5e8c56 100%);
+        border-bottom: $border-width solid $color-ink;
+    }
+
+    .pixel-navbar__btn {
+        color: $color-white;
+    }
+
+    .pixel-navbar__title-text {
+        color: $color-white;
+    }
+}
+
 .pixel-navbar--web {
     .pixel-navbar__fixed {
         background: linear-gradient(180deg, #334b93 0%, #26386f 100%);
