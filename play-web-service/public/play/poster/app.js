@@ -74,6 +74,18 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
 
+    videoPlayer.addEventListener('waiting', function() {
+      videoStage.classList.add('is-loading');
+    });
+
+    videoPlayer.addEventListener('playing', function() {
+      videoStage.classList.remove('is-loading');
+    });
+
+    videoPlayer.addEventListener('canplay', function() {
+      videoStage.classList.remove('is-loading');
+    });
+
     videoPlayer.addEventListener('timeupdate', function() {
       const current = videoPlayer.currentTime;
       const duration = videoPlayer.duration || 0;

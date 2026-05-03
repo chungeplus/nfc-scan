@@ -172,17 +172,22 @@ audio {
 .audio-visual {
   width: 100%;
   min-height: 296px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 28px;
+  flex-shrink: 0;
 }
 
 .audio-visual__record-wrap {
   position: relative;
   width: var(--record-size);
   height: var(--record-size);
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .audio-visual__halo {
@@ -199,6 +204,25 @@ audio {
   border-radius: 50%;
   overflow: hidden;
   box-shadow: 0 24px 44px rgba(0, 0, 0, 0.28);
+  aspect-ratio: 1 / 1;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.3s ease,
+              box-shadow 0.3s ease;
+  animation: record-appear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes record-appear {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .audio-visual__record::before {
@@ -232,7 +256,8 @@ audio {
 }
 
 .audio-visual.is-playing .audio-visual__record {
-  animation: spin 2.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+  animation: spin 2.8s linear infinite;
+  transform: none;
 }
 
 .audio-visual.is-playing .audio-visual__halo {
@@ -303,6 +328,7 @@ audio {
 .video-stage {
   width: 100%;
   display: none;
+  position: relative;
 }
 
 .video-player {
@@ -314,6 +340,112 @@ audio {
   background: #000;
   object-fit: cover;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.26);
+}
+
+.video-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--video-radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.video-stage.is-playing .video-overlay {
+  opacity: 0;
+}
+
+.video-stage.is-playing.show-controls .video-overlay {
+  opacity: 1;
+}
+
+.video-play-btn {
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.video-play-btn:active {
+  transform: scale(0.95);
+}
+
+.video-fullscreen-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.video-time {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+}
+
+.video-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  overflow: hidden;
+}
+
+.video-progress-bar {
+  height: 100%;
+  transition: width 0.1s linear;
+}
+
+.video-play-btn .icon-pause {
+  display: none;
+}
+
+.video-stage.is-playing .video-play-btn .icon-play {
+  display: none;
+}
+
+.video-stage.is-playing .video-play-btn .icon-pause {
+  display: block;
+}
+
+.video-loader {
+  display: none;
+}
+
+.video-stage.is-loading .video-loader {
+  display: block;
+}
+
+.video-stage.is-loading .video-play-btn {
+  display: none;
+}
+
+.audio-visual.is-loading .audio-visual__record {
+  animation: record-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes record-pulse {
+  0%, 100% { 
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.02);
+  }
 }
 
 #audioPlayer {
@@ -447,22 +579,45 @@ audio {
   transition: opacity 0.2s ease;
 }
 
-.control-btn:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
 
-.control-btn:hover::before {
-  opacity: 1;
+
+.control-btn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease, opacity 0.4s ease;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .control-btn:active {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.96);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.control-btn:active::after {
+  width: 300px;
+  height: 300px;
+  opacity: 1;
+}
+
+.media-card,
+.controls-card {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+              opacity 0.3s ease,
+              box-shadow 0.3s ease;
 }
 
 .control-btn--primary {
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
   color: var(--accent-button-ink, #161616);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .state-card {

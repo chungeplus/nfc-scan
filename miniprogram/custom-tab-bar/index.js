@@ -1,11 +1,11 @@
 const TAB_LIST = [
     {
-        pagePath: '/miniprogram/pages/write-menu/write-menu',
+        pagePath: '/pages/write-menu/write-menu',
         text: 'NFC',
         icon: 'nfc',
     },
     {
-        pagePath: '/miniprogram/pages/my-files/my-files',
+        pagePath: '/pages/my-files/my-files',
         text: '我的文件',
         icon: 'record',
     },

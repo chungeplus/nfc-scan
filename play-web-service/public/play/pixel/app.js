@@ -3,27 +3,38 @@ window.createPlayerPage({
 });
 
 document.addEventListener('DOMContentLoaded', function() {
+  const starsContainer = document.querySelector('.pixel-stars');
+  if (starsContainer) {
+    const starTypes = ['star-1', 'star-2', 'star-3', 'star-4', 'star-5', 'star-1', 'star-2', 'star-3', 'star-4', 'star-5'];
+    for (let i = 0; i < 10; i++) {
+      const star = document.createElement('span');
+      star.className = 'pixel-star ' + starTypes[i];
+      starsContainer.appendChild(star);
+    }
+  }
+
+  const videoStage = document.querySelector('.video-stage');
+  const videoPlayer = document.getElementById('videoPlayer');
+
+  if (!videoStage || !videoPlayer) {
+    return;
+  }
+
   const videoPlayBtn = document.getElementById('videoPlayBtn');
   const videoTimeDisplay = document.getElementById('videoTimeDisplay');
   const videoProgressBar = document.getElementById('videoProgressBar');
   const videoFullscreenBtn = document.getElementById('videoFullscreenBtn');
-  const videoStage = document.querySelector('.video-stage');
-  const videoPlayer = document.getElementById('videoPlayer');
-  let hideControlsTimer = null;
 
   function resetHideTimer() {
-    if (hideControlsTimer) {
-      clearTimeout(hideControlsTimer);
-    }
     if (videoPlayer && !videoPlayer.paused) {
       videoStage.classList.add('show-controls');
-      hideControlsTimer = setTimeout(function() {
+      setTimeout(function() {
         videoStage.classList.remove('show-controls');
       }, 3000);
     }
   }
 
-  if (videoFullscreenBtn && videoPlayer) {
+  if (videoFullscreenBtn) {
     videoFullscreenBtn.addEventListener('click', function(e) {
       e.stopPropagation();
       if (document.fullscreenElement) {
@@ -36,18 +47,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  if (videoStage && videoPlayer) {
-    videoStage.addEventListener('click', function(e) {
-      if (e.target === videoPlayer) {
-        videoStage.classList.toggle('show-controls');
-        if (!videoPlayer.paused) {
-          resetHideTimer();
-        }
+  videoStage.addEventListener('click', function(e) {
+    if (e.target === videoPlayer) {
+      videoStage.classList.toggle('show-controls');
+      if (!videoPlayer.paused) {
+        resetHideTimer();
       }
-    });
-  }
+    }
+  });
 
-  if (videoPlayBtn && videoPlayer) {
+  if (videoPlayBtn) {
     videoPlayBtn.addEventListener('click', function(e) {
       e.stopPropagation();
       if (videoPlayer.paused) {
@@ -56,46 +65,52 @@ document.addEventListener('DOMContentLoaded', function() {
         videoPlayer.pause();
       }
     });
-
-    videoPlayer.addEventListener('play', function() {
-      if (videoStage) {
-        videoStage.classList.add('is-playing');
-      }
-      resetHideTimer();
-    });
-
-    videoPlayer.addEventListener('pause', function() {
-      if (videoStage) {
-        videoStage.classList.remove('is-playing');
-        videoStage.classList.add('show-controls');
-      }
-      if (hideControlsTimer) {
-        clearTimeout(hideControlsTimer);
-      }
-    });
-
-    videoPlayer.addEventListener('timeupdate', function() {
-      const current = videoPlayer.currentTime;
-      const duration = videoPlayer.duration || 0;
-      
-      if (videoTimeDisplay) {
-        videoTimeDisplay.textContent = formatTime(current);
-      }
-      
-      if (videoProgressBar && duration > 0) {
-        const progress = (current / duration) * 100;
-        videoProgressBar.style.width = `${progress}%`;
-      }
-    });
-
-    videoPlayer.addEventListener('loadedmetadata', function() {
-      if (videoTimeDisplay) {
-        videoTimeDisplay.textContent = '00:00';
-      }
-    });
   }
 
-  if (videoProgressBar && videoProgressBar.parentElement && videoPlayer) {
+  videoPlayer.addEventListener('play', function() {
+    videoStage.classList.add('is-playing');
+    resetHideTimer();
+  });
+
+  videoPlayer.addEventListener('pause', function() {
+    videoStage.classList.remove('is-playing');
+    videoStage.classList.add('show-controls');
+  });
+
+  videoPlayer.addEventListener('waiting', function() {
+    videoStage.classList.add('is-loading');
+  });
+
+  videoPlayer.addEventListener('playing', function() {
+    videoStage.classList.remove('is-loading');
+  });
+
+  videoPlayer.addEventListener('canplay', function() {
+    videoStage.classList.remove('is-loading');
+  });
+
+  videoPlayer.addEventListener('timeupdate', function() {
+    const current = Math.floor(videoPlayer.currentTime);
+    const mins = Math.floor(current / 60);
+    const secs = current % 60;
+    
+    if (videoTimeDisplay) {
+      videoTimeDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+    
+    if (videoProgressBar && videoPlayer.duration > 0) {
+      const progress = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+      videoProgressBar.style.width = `${progress}%`;
+    }
+  });
+
+  videoPlayer.addEventListener('loadedmetadata', function() {
+    if (videoTimeDisplay) {
+      videoTimeDisplay.textContent = '00:00';
+    }
+  });
+
+  if (videoProgressBar && videoProgressBar.parentElement) {
     const progressContainer = videoProgressBar.parentElement;
     progressContainer.style.cursor = 'pointer';
     progressContainer.addEventListener('click', function(e) {
@@ -108,12 +123,5 @@ document.addEventListener('DOMContentLoaded', function() {
         videoPlayer.currentTime = seekTime;
       }
     });
-  }
-
-  function formatTime(seconds) {
-    const safeSeconds = Math.max(0, Number.isFinite(seconds) ? seconds : 0);
-    const mins = Math.floor(safeSeconds / 60);
-    const secs = Math.floor(safeSeconds % 60);
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   }
 });

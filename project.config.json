@@ -1,5 +1,5 @@
 {
-  "miniprogramRoot": "",
+  "miniprogramRoot": "miniprogram/",
   "cloudfunctionRoot": "cloudfunctions",
   "setting": {
     "urlCheck": true,
@@ -51,7 +51,7 @@
     }
   },
   "appid": "wxcff5fe58e2bb4ec4",
-  "projectname": "quickstart-wx-cloud",
+  "projectname": "nfc-scan",
   "libVersion": "3.10.2",
   "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
   "condition": {

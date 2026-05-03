@@ -66,19 +66,7 @@
 
     loadShare();
 
-    function isDemoMode() {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.has('demo');
-    }
 
-    function getDemoMediaType() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const demoType = urlParams.get('demo');
-      if (demoType === 'video' || demoType === 'v') {
-        return 'video';
-      }
-      return 'audio';
-    }
 
     function getShareId() {
       const segments = window.location.pathname.split('/').filter(Boolean);
@@ -178,22 +166,8 @@
 
       const shareId = getShareId();
 
-      if (isDemoMode() || !shareId) {
-        const demoMediaType = getDemoMediaType();
-        currentShare = {
-          mediaType: demoMediaType,
-          title: demoMediaType === 'video' ? '演示视频 - 点击播放体验效果' : '演示音乐 - 点击播放体验效果'
-        };
-
-        applyTheme();
-
-        const pageTitle = document.getElementById('pageTitle');
-        if (pageTitle) {
-          pageTitle.textContent = currentShare.title;
-        }
-
-        resetControls();
-        setPageState('ready');
+      if (!shareId) {
+        setPageState('missing');
         return;
       }
 
