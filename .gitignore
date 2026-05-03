@@ -30,3 +30,10 @@ Thumbs.db
 *.bak
 *.tmp
 *.temp
+
+# Local tooling artifacts
+/.agents/
+/.cloudbase/
+/.trae/
+/skills/
+skills-lock.json
