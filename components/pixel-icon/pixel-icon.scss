@@ -1,0 +1,16 @@
+@import "../../styles/variables.scss";
+
+.pixel-icon {
+    display: inline-block;
+}
+
+.pixel-icon__grid {
+    display: flex;
+    flex-wrap: wrap;
+    background: transparent;
+}
+
+.pixel-icon__px {
+    flex: 0 0 auto;
+}
+

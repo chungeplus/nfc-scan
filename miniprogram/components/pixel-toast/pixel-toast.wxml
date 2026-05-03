@@ -1,0 +1,5 @@
+<view wx:if="{{visible}}" class="pixel-toast pixel-toast--{{theme}}" bindtap="handleMaskTap">
+  <view class="pixel-toast__box">
+    <text class="pixel-toast__text">{{message}}</text>
+  </view>
+</view>

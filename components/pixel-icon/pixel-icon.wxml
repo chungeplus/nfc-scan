@@ -1,0 +1,5 @@
+<view class="pixel-icon" style="width: {{containerSize}}px; height: {{containerSize}}px;">
+  <view class="pixel-icon__grid" style="width: {{containerSize}}px; height: {{containerSize}}px;">
+    <view wx:for="{{pixels}}" wx:key="index" class="pixel-icon__px" style="width: {{pixelSize}}px; height: {{pixelSize}}px; background: {{item}};"></view>
+  </view>
+</view>

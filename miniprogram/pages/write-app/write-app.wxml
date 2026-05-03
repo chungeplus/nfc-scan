@@ -12,25 +12,31 @@
             <text>iOS</text>
         </view>
     </view>
-    
+
     <view class="field">
         <view class="label">应用类型</view>
         <view class="box box--select" bindtap="handleOpenPicker">
             <text class="box__value">{{appTypeLabel}}</text>
-            <text class="box__arrow {{pickerVisible ? 'box__arrow--open' : ''}}">▶</text>
+            <text class="box__arrow {{pickerVisible ? 'box__arrow--open' : ''}}">▼</text>
         </view>
     </view>
-    
+
     <view class="field">
         <view class="label">应用包名</view>
-        <input class="box box--input" value="{{packageName}}" placeholder="{{packagePlaceholder}}" bindinput="handlePackageNameInput" disabled="{{!allowEditPackageName}}" />
+        <input
+            class="box box--input"
+            value="{{packageName}}"
+            placeholder="{{packagePlaceholder}}"
+            bindinput="handlePackageNameInput"
+            disabled="{{!allowEditPackageName}}"
+        />
         <view class="field__error" wx:if="{{packageError}}">{{packageError}}</view>
     </view>
-    
+
     <view class="btn-wrap">
         <button class="btn" bindtap="handlePasteTap">粘贴</button>
     </view>
-    
+
     <button class="primary-btn" disabled="{{!canWrite}}" bindtap="handleOpenScanDialog">写入 NFC 标签</button>
 </view>
 

@@ -1,4 +1,7 @@
 import { showPixelToast } from '../../utils/pixel-toast';
+import { getNavMetrics } from '../../utils/system-info';
+
+const ROOT_PAGE_PREFIX = '/miniprogram/pages';
 
 const DEVELOPER_PROMISE_ACK_KEY = 'developerPromiseAcknowledged';
 
@@ -11,10 +14,9 @@ Page({
     },
 
     onLoad() {
-        const systemInfo = wx.getSystemInfoSync();
-        const statusBarHeight = systemInfo.statusBarHeight || 20;
+        const { navHeight } = getNavMetrics();
         this.setData({
-            navHeight: statusBarHeight + 44,
+            navHeight,
             developerPromiseDialogVisible: this.shouldShowDeveloperPromiseDialog(),
         });
         this.checkDeviceProcessNFC();
@@ -69,7 +71,7 @@ Page({
         }
 
         wx.navigateTo({
-            url: '/pages/write-app/write-app',
+            url: `${ROOT_PAGE_PREFIX}/write-app/write-app`,
         });
     },
 
@@ -79,7 +81,7 @@ Page({
         }
 
         wx.navigateTo({
-            url: '/pages/write-music/write-music',
+            url: `${ROOT_PAGE_PREFIX}/write-music/write-music`,
         });
     },
 
@@ -89,13 +91,13 @@ Page({
         }
 
         wx.navigateTo({
-            url: '/pages/write-web/write-web',
+            url: `${ROOT_PAGE_PREFIX}/write-web/write-web`,
         });
     },
 
-    handleWriteLocalAudio() {
+    handleWriteLocalMedia() {
         wx.navigateTo({
-            url: '/pages/write-local-audio/write-local-audio',
+            url: `${ROOT_PAGE_PREFIX}/write-local-media/write-local-media`,
         });
     },
 

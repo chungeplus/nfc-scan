@@ -1,0 +1,44 @@
+@import "../styles/variables.scss";
+
+.custom-tab-bar {
+    position: fixed;
+    left: 16rpx;
+    right: 16rpx;
+    bottom: 16rpx;
+    z-index: $z-index-fixed;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12rpx;
+    padding: 12rpx;
+    background: rgba(244, 237, 214, 0.98);
+    border: $border-width solid $color-ink;
+    box-shadow: 6rpx 6rpx 0 rgba(0, 0, 0, 0.18);
+}
+
+.custom-tab-bar__item {
+    min-height: 92rpx;
+    padding: 10rpx 12rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12rpx;
+    background: $color-paper-2;
+    border: $border-width-sm solid $color-ink;
+    box-shadow: $shadow-sm;
+}
+
+.custom-tab-bar__item--active {
+    background: $color-yellow;
+}
+
+.custom-tab-bar__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.custom-tab-bar__text {
+    font-size: 22rpx;
+    font-weight: bold;
+    letter-spacing: 2rpx;
+}

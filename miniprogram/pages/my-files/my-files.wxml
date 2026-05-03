@@ -1,0 +1,64 @@
+<pixel-navbar title="我的文件" theme="home" showBack="{{false}}" showHome="{{false}}" />
+<pixel-toast id="pixel-toast" />
+
+<view class="my-files" style="min-height: calc(100vh - {{navHeight}}px);">
+    <view class="summary-grid">
+        <view class="summary-card">
+            <view class="summary-card__label">文件总数</view>
+            <view class="summary-card__value">{{totalCount}}</view>
+        </view>
+        <view class="summary-card">
+            <view class="summary-card__label">云端占用</view>
+            <view class="summary-card__value">{{totalSizeText}}</view>
+        </view>
+    </view>
+
+    <view wx:if="{{loading}}" class="state-card">
+        <view class="state-card__title">正在加载我的文件</view>
+        <view class="state-card__desc">请稍候，系统正在读取你最近上传的音视频文件。</view>
+    </view>
+
+    <view wx:elif="{{!records.length}}" class="state-card">
+        <view class="state-card__title">还没有上传文件</view>
+        <view class="state-card__desc">先去 NFC 页面选择一个本地音视频文件，上传后就能在这里查看和管理。</view>
+        <button class="state-card__btn" bindtap="handleGoNfc">前往 NFC 页</button>
+    </view>
+
+    <view wx:else class="file-list">
+        <view wx:for="{{records}}" wx:key="id" class="file-card">
+            <view class="file-card__title">{{item.fileName}}</view>
+            <view class="file-card__meta">{{item.mediaTypeLabel}} / {{item.fileSizeText}}</view>
+            <view class="file-card__link">{{item.latestPlayUrl}}</view>
+            <view class="file-card__actions">
+                <button
+                    class="secondary-btn secondary-btn--green"
+                    data-id="{{item.id}}"
+                    bindtap="handleReuseRecord"
+                >
+                    去写入
+                </button>
+                <button class="secondary-btn" data-id="{{item.id}}" bindtap="handleCopyLink">复制链接</button>
+                <button class="secondary-btn secondary-btn--danger" data-id="{{item.id}}" bindtap="handlePromptDelete">删除</button>
+            </view>
+        </view>
+    </view>
+</view>
+
+<view wx:if="{{deleteDialogVisible}}" class="overlay">
+    <view class="dialog">
+        <view class="dialog__title dialog__title--red">确认删除</view>
+        <view class="dialog__body">
+            <view class="dialog__copy">
+                确定删除“{{pendingDeleteName}}”吗？<br />
+                删除后，所有已写入 NFC 的相关链接都会失效。
+            </view>
+        </view>
+        <view class="dialog__actions">
+            <button class="dialog-btn" bindtap="handleCloseDeleteDialog" disabled="{{deleting}}">取消</button>
+            <button class="dialog-btn dialog-btn--red" bindtap="handleConfirmDelete" disabled="{{deleting}}">
+                <text wx:if="{{deleting}}">删除中...</text>
+                <text wx:else>确认</text>
+            </button>
+        </view>
+    </view>
+</view>

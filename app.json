@@ -1,0 +1,32 @@
+{
+  "pages": [
+    "miniprogram/pages/write-menu/write-menu",
+    "miniprogram/pages/my-files/my-files",
+    "miniprogram/pages/write-app/write-app",
+    "miniprogram/pages/write-music/write-music",
+    "miniprogram/pages/write-web/write-web",
+    "miniprogram/pages/write-local-media/write-local-media"
+  ],
+  "window": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "NFC卡片助手",
+    "navigationBarBackgroundColor": "#ff665b",
+    "navigationStyle": "custom"
+  },
+  "tabBar": {
+    "custom": true,
+    "list": [
+      {
+        "pagePath": "miniprogram/pages/write-menu/write-menu",
+        "text": "NFC"
+      },
+      {
+        "pagePath": "miniprogram/pages/my-files/my-files",
+        "text": "我的文件"
+      }
+    ]
+  },
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

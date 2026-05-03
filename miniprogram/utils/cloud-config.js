@@ -1,0 +1,30 @@
+const CLOUD_ENV_ID = 'cloud1-5gsbvhr91440e872';
+const MEDIA_SHARE_SERVICE_NAME = 'media-share-service';
+const MEDIA_FILE_COLLECTION = 'media_files';
+const MEDIA_SHARE_COLLECTION = 'media_shares';
+const PLAY_BASE_URL = 'https://www.huazhou.love';
+
+const AUDIO_ACCEPT_EXTENSIONS = ['mp3', 'm4a', 'wav'];
+const VIDEO_ACCEPT_EXTENSIONS = ['mp4'];
+const MEDIA_ACCEPT_EXTENSIONS = [...AUDIO_ACCEPT_EXTENSIONS, ...VIDEO_ACCEPT_EXTENSIONS];
+
+const AUDIO_MAX_SIZE = 10 * 1024 * 1024;
+const VIDEO_MAX_SIZE = 20 * 1024 * 1024;
+
+const THEME_KEYS = ['pixel', 'minimal', 'poster'];
+const DEFAULT_THEME_KEY = 'pixel';
+
+export {
+    AUDIO_ACCEPT_EXTENSIONS,
+    AUDIO_MAX_SIZE,
+    CLOUD_ENV_ID,
+    DEFAULT_THEME_KEY,
+    MEDIA_ACCEPT_EXTENSIONS,
+    MEDIA_FILE_COLLECTION,
+    MEDIA_SHARE_COLLECTION,
+    MEDIA_SHARE_SERVICE_NAME,
+    PLAY_BASE_URL,
+    THEME_KEYS,
+    VIDEO_ACCEPT_EXTENSIONS,
+    VIDEO_MAX_SIZE,
+};

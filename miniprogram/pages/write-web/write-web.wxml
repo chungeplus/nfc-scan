@@ -13,11 +13,11 @@
         ></textarea>
         <view class="field__error" wx:if="{{urlError}}">{{urlError}}</view>
     </view>
-    
+
     <view class="btn-wrap">
         <button class="btn" bindtap="handlePasteTap">粘贴</button>
     </view>
-    
+
     <button class="primary-btn" disabled="{{!canSubmit}}" bindtap="handleOpenScanDialog">写入 NFC 标签</button>
 </view>
 

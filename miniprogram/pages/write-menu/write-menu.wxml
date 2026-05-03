@@ -36,7 +36,7 @@
                         </view>
                         <view class="body">
                             <view class="card__title">音乐专区</view>
-                            <view class="meta">支持网易云和 QQ 音乐分享链接写入。</view>
+                            <view class="meta">支持网易云和 QQ 音乐分享链接写入 NFC。</view>
                         </view>
                     </view>
                 </view>
@@ -49,12 +49,12 @@
                         </view>
                         <view class="body">
                             <view class="card__title">网页专区</view>
-                            <view class="meta">官网、活动页和短链都可以直接写入。</view>
+                            <view class="meta">官网、活动页和短链接都可以直接写入 NFC。</view>
                         </view>
                     </view>
                 </view>
 
-                <view class="card card--green card--pixel-cut home-sub home-sub--wide" bindtap="handleWriteLocalAudio">
+                <view class="card card--green card--pixel-cut home-sub home-sub--wide" bindtap="handleWriteLocalMedia">
                     <view class="card__bite card__bite--tl"></view>
                     <view class="card__bite card__bite--br"></view>
                     <view class="row">
@@ -62,8 +62,8 @@
                             <pixel-icon name="record" size="48" />
                         </view>
                         <view class="body">
-                            <view class="card__title">本地音频</view>
-                            <view class="meta">从微信会话选择音频文件，上传云存储后生成播放链接并写入 NFC。</view>
+                            <view class="card__title">本地音视频</view>
+                            <view class="meta">从微信会话选择音视频文件，生成播放页后写入 NFC。</view>
                         </view>
                     </view>
                 </view>
@@ -82,8 +82,8 @@
         <view class="dialog__body">
             <view class="promise">
                 <view>1. 小程序仅在本地和云开发环境中处理本次写卡所需数据。</view>
-                <view>2. 本地音频文件会上传到你的云存储，并通过云函数记录数据库信息。</view>
-                <view>3. 写入前请再次确认内容，删除文件后旧 NFC 链接会失效。</view>
+                <view>2. 本地音视频文件会上传到你的云存储，并通过云函数写入文件记录和分享记录。</view>
+                <view>3. 删除文件后，所有相关 NFC 链接都会失效，请在写入前确认内容无误。</view>
             </view>
         </view>
         <view class="dialog__actions dialog__actions--one">

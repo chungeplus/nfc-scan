@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NFC卡片助手</title>
+  <link rel="stylesheet" href="/play/shared/player-layout.css?v=20260430b">
+  <link rel="stylesheet" href="/play/minimal/style.css?v=20260430b">
+</head>
+<body>
+  <main id="app" class="player-shell theme-minimal media-audio">
+    <section id="loadingState" class="state-screen is-visible">
+      <div class="state-card">
+        <p class="state-card__eyebrow">Preparing Playback</p>
+        <h1 class="state-card__title">正在加载内容</h1>
+        <p class="state-card__desc">播放页正在读取分享记录并准备媒体资源，请稍候片刻。</p>
+      </div>
+    </section>
+
+    <section id="missingState" class="state-screen">
+      <div class="state-card">
+        <p class="state-card__eyebrow">Unavailable Link</p>
+        <h1 class="state-card__title">链接不可用</h1>
+        <p class="state-card__desc">这个播放页已失效或被删除，请返回小程序重新生成新的播放链接。</p>
+      </div>
+    </section>
+
+    <section id="errorState" class="state-screen">
+      <div class="state-card">
+        <p class="state-card__eyebrow">Load Failed</p>
+        <h1 class="state-card__title">加载失败</h1>
+        <p id="errorMessage" class="state-card__desc">分享详情请求失败，请稍后重试。</p>
+        <button id="reloadButton" class="control-btn control-btn--primary state-card__action" type="button">重新加载</button>
+      </div>
+    </section>
+
+    <section id="readyState" class="play-scene">
+      <div class="chrome-bar">
+        <div class="chrome-group">
+          <span id="themeBadge" class="chrome-pill">Minimal</span>
+          <span id="mediaBadge" class="chrome-pill">音频播放页</span>
+        </div>
+      </div>
+
+      <section class="surface media-card">
+        <div class="media-stage">
+          <div id="audioVisual" class="audio-visual">
+            <div class="audio-visual__record-wrap">
+              <div class="audio-visual__halo"></div>
+              <div class="audio-visual__record"></div>
+              <div class="audio-visual__core"></div>
+              <div class="audio-visual__needle"></div>
+            </div>
+            <div class="audio-visual__equalizer">
+              <span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="video-stage">
+            <video id="videoPlayer" class="video-player" playsinline preload="metadata"></video>
+            <div class="video-overlay">
+              <div class="video-play-btn" id="videoPlayBtn"></div>
+              <div class="video-time" id="videoTimeDisplay">00:00</div>
+              <button class="video-fullscreen-btn" id="videoFullscreenBtn" title="全屏">⛶</button>
+            </div>
+            <div class="video-progress">
+              <div class="video-progress-bar" id="videoProgressBar"></div>
+            </div>
+          </div>
+          <audio id="audioPlayer" preload="metadata"></audio>
+        </div>
+      </section>
+
+      <section class="surface controls-card">
+        <div class="status-row">
+          <span id="statusBadge" class="status-badge">准备播放</span>
+          <div class="time-pair">
+            <span id="currentTime">00:00</span>
+            <span>/</span>
+            <span id="durationTime">00:00</span>
+          </div>
+        </div>
+
+        <div class="progress-shell">
+          <input id="seekBar" class="progress-bar" type="range" min="0" max="1000" value="0" step="1">
+        </div>
+
+        <div class="controls-grid">
+          <button id="primaryButton" class="control-btn control-btn--primary" type="button">播放</button>
+          <button id="secondaryButton" class="control-btn" type="button">从头播放</button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="/play/shared/core.js?v=20260430b"></script>
+  <script src="/play/minimal/app.js?v=20260430b"></script>
+</body>
+</html>
+

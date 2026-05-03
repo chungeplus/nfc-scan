@@ -1,0 +1,235 @@
+@import "../../styles/variables.scss";
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: $z-index-modal;
+    background: rgba(38, 45, 30, 0.88);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-sm;
+}
+
+.dialog {
+    width: 100%;
+    max-width: 560rpx;
+    background: $color-paper;
+    border: $border-width solid $color-ink;
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+
+    &__title {
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: $color-yellow;
+        border-bottom: $border-width-sm solid $color-ink;
+        font-size: 14px;
+        font-weight: bold;
+        letter-spacing: 2rpx;
+
+        &--success {
+            background: $color-green;
+        }
+
+        &--error {
+            background: $color-red;
+            color: $color-white;
+        }
+
+        &--writing {
+            background: $color-yellow;
+        }
+    }
+
+    &__body {
+        padding: 18px 16px;
+    }
+
+    &__actions {
+        display: grid;
+        gap: 10rpx;
+        padding: 0 16px 16px;
+
+        &--one {
+            grid-template-columns: 1fr;
+        }
+
+        &--two {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+}
+
+.stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12rpx;
+    min-height: 168px;
+    justify-content: center;
+}
+
+.stage--waiting {
+    gap: 10px;
+}
+
+.detect-scene {
+    position: relative;
+    width: 186px;
+    height: 112px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -24px;
+}
+
+.stage--writing {
+    gap: 16px;
+}
+
+.stage--success,
+.stage--error {
+    gap: 14px;
+}
+
+.nphone {
+    width: 90px;
+    height: 126px;
+    border: $border-width-sm solid $color-ink;
+    background: $color-cyan;
+    border-radius: $radius-sm;
+    box-shadow: $shadow-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nphone--detect {
+    position: absolute;
+    top: -10px;
+    left: 4px;
+    animation: phonePulse 1.6s ease-in-out infinite;
+}
+
+.ntag {
+    width: 82px;
+    height: 44px;
+    border: $border-width-sm solid $color-ink;
+    background: $color-yellow;
+    border-radius: $radius-sm;
+    box-shadow: $shadow-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6rpx;
+    font-size: $font-size-xs;
+    font-weight: bold;
+}
+
+.ntag--detect {
+    position: absolute;
+    right: 8px;
+    top: 18px;
+    animation: tagApproach 1.6s ease-in-out infinite;
+}
+
+.hint {
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.7;
+    color: $color-muted;
+    max-width: 300rpx;
+
+    &--center {
+        text-align: center;
+    }
+
+    &--green {
+        color: $color-green-deep;
+        font-weight: bold;
+    }
+
+    &--red {
+        color: $color-red-deep;
+        font-weight: bold;
+    }
+}
+
+.spin {
+    width: 34px;
+    height: 34px;
+    border: $border-width solid $color-ink;
+    border-top-color: $color-green-deep;
+    background: $color-green;
+    animation: spin 0.8s steps(8) infinite;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.14);
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes tagApproach {
+    0% {
+        transform: translate(10px, 8px) scale(0.92);
+        opacity: 0.68;
+    }
+
+    55% {
+        transform: translate(-26px, -10px) scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(10px, 8px) scale(0.92);
+        opacity: 0.68;
+    }
+}
+
+@keyframes phonePulse {
+    0%,
+    100% {
+        box-shadow: $shadow-sm;
+    }
+
+    50% {
+        box-shadow: 0 0 0 6rpx rgba(159, 217, 223, 0.18), $shadow-sm;
+    }
+}
+
+.dialog-btn {
+    height: 42px;
+    background: $color-paper-2;
+    color: $color-ink;
+    border: $border-width-sm solid $color-ink;
+    border-radius: $radius-sm;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: $shadow-sm;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::after {
+        border: none;
+    }
+
+    &:active {
+        transform: translate(3rpx, 3rpx);
+        box-shadow: none;
+    }
+
+    &--green {
+        background: $color-green;
+    }
+
+    &--red {
+        background: $color-red;
+        color: $color-white;
+    }
+}

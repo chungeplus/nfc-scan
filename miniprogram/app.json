@@ -5,7 +5,7 @@
     "pages/write-app/write-app",
     "pages/write-music/write-music",
     "pages/write-web/write-web",
-    "pages/write-local-audio/write-local-audio"
+    "pages/write-local-media/write-local-media"
   ],
   "window": {
     "navigationBarTextStyle": "white",

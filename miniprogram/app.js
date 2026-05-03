@@ -3,7 +3,7 @@ import { CLOUD_ENV_ID } from './utils/cloud-config';
 App({
     globalData: {
         cloudEnvId: CLOUD_ENV_ID,
-        pendingAudioRecord: null,
+        pendingMediaRecord: null,
     },
 
     onLaunch() {

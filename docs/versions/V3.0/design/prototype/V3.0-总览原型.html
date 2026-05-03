@@ -1,0 +1,1707 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFC卡片助手 - V3.0 交互原型</title>
+    <style>
+        :root {
+            --scene: #88aa67;
+            --paper: #f4edd6;
+            --paper-2: #efe5c6;
+            --ink: #2d2d2d;
+            --muted: #626262;
+            --orange: #f0bf66;
+            --purple: #ceb0ef;
+            --cyan: #9fd9df;
+            --green: #b8d98b;
+            --green-deep: #6ea85e;
+            --red: #e86a58;
+            --red-deep: #be4a3a;
+            --yellow: #efd86c;
+            --shadow: 4px 4px 0 rgba(0, 0, 0, 0.16);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Courier New", Courier, monospace;
+            background:
+                radial-gradient(circle at 20px 20px, rgba(255,255,255,0.12) 0 2px, transparent 2px),
+                linear-gradient(180deg, #93b673 0%, #7e9f5f 100%);
+            background-size: 36px 36px, auto;
+            color: var(--ink);
+            padding: 24px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 260px minmax(360px, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .sidebar,
+        .stage-shell {
+            border: 4px solid var(--ink);
+            background: var(--paper);
+            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.18);
+        }
+
+        .sidebar {
+            padding: 18px;
+            position: sticky;
+            top: 24px;
+        }
+
+        .sidebar h1 {
+            margin: 0 0 10px;
+            font-size: 18px;
+        }
+
+        .sidebar p {
+            margin: 0 0 16px;
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--muted);
+        }
+
+        .group {
+            margin-top: 16px;
+        }
+
+        .group-super {
+            margin-top: 18px;
+            padding: 8px 10px;
+            border: 3px solid var(--ink);
+            background: var(--yellow);
+            box-shadow: var(--shadow);
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .group-title {
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        .nav-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            border: 3px solid var(--ink);
+            background: var(--paper-2);
+            box-shadow: var(--shadow);
+            min-height: 40px;
+            padding: 8px 10px;
+            text-align: left;
+            font: inherit;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .nav-btn.is-active {
+            background: var(--yellow);
+        }
+
+        .stage-shell {
+            padding: 18px;
+        }
+
+        .stage-head {
+            margin-bottom: 16px;
+        }
+
+        .stage-surface {
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 0 10px;
+            margin-bottom: 8px;
+            border: 3px solid var(--ink);
+            background: var(--paper-2);
+            box-shadow: var(--shadow);
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .stage-head h2 {
+            margin: 0 0 6px;
+            font-size: 18px;
+        }
+
+        .stage-head p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.6;
+            max-width: 520px;
+        }
+
+        .phone {
+            width: 360px;
+            margin: 0 auto;
+            padding: 10px;
+            border: 5px solid var(--ink);
+            border-radius: 26px;
+            background: #24303d;
+            box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.22);
+        }
+
+        .phone-screen {
+            position: relative;
+            height: 712px;
+            border: 4px solid #121821;
+            border-radius: 18px;
+            overflow: hidden;
+            background: var(--paper);
+        }
+
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: none;
+            background: var(--paper);
+        }
+
+        .screen.is-active {
+            display: block;
+        }
+
+        .topbar {
+            padding: 12px 16px 10px;
+            border-bottom: 4px solid var(--ink);
+            color: #fff;
+        }
+
+        .topbar--home { background: linear-gradient(180deg, #ff8a7a 0%, #ef665b 100%); }
+        .topbar--app { background: linear-gradient(180deg, #f1cb4b 0%, #e1b12e 100%); color: var(--ink); }
+        .topbar--music { background: linear-gradient(180deg, #226c60 0%, #184e45 100%); }
+        .topbar--web { background: linear-gradient(180deg, #334b93 0%, #26386f 100%); }
+        .topbar--audio { background: linear-gradient(180deg, #6ea85e 0%, #538845 100%); }
+
+        .status {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .navrow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navicon,
+        .navspacer {
+            width: 28px;
+            height: 28px;
+        }
+
+        .navicon {
+            border: 3px solid currentColor;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            background: rgba(255,255,255,0.16);
+        }
+
+        .navtitle {
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .page {
+            height: calc(100% - 82px);
+            padding: 18px 16px 88px;
+            overflow: auto;
+        }
+
+        .page--home {
+            padding-bottom: 98px;
+        }
+
+        .stack,
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card,
+        .box,
+        .state-card,
+        .summary-card,
+        .upload-card,
+        .loading-card,
+        .note-box,
+        .dialog-copy {
+            border: 3px solid var(--ink);
+            box-shadow: var(--shadow);
+        }
+
+        .card {
+            position: relative;
+            padding: 14px;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 8px;
+            border: 2px dashed rgba(45, 45, 45, 0.2);
+        }
+
+        .card--main { background: linear-gradient(180deg, #ffd884 0%, var(--orange) 100%); }
+        .card--music { background: linear-gradient(180deg, #ead8ff 0%, #d8c1f2 100%); }
+        .card--web { background: linear-gradient(180deg, #caedf1 0%, #b8dde1 100%); }
+        .card--audio { background: linear-gradient(180deg, #d4efc8 0%, #b4d89b 100%); }
+
+        .row {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .visual {
+            width: 74px;
+            height: 74px;
+            border: 3px solid var(--ink);
+            background: rgba(255,255,255,0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: var(--shadow);
+            flex-shrink: 0;
+        }
+
+        .card--main .visual {
+            width: 92px;
+            height: 102px;
+            font-size: 36px;
+        }
+
+        .body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .title {
+            margin: 0 0 6px;
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .meta {
+            margin: 0;
+            font-size: 10px;
+            line-height: 1.55;
+            color: var(--muted);
+        }
+
+        .subgrid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .subgrid .card {
+            min-height: 154px;
+        }
+
+        .subgrid .card .row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .subgrid .card .title {
+            font-size: 15px;
+        }
+
+        .subgrid .card--audio-wide {
+            grid-column: span 2;
+            min-height: 124px;
+        }
+
+        .subgrid .card--audio-wide .row {
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .fab {
+            position: absolute;
+            right: 16px;
+            bottom: 96px;
+            width: 46px;
+            height: 46px;
+            border: 3px solid var(--ink);
+            background: var(--yellow);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .tabbar {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 16px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            padding: 10px;
+            background: rgba(244, 237, 214, 0.98);
+            border: 4px solid var(--ink);
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.18);
+        }
+
+        .tab {
+            min-height: 52px;
+            border: 3px solid var(--ink);
+            background: var(--paper-2);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .tab.is-active {
+            background: var(--yellow);
+        }
+
+        .field {
+            margin-bottom: 14px;
+        }
+
+        .label {
+            margin-bottom: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--muted);
+        }
+
+        .box {
+            min-height: 46px;
+            padding: 10px 12px;
+            background: var(--paper-2);
+            line-height: 1.6;
+            font-size: 11px;
+        }
+
+        .box--tall {
+            min-height: 110px;
+        }
+
+        .btn,
+        .primary-btn,
+        .action-btn,
+        .dialog-btn {
+            border: 3px solid var(--ink);
+            box-shadow: var(--shadow);
+            font: inherit;
+            font-weight: bold;
+        }
+
+        .btn {
+            width: 100%;
+            min-height: 46px;
+            background: var(--yellow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+        }
+
+        .primary-btn {
+            width: 100%;
+            min-height: 52px;
+            background: var(--green-deep);
+            color: #fff;
+            font-size: 14px;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .primary-btn.is-disabled {
+            opacity: 0.5;
+        }
+
+        .note-box {
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #d7ebcb;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .carry-hint,
+        .inline-error {
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            border: 3px solid var(--ink);
+            box-shadow: var(--shadow);
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .carry-hint {
+            background: #dcefc8;
+            color: #406833;
+        }
+
+        .inline-error {
+            background: #f7d1ca;
+            color: var(--red-deep);
+        }
+
+        .loading-card,
+        .upload-card,
+        .state-card,
+        .summary-card {
+            padding: 12px;
+            background: var(--paper-2);
+        }
+
+        .loading-card {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .spinner {
+            width: 34px;
+            height: 34px;
+            border: 3px solid var(--ink);
+            border-top-color: #406833;
+            background: var(--green);
+            border-radius: 50%;
+        }
+
+        .loading-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #406833;
+        }
+
+        .loading-desc {
+            margin-top: 4px;
+            font-size: 10px;
+            line-height: 1.55;
+            color: var(--muted);
+        }
+
+        .upload-title,
+        .summary-label {
+            font-size: 10px;
+            color: var(--muted);
+        }
+
+        .upload-name,
+        .summary-value,
+        .file-title {
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .pill-row,
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .pill {
+            padding: 6px 10px;
+            border: 3px solid var(--ink);
+            background: #fff7d5;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.12);
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .upload-link,
+        .file-link {
+            margin-top: 12px;
+            padding: 10px;
+            border: 3px solid var(--ink);
+            background: #fff7d5;
+            box-shadow: inset 2px 2px 0 rgba(0,0,0,0.12);
+            font-size: 10px;
+            line-height: 1.6;
+            word-break: break-all;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .summary-card {
+            background: linear-gradient(180deg, #fff4c6 0%, #f2df8a 100%);
+        }
+
+        .file-card {
+            padding: 12px;
+            border: 3px solid var(--ink);
+            background: var(--paper-2);
+            box-shadow: var(--shadow);
+        }
+
+        .file-meta,
+        .state-desc,
+        .file-warn {
+            margin-top: 8px;
+            font-size: 10px;
+            line-height: 1.6;
+            color: var(--muted);
+        }
+
+        .file-warn {
+            color: var(--red-deep);
+            font-weight: bold;
+        }
+
+        .actions {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .action-btn {
+            min-height: 42px;
+            background: var(--green);
+            font-size: 12px;
+        }
+
+        .action-btn--danger {
+            background: var(--red);
+            color: #fff;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            padding: 24px;
+            background: rgba(38, 45, 30, 0.46);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dialog {
+            width: 100%;
+            border: 4px solid var(--ink);
+            background: var(--paper);
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.18);
+        }
+
+        .dialog-title {
+            min-height: 48px;
+            padding: 0 16px;
+            border-bottom: 3px solid var(--ink);
+            background: var(--yellow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .dialog-title--red {
+            background: var(--red);
+            color: #fff;
+        }
+
+        .dialog-body {
+            padding: 18px 16px;
+        }
+
+        .dialog-copy {
+            padding: 12px;
+            background: var(--paper-2);
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .dialog-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            padding: 0 16px 16px;
+        }
+
+        .dialog-actions--one {
+            grid-template-columns: 1fr;
+        }
+
+        .dialog-btn {
+            min-height: 42px;
+            background: var(--paper-2);
+            font-size: 12px;
+        }
+
+        .dialog-btn--green {
+            background: var(--green);
+        }
+
+        .dialog-btn--red {
+            background: var(--red);
+            color: #fff;
+        }
+
+        .nfc-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            text-align: center;
+        }
+
+        .nfc-phone {
+            width: 78px;
+            height: 118px;
+            border: 3px solid var(--ink);
+            background: var(--cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+
+        .nfc-tag {
+            width: 96px;
+            height: 48px;
+            border: 3px solid var(--ink);
+            background: var(--yellow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .hint {
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--muted);
+        }
+
+        .hint--green {
+            color: #406833;
+            font-weight: bold;
+        }
+
+        .hint--red {
+            color: var(--red-deep);
+            font-weight: bold;
+        }
+
+        @media (max-width: 960px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <h1>NFC卡片助手 V3.0</h1>
+            <p>这份原型聚焦 V3.0 的本地音视频播放页写入链路，按“小程序端”和“网页端”分开展示上传、我的文件、NFC 写卡和浏览器播放页状态。</p>
+
+            <div class="group-super">小程序端（NFC卡片助手）</div>
+            <div class="group">
+                <div class="group-title">首页与系统态</div>
+                <div class="nav-list">
+                    <button class="nav-btn is-active" data-target="home">首页</button>
+                    <button class="nav-btn" data-target="home-promise">首页 / 开发者承诺</button>
+                    <button class="nav-btn" data-target="home-unsupported">首页 / NFC 不支持</button>
+                </div>
+            </div>
+
+            <div class="group">
+                <div class="group-title">原有写入页</div>
+                <div class="nav-list">
+                    <button class="nav-btn" data-target="app">写入应用</button>
+                    <button class="nav-btn" data-target="music">写入音乐</button>
+                    <button class="nav-btn" data-target="web">写入网页</button>
+                </div>
+            </div>
+
+            <div class="group">
+                <div class="group-title">V3.0 本地音视频</div>
+                <div class="nav-list">
+                    <button class="nav-btn" data-target="media-default">写入本地音视频 / 初始</button>
+                    <button class="nav-btn" data-target="media-loading">写入本地音视频 / 上传与生成链接中</button>
+                    <button class="nav-btn" data-target="media-error">写入本地音视频 / 错误提示</button>
+                    <button class="nav-btn" data-target="media-ready">写入本地音视频 / 已带入文件</button>
+                </div>
+            </div>
+
+            <div class="group">
+                <div class="group-title">我的文件</div>
+                <div class="nav-list">
+                    <button class="nav-btn" data-target="files-loading">我的文件 / 加载中</button>
+                    <button class="nav-btn" data-target="files-empty">我的文件 / 空态</button>
+                    <button class="nav-btn" data-target="files-list">我的文件 / 列表</button>
+                    <button class="nav-btn" data-target="files-delete">我的文件 / 删除确认</button>
+                </div>
+            </div>
+
+            <div class="group">
+                <div class="group-title">写卡弹窗</div>
+                <div class="nav-list">
+                    <button class="nav-btn" data-target="scan-waiting">NFC / 等待贴卡</button>
+                    <button class="nav-btn" data-target="scan-success">NFC / 成功分流</button>
+                </div>
+            </div>
+
+            <div class="group-super">网页端（浏览器播放页）</div>
+            <div class="group">
+                <div class="group-title">音频播放页</div>
+                <div class="nav-list">
+                    <button class="nav-btn" data-target="play-audio-pixel">音频 / Pixel</button>
+                    <button class="nav-btn" data-target="play-audio-minimal">音频 / Minimal</button>
+                    <button class="nav-btn" data-target="play-audio-poster">音频 / Poster</button>
+                </div>
+            </div>
+            <div class="group">
+                <div class="group-title">视频播放页</div>
+                <div class="nav-list">
+                    <button class="nav-btn" data-target="play-video-pixel">视频 / Pixel</button>
+                    <button class="nav-btn" data-target="play-video-minimal">视频 / Minimal</button>
+                    <button class="nav-btn" data-target="play-video-poster">视频 / Poster</button>
+                </div>
+            </div>
+            <div class="group">
+                <div class="group-title">状态页</div>
+                <div class="nav-list">
+                    <button class="nav-btn" data-target="play-loading">播放页 / 加载中</button>
+                    <button class="nav-btn" data-target="play-missing">播放页 / 链接不存在</button>
+                    <button class="nav-btn" data-target="play-error">播放页 / 加载失败</button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="stage-shell">
+            <div class="stage-head">
+                <div class="stage-surface" id="screen-surface">当前端侧：小程序端（NFC卡片助手）</div>
+                <h2 id="screen-title">首页</h2>
+                <p id="screen-desc">首页保留应用专区、音乐专区、网页专区三个原有入口，并新增 V3.0 的本地音视频、我的文件和浏览器播放页链路。原型按小程序端与网页端分开展示。</p>
+            </div>
+
+            <div class="phone">
+                <div class="phone-screen">
+                    <section class="screen is-active" id="screen-home">
+                        <div class="topbar topbar--home">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">NFC</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page page--home">
+                            <div class="stack">
+                                <div class="card card--main">
+                                    <div class="row">
+                                        <div class="visual">📱</div>
+                                        <div class="body">
+                                            <div class="title">应用专区</div>
+                                            <p class="meta">常用应用一碰直达，适合桌面标签、车载支架和办公入口。</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="subgrid">
+                                    <div class="card card--music">
+                                        <div class="row">
+                                            <div class="visual">🎵</div>
+                                            <div class="body">
+                                                <div class="title">音乐专区</div>
+                                                <p class="meta">支持网易云和 QQ 音乐分享链接写入。</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card card--web">
+                                        <div class="row">
+                                            <div class="visual">🌐</div>
+                                            <div class="body">
+                                                <div class="title">网页专区</div>
+                                                <p class="meta">官网、活动页和短链都可以直接写入。</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card card--audio card--audio-wide">
+                                        <div class="row">
+                                            <div class="visual">🎙</div>
+                                            <div class="body">
+                                                <div class="title">本地音视频</div>
+                                                <p class="meta">从微信会话选择音视频文件，输入标题并选择风格，生成播放页链接后写入 NFC。</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fab">?</div>
+                        <div class="tabbar">
+                            <div class="tab is-active">📶 NFC</div>
+                            <div class="tab">📁 我的文件</div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-home-promise">
+                        <div class="topbar topbar--home">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">NFC</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page page--home"></div>
+                        <div class="overlay">
+                            <div class="dialog">
+                                <div class="dialog-title">开发者承诺</div>
+                                <div class="dialog-body">
+                                    <div class="dialog-copy">
+                                        1. 小程序仅在本地和云开发环境中处理本次写卡所需数据。<br>
+                                        2. 本地音视频文件会上传到你的云存储，用于生成播放页链接和分享记录。<br>
+                                        3. 写入前请再次确认标题与风格，删除文件后所有相关 NFC 链接都会失效。
+                                    </div>
+                                </div>
+                                <div class="dialog-actions dialog-actions--one">
+                                    <button class="dialog-btn dialog-btn--green">我知道了</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-home-unsupported">
+                        <div class="topbar topbar--home">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">NFC</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page page--home"></div>
+                        <div class="overlay">
+                            <div class="dialog">
+                                <div class="dialog-title dialog-title--red">NFC 不可用</div>
+                                <div class="dialog-body">
+                                    <div class="nfc-stage">
+                                        <div class="nfc-phone">📱</div>
+                                        <div class="hint hint--red">当前设备暂不支持 NFC 写入。<br>你仍然可以查看页面和管理云端文件。</div>
+                                    </div>
+                                </div>
+                                <div class="dialog-actions dialog-actions--one">
+                                    <button class="dialog-btn dialog-btn--red">我知道了</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-app">
+                        <div class="topbar topbar--app">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navicon">&lt;</div>
+                                <div class="navtitle">写入应用</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="field">
+                                <div class="label">应用平台</div>
+                                <div class="actions" style="grid-template-columns:repeat(2,minmax(0,1fr)); margin-top:0;">
+                                    <div class="action-btn" style="background:var(--red); color:#fff;">Android</div>
+                                    <div class="action-btn" style="background:var(--cyan);">iOS</div>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="label">应用包名</div>
+                                <div class="box">com.tencent.mobileqq</div>
+                            </div>
+                            <div class="field">
+                                <div class="label">应用选择器</div>
+                                <div class="btn">打开分类选择器</div>
+                            </div>
+                            <button class="primary-btn">写入 NFC 标签</button>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-music">
+                        <div class="topbar topbar--music">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navicon">&lt;</div>
+                                <div class="navtitle">写入音乐</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="field">
+                                <div class="label">分享链接</div>
+                                <div class="box box--tall">https://music.163.com/song?id=1463165983</div>
+                            </div>
+                            <div class="btn">粘贴链接</div>
+                            <button class="primary-btn" style="margin-top:16px;">解析后写入 NFC</button>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-web">
+                        <div class="topbar topbar--web">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navicon">&lt;</div>
+                                <div class="navtitle">写入网页</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="field">
+                                <div class="label">网页链接</div>
+                                <div class="box box--tall">nfc-direct.cn/guide/museum</div>
+                            </div>
+                            <div class="btn">粘贴网址</div>
+                            <button class="primary-btn" style="margin-top:16px;">写入 NFC 标签</button>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-media-default">
+                        <div class="topbar topbar--audio">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navicon">&lt;</div>
+                                <div class="navtitle">写入本地音视频</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="note-box">
+                                从微信会话选择音视频文件。<br>
+                                音频支持 mp3 / m4a / wav（10MB 以内），视频支持 mp4（20MB 以内）。填写标题并选择风格后，系统会生成固定播放页链接，再写入 NFC。
+                            </div>
+                            <div class="field">
+                                <div class="label">音视频文件</div>
+                                <div class="btn">从微信会话选择文件</div>
+                            </div>
+                            <div class="field">
+                                <div class="label">播放页标题（可选）</div>
+                                <div class="box">生日祝福 / 新品演示</div>
+                            </div>
+                            <div class="field">
+                                <div class="label">播放页风格</div>
+                                <div class="actions">
+                                    <div class="action-btn" style="background:var(--green);">Pixel</div>
+                                    <div class="action-btn">Minimal</div>
+                                    <div class="action-btn">Poster</div>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="label">播放页链接</div>
+                                <div class="box box--tall">完成上传后生成 `https://你的域名/play/{themeKey}/{shareId}`</div>
+                            </div>
+                            <button class="primary-btn is-disabled">生成链接并写入 NFC</button>
+                        </div>
+                        <div class="fab">?</div>
+                    </section>
+
+                    <section class="screen" id="screen-media-loading">
+                        <div class="topbar topbar--audio">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navicon">&lt;</div>
+                                <div class="navtitle">写入本地音视频</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="note-box">文件会先上传到云存储，再创建文件记录和分享记录。NFC 最终写入的是固定播放页链接，而不是媒体文件直链。</div>
+                            <div class="field">
+                                <div class="label">音视频文件</div>
+                                <div class="btn">从微信会话选择文件</div>
+                                <div class="upload-card">
+                                    <div class="upload-title">已选文件</div>
+                                    <div class="upload-name">新品开箱演示.mp4</div>
+                                    <div class="pill-row">
+                                        <div class="pill">12.4MB</div>
+                                        <div class="pill">视频</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="label">播放页标题（可选）</div>
+                                <div class="box">新品开箱演示</div>
+                            </div>
+                            <div class="field">
+                                <div class="label">播放页风格</div>
+                                <div class="actions">
+                                    <div class="action-btn">Pixel</div>
+                                    <div class="action-btn">Minimal</div>
+                                    <div class="action-btn" style="background:var(--green);">Poster</div>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="label">生成进度</div>
+                                <div class="loading-card">
+                                    <div class="spinner"></div>
+                                    <div>
+                                        <div class="loading-title">上传与生成链接中…</div>
+                                        <div class="loading-desc">系统正在上传文件、创建分享记录，并生成可写入 NFC 的 `/play/{themeKey}/{shareId}` 链接。</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="label">播放页链接</div>
+                                <div class="box box--tall">处理中，暂未生成固定播放页链接。</div>
+                            </div>
+                            <button class="primary-btn is-disabled">上传与生成链接中…</button>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-media-error">
+                        <div class="topbar topbar--audio">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navicon">&lt;</div>
+                                <div class="navtitle">写入本地音视频</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="note-box">首版只支持从微信会话选择文件。音频上限 10MB，视频上限 20MB，标题必填，风格必须三选一。</div>
+                            <div class="field">
+                                <div class="label">音视频文件</div>
+                                <div class="btn">从微信会话选择文件</div>
+                                <div class="inline-error">视频超过 20MB，请压缩后重新上传。</div>
+                            </div>
+                            <div class="field">
+                                <div class="label">播放页标题（可选）</div>
+                                <div class="box">新品开箱演示</div>
+                            </div>
+                            <div class="field">
+                                <div class="label">播放页风格</div>
+                                <div class="actions">
+                                    <div class="action-btn">Pixel</div>
+                                    <div class="action-btn">Minimal</div>
+                                    <div class="action-btn" style="background:var(--green);">Poster</div>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="label">播放页链接</div>
+                                <div class="box box--tall">当前未生成可写入 NFC 的播放页链接。</div>
+                            </div>
+                            <button class="primary-btn is-disabled">重新选择文件后继续</button>
+                        </div>
+                        <div class="fab">?</div>
+                    </section>
+
+                    <section class="screen" id="screen-media-ready">
+                        <div class="topbar topbar--audio">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navicon">&lt;</div>
+                                <div class="navtitle">写入本地音视频</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="note-box">已从“我的文件”带回一个视频文件。你可以重新输入标题、切换风格，并生成一个新的播放页链接继续写卡。</div>
+                            <div class="field">
+                                <div class="label">音视频文件</div>
+                                <div class="btn">从微信会话选择文件</div>
+                                <div class="carry-hint">已带入文件：新品开箱演示.mp4，可直接继续写入 NFC。</div>
+                                <div class="upload-card">
+                                    <div class="upload-title">已选文件</div>
+                                    <div class="upload-name">新品开箱演示.mp4</div>
+                                    <div class="pill-row">
+                                        <div class="pill">12.4MB</div>
+                                        <div class="pill">视频 · 已建档</div>
+                                    </div>
+                                    <div class="upload-link">最近生成：https://nfc-card.cn/play/poster?id=sh_a8M2kQ</div>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="label">播放页标题（可选）</div>
+                                <div class="box">开箱演示｜限定版礼盒</div>
+                            </div>
+                            <div class="field">
+                                <div class="label">播放页风格</div>
+                                <div class="actions">
+                                    <div class="action-btn">Pixel</div>
+                                    <div class="action-btn">Minimal</div>
+                                    <div class="action-btn" style="background:var(--green);">Poster</div>
+                                </div>
+                            </div>
+                            <div class="field">
+                                <div class="label">播放页链接</div>
+                                <div class="box box--tall">https://nfc-card.cn/play/poster?id=sh_a8M2kQ</div>
+                            </div>
+                            <button class="primary-btn">写入 NFC 标签</button>
+                        </div>
+                        <div class="fab">?</div>
+                    </section>
+
+                    <section class="screen" id="screen-files-loading">
+                        <div class="topbar topbar--home">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">我的文件</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="summary-grid">
+                                <div class="summary-card">
+                                    <div class="summary-label">文件总数</div>
+                                    <div class="summary-value">0</div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="summary-label">云端占用</div>
+                                    <div class="summary-value">0B</div>
+                                </div>
+                            </div>
+                            <div class="state-card">
+                                <div class="file-title">正在加载我的文件</div>
+                                <div class="state-desc">系统正在拉取当前用户的音视频文件和最近生成的播放页链接。</div>
+                            </div>
+                        </div>
+                        <div class="tabbar">
+                            <div class="tab">📶 NFC</div>
+                            <div class="tab is-active">📁 我的文件</div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-files-empty">
+                        <div class="topbar topbar--home">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">我的文件</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="summary-grid">
+                                <div class="summary-card">
+                                    <div class="summary-label">文件总数</div>
+                                    <div class="summary-value">0</div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="summary-label">云端占用</div>
+                                    <div class="summary-value">0B</div>
+                                </div>
+                            </div>
+                            <div class="state-card">
+                                <div class="file-title">还没有上传文件</div>
+                                <div class="state-desc">先去 NFC 页选择一个本地音视频文件，生成播放页链接后就能在这里查看和管理。</div>
+                                <button class="primary-btn" style="margin-top:14px;">前往 NFC 页</button>
+                            </div>
+                        </div>
+                        <div class="tabbar">
+                            <div class="tab">📶 NFC</div>
+                            <div class="tab is-active">📁 我的文件</div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-files-list">
+                        <div class="topbar topbar--home">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">我的文件</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="summary-grid">
+                                <div class="summary-card">
+                                    <div class="summary-label">文件总数</div>
+                                    <div class="summary-value">3</div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="summary-label">云端占用</div>
+                                    <div class="summary-value">15.9MB</div>
+                                </div>
+                            </div>
+                            <div class="file-list">
+                                <div class="file-card">
+                                    <div class="file-title">生日祝福语音</div>
+                                    <div class="file-meta">audio · 1.8MB</div>
+                                    <div class="file-link">https://nfc-card.cn/play/minimal?id=sh_b7P3mN</div>
+                                    <div class="actions">
+                                        <button class="action-btn">去写入</button>
+                                        <button class="action-btn">复制链接</button>
+                                        <button class="action-btn action-btn--danger">删除</button>
+                                    </div>
+                                </div>
+                                <div class="file-card">
+                                    <div class="file-title">新品开箱演示</div>
+                                    <div class="file-meta">video · 12.4MB</div>
+                                    <div class="file-link">https://nfc-card.cn/play/poster?id=sh_a8M2kQ</div>
+                                    <div class="actions">
+                                        <button class="action-btn">去写入</button>
+                                        <button class="action-btn">复制链接</button>
+                                        <button class="action-btn action-btn--danger">删除</button>
+                                    </div>
+                                </div>
+                                <div class="file-card">
+                                    <div class="file-title">门店欢迎视频</div>
+                                    <div class="file-meta">video · 1.7MB</div>
+                                    <div class="file-link">https://nfc-card.cn/play/pixel?id=sh_k2Q9Lp</div>
+                                    <div class="actions">
+                                        <button class="action-btn">去写入</button>
+                                        <button class="action-btn">复制链接</button>
+                                        <button class="action-btn action-btn--danger">删除</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tabbar">
+                            <div class="tab">📶 NFC</div>
+                            <div class="tab is-active">📁 我的文件</div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-files-delete">
+                        <div class="topbar topbar--home">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">我的文件</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="summary-grid">
+                                <div class="summary-card">
+                                    <div class="summary-label">文件总数</div>
+                                    <div class="summary-value">3</div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="summary-label">云端占用</div>
+                                    <div class="summary-value">15.9MB</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overlay">
+                            <div class="dialog">
+                                <div class="dialog-title dialog-title--red">确认删除</div>
+                                <div class="dialog-body">
+                                    <div class="dialog-copy">
+                                        确定删除“新品开箱演示.mp4”吗？<br>
+                                        删除后，所有已写入 NFC 的相关链接都将失效。
+                                    </div>
+                                </div>
+                                <div class="dialog-actions">
+                                    <button class="dialog-btn">取消</button>
+                                    <button class="dialog-btn dialog-btn--red">确认</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-scan-waiting">
+                        <div class="topbar topbar--audio">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navicon">&lt;</div>
+                                <div class="navtitle">写入本地音视频</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page"></div>
+                        <div class="overlay">
+                            <div class="dialog">
+                                <div class="dialog-title">等待贴近标签</div>
+                                <div class="dialog-body">
+                                    <div class="nfc-stage">
+                                        <div class="nfc-phone">📱</div>
+                                        <div class="nfc-tag">🏷 NFC</div>
+                                        <div class="hint">请将 NFC 标签贴近手机</div>
+                                    </div>
+                                </div>
+                                <div class="dialog-actions dialog-actions--one">
+                                    <button class="dialog-btn">取消</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-scan-success">
+                        <div class="topbar topbar--audio">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navicon">&lt;</div>
+                                <div class="navtitle">写入本地音视频</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page"></div>
+                        <div class="overlay">
+                            <div class="dialog">
+                                <div class="dialog-title">写入成功</div>
+                                <div class="dialog-body">
+                                    <div class="nfc-stage">
+                                        <div style="font-size:56px;">✓</div>
+                                        <div class="hint hint--green">播放页链接写入完成</div>
+                                        <div class="hint hint--green">可以继续写入，或回到我的文件继续管理</div>
+                                    </div>
+                                </div>
+                                <div class="dialog-actions">
+                                    <button class="dialog-btn">继续写入</button>
+                                    <button class="dialog-btn dialog-btn--green">回我的文件</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-play-loading">
+                        <div class="topbar topbar--web">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">播放页</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="state-card">
+                                <div class="file-title">正在加载内容</div>
+                                <div class="state-desc">页面正在请求分享详情，并准备渲染对应的音频或视频播放器。</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-play-audio-pixel">
+                        <div class="topbar topbar--music">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">播放页</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="box box--tall" style="display:flex; align-items:center; justify-content:center; height:170px; background:#f3c96a;">像素音频媒体区域</div>
+                            <div class="box box--tall" style="margin-top:12px; padding:16px; font-size:18px; font-weight:bold; line-height:1.5;">给未来的自己留一段语音</div>
+                            <div class="actions" style="margin-top:12px;">
+                                <button class="action-btn" style="background:var(--yellow);">播放</button>
+                                <button class="action-btn" style="background:var(--green);">暂停</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-play-audio-minimal">
+                        <div class="topbar topbar--web">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">播放页</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="box box--tall" style="display:flex; align-items:center; justify-content:center; height:170px; background:#faf8f1;">极简音频媒体区域</div>
+                            <div class="box box--tall" style="margin-top:12px; padding:16px; font-size:18px; font-weight:bold; line-height:1.6; background:#fcfbf7;">深夜电台里的晚安故事</div>
+                            <div class="actions" style="margin-top:12px;">
+                                <button class="action-btn">播放</button>
+                                <button class="action-btn">暂停</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-play-audio-poster">
+                        <div class="topbar topbar--audio">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">播放页</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="box box--tall" style="display:flex; align-items:center; justify-content:center; height:190px; background:linear-gradient(180deg,#d96e63 0%,#b94848 100%); color:#fff;">海报音频媒体区域</div>
+                            <div class="box box--tall" style="margin-top:12px; padding:16px; font-size:20px; font-weight:bold; line-height:1.5; background:#f8e7d4;">周年纪念语音留言</div>
+                            <div class="actions" style="margin-top:12px;">
+                                <button class="action-btn" style="background:var(--red); color:#fff;">播放</button>
+                                <button class="action-btn" style="background:var(--paper-2);">暂停</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-play-video-pixel">
+                        <div class="topbar topbar--music">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">播放页</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="box box--tall" style="display:flex; align-items:center; justify-content:center; height:190px; background:#d7b55a;">像素视频媒体区域</div>
+                            <div class="box box--tall" style="margin-top:12px; padding:16px; font-size:18px; font-weight:bold; line-height:1.5;">春日活动回顾与现场记录</div>
+                            <div class="actions" style="margin-top:12px;">
+                                <button class="action-btn" style="background:var(--yellow);">播放</button>
+                                <button class="action-btn" style="background:var(--green);">全屏</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-play-video-minimal">
+                        <div class="topbar topbar--web">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">播放页</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="box box--tall" style="display:flex; align-items:center; justify-content:center; height:190px; background:#f6f5ef;">极简视频媒体区域</div>
+                            <div class="box box--tall" style="margin-top:12px; padding:16px; font-size:18px; font-weight:bold; line-height:1.6; background:#fcfbf7;">限定礼盒发布会开场影片</div>
+                            <div class="actions" style="margin-top:12px;">
+                                <button class="action-btn">播放</button>
+                                <button class="action-btn">全屏</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-play-video-poster">
+                        <div class="topbar topbar--audio">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">播放页</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="box box--tall" style="display:flex; align-items:center; justify-content:center; height:210px; background:linear-gradient(180deg,#c75e53 0%,#843b35 100%); color:#fff;">海报视频媒体区域</div>
+                            <div class="box box--tall" style="margin-top:12px; padding:16px; font-size:20px; font-weight:bold; line-height:1.5; background:#f7e6d8;">城市纪念展映开场短片</div>
+                            <div class="actions" style="margin-top:12px;">
+                                <button class="action-btn" style="background:var(--red); color:#fff;">播放</button>
+                                <button class="action-btn">重播</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-play-missing">
+                        <div class="topbar topbar--web">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">播放页</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="state-card">
+                                <div class="file-title">链接不存在或已删除</div>
+                                <div class="state-desc">当前分享内容已被删除，或链接输入错误，请返回小程序重新生成新的播放页链接。</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-play-error">
+                        <div class="topbar topbar--web">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow">
+                                <div class="navspacer"></div>
+                                <div class="navtitle">播放页</div>
+                                <div class="navspacer"></div>
+                            </div>
+                        </div>
+                        <div class="page">
+                            <div class="state-card">
+                                <div class="file-title">加载失败</div>
+                                <div class="state-desc">分享详情请求失败，请检查网络后重试。</div>
+                                <button class="primary-btn" style="margin-top:14px;">重新加载</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const metaMap = {
+            home: {
+                title: "\u9996\u9875",
+                desc: "\u9996\u9875\u4fdd\u7559\u5e94\u7528\u4e13\u533a\u3001\u97f3\u4e50\u4e13\u533a\u3001\u7f51\u9875\u4e13\u533a\u4e09\u4e2a\u539f\u6709\u5165\u53e3\uff0c\u5e76\u65b0\u589e V3.0 \u7684\u672c\u5730\u97f3\u89c6\u9891\u3001\u6211\u7684\u6587\u4ef6\u4e0e\u6d4f\u89c8\u5668\u64ad\u653e\u9875\u94fe\u8def\u3002\u539f\u578b\u6309\u5c0f\u7a0b\u5e8f\u7aef\u4e0e\u7f51\u9875\u7aef\u5206\u5f00\u5c55\u793a\u3002"
+            },
+            "home-promise": {
+                title: "\u9996\u9875 / \u5f00\u53d1\u8005\u627f\u8bfa",
+                desc: "\u9996\u6b21\u4f7f\u7528\u65f6\u7684\u627f\u8bfa\u5f39\u7a97\uff0c\u5df2\u4e0e V3.0 \u672c\u5730\u97f3\u89c6\u9891\u4e0a\u4f20\u4e0e\u5220\u9664\u5f71\u54cd\u540c\u6b65\u3002"
+            },
+            "home-unsupported": {
+                title: "\u9996\u9875 / NFC \u4e0d\u652f\u6301",
+                desc: "\u5f53\u524d\u8bbe\u5907\u65e0\u6cd5\u4f7f\u7528 NFC \u5199\u5165\u65f6\u7684\u62e6\u622a\u72b6\u6001\u3002"
+            },
+            app: {
+                title: "\u5199\u5165\u5e94\u7528",
+                desc: "\u4fdd\u7559\u73b0\u6709\u5e94\u7528\u5199\u5165\u6d41\u7a0b\u4e0e\u9996\u9875\u5165\u53e3\u3002"
+            },
+            music: {
+                title: "\u5199\u5165\u97f3\u4e50",
+                desc: "\u4fdd\u7559\u73b0\u6709\u97f3\u4e50\u89e3\u6790\u4e0e NFC \u5199\u5165\u6d41\u7a0b\u3002"
+            },
+            web: {
+                title: "\u5199\u5165\u7f51\u9875",
+                desc: "\u4fdd\u7559\u73b0\u6709\u7f51\u5740\u9a8c\u8bc1\u4e0e NFC \u5199\u5165\u6d41\u7a0b\u3002"
+            },
+            "media-default": {
+                title: "\u5199\u5165\u672c\u5730\u97f3\u89c6\u9891 / \u521d\u59cb",
+                desc: "\u4ece\u5fae\u4fe1\u4f1a\u8bdd\u4e2d\u9009\u62e9\u97f3\u89c6\u9891\u6587\u4ef6\uff0c\u586b\u5199\u6807\u9898\u5e76\u9009\u62e9\u98ce\u683c\uff0c\u5f00\u59cb\u751f\u6210\u64ad\u653e\u9875\u94fe\u63a5\u3002"
+            },
+            "media-loading": {
+                title: "\u5199\u5165\u672c\u5730\u97f3\u89c6\u9891 / \u4e0a\u4f20\u4e0e\u751f\u6210\u94fe\u63a5\u4e2d",
+                desc: "\u5c55\u793a\u6587\u4ef6\u4e0a\u4f20\u3001\u521b\u5efa\u5206\u4eab\u8bb0\u5f55\u4e0e\u751f\u6210 /play \u94fe\u63a5\u65f6\u7684\u7b49\u5f85\u72b6\u6001\u3002"
+            },
+            "media-error": {
+                title: "\u5199\u5165\u672c\u5730\u97f3\u89c6\u9891 / \u9519\u8bef\u63d0\u793a",
+                desc: "\u5c55\u793a\u89c6\u9891\u8fc7\u5927\u3001\u6587\u4ef6\u6765\u6e90\u4e0d\u7b26\u5408\u8981\u6c42\u3001\u6807\u9898\u7f3a\u5931\u7b49\u9519\u8bef\u72b6\u6001\u3002"
+            },
+            "media-ready": {
+                title: "\u5199\u5165\u672c\u5730\u97f3\u89c6\u9891 / \u5df2\u5e26\u5165\u6587\u4ef6",
+                desc: "\u4ece\u6211\u7684\u6587\u4ef6\u5e26\u56de\u67d0\u6761\u97f3\u89c6\u9891\u8bb0\u5f55\u540e\uff0c\u53ef\u91cd\u65b0\u8bbe\u7f6e\u6807\u9898\u548c\u98ce\u683c\u5e76\u5199\u5165 NFC\u3002"
+            },
+            "files-loading": {
+                title: "\u6211\u7684\u6587\u4ef6 / \u52a0\u8f7d\u4e2d",
+                desc: "\u9875\u9762\u5148\u5c55\u793a\u52a0\u8f7d\u72b6\u6001\uff0c\u7b49\u5f85\u7cfb\u7edf\u8fd4\u56de\u5f53\u524d\u7528\u6237\u7684\u97f3\u89c6\u9891\u6587\u4ef6\u4e0e\u6700\u8fd1\u751f\u6210\u7684\u5206\u4eab\u94fe\u63a5\u3002"
+            },
+            "files-empty": {
+                title: "\u6211\u7684\u6587\u4ef6 / \u7a7a\u6001",
+                desc: "\u6682\u65e0\u4e0a\u4f20\u6587\u4ef6\u65f6\uff0c\u5f15\u5bfc\u7528\u6237\u56de\u5230 NFC \u9875\u4ece\u5fae\u4fe1\u4f1a\u8bdd\u9009\u62e9\u97f3\u89c6\u9891\u6587\u4ef6\u3002"
+            },
+            "files-list": {
+                title: "\u6211\u7684\u6587\u4ef6 / \u5217\u8868",
+                desc: "\u5c55\u793a\u97f3\u9891\u3001\u89c6\u9891\u6587\u4ef6\u4e0e\u5bf9\u5e94\u7684\u64ad\u653e\u9875\u94fe\u63a5\uff0c\u652f\u6301\u53bb\u5199\u5165\u4e0e\u5220\u9664\u7ba1\u7406\u3002"
+            },
+            "files-delete": {
+                title: "\u6211\u7684\u6587\u4ef6 / \u5220\u9664\u786e\u8ba4",
+                desc: "\u5220\u9664\u524d\u8fdb\u884c\u4e8c\u6b21\u786e\u8ba4\uff0c\u5e76\u660e\u786e\u6240\u6709\u5df2\u5199\u5165 NFC \u7684\u76f8\u5173\u94fe\u63a5\u90fd\u4f1a\u5931\u6548\u3002"
+            },
+            "scan-waiting": {
+                title: "NFC / \u7b49\u5f85\u8d34\u5361",
+                desc: "\u5df2\u751f\u6210 /play \u64ad\u653e\u9875\u94fe\u63a5\uff0c\u7b49\u5f85\u7528\u6237\u5c06 NFC \u6807\u7b7e\u8d34\u8fd1\u624b\u673a\u3002"
+            },
+            "scan-success": {
+                title: "NFC / \u5199\u5165\u6210\u529f",
+                desc: "\u672c\u5730\u97f3\u89c6\u9891\u7684\u64ad\u653e\u9875\u94fe\u63a5\u5199\u5165\u6210\u529f\u540e\uff0c\u652f\u6301\u7ee7\u7eed\u5199\u5165\u6216\u56de\u5230\u6211\u7684\u6587\u4ef6\u3002"
+            },
+            "play-loading": {
+                title: "\u64ad\u653e\u9875 / \u52a0\u8f7d\u4e2d",
+                desc: "\u6d4f\u89c8\u5668\u6253\u5f00 /play \u540e\uff0c\u6b63\u5728\u8bf7\u6c42\u5206\u4eab\u8be6\u60c5\u5e76\u51c6\u5907\u6e32\u67d3\u64ad\u653e\u5668\u3002"
+            },
+            "play-audio-pixel": {
+                title: "\u97f3\u9891\u64ad\u653e\u9875 / Pixel",
+                desc: "\u6309 shareId \u8bf7\u6c42\u5206\u4eab\u8be6\u60c5\u540e\uff0c\u4ee5 Pixel \u8bbe\u8ba1\u98ce\u683c\u5c55\u793a\u97f3\u9891\u7684\u5a92\u4f53\u533a\u57df\u3001\u6807\u9898\u548c\u64ad\u653e\u64cd\u4f5c\u533a\u3002"
+            },
+            "play-audio-minimal": {
+                title: "\u97f3\u9891\u64ad\u653e\u9875 / Minimal",
+                desc: "\u4ee5 Minimal \u98ce\u683c\u5c55\u793a\u97f3\u9891\u64ad\u653e\u9875\uff0c\u5e76\u9a8c\u8bc1\u957f\u6807\u9898\u6362\u884c\u540e\u4ecd\u53ea\u4fdd\u7559\u5a92\u4f53\u533a\u57df\u3001\u6807\u9898\u3001\u64ad\u653e\u533a\u57df\u4e09\u5757\u5185\u5bb9\u3002"
+            },
+            "play-audio-poster": {
+                title: "\u97f3\u9891\u64ad\u653e\u9875 / Poster",
+                desc: "\u4ee5 Poster \u98ce\u683c\u5c55\u793a\u97f3\u9891\u64ad\u653e\u9875\uff0c\u7528\u66f4\u5f3a\u7684\u5c55\u793a\u611f\u5448\u73b0\u6807\u9898\u4e0e\u64ad\u653e\u533a\u57df\u3002"
+            },
+            "play-video-pixel": {
+                title: "\u89c6\u9891\u64ad\u653e\u9875 / Pixel",
+                desc: "\u4ee5 Pixel \u98ce\u683c\u5c55\u793a\u89c6\u9891\u64ad\u653e\u9875\uff0c\u64ad\u653e\u533a\u57df\u63d0\u4f9b\u64ad\u653e\u4e0e\u5168\u5c4f\u7b49\u89c6\u9891\u64cd\u4f5c\u3002"
+            },
+            "play-video-minimal": {
+                title: "\u89c6\u9891\u64ad\u653e\u9875 / Minimal",
+                desc: "\u4ee5 Minimal \u98ce\u683c\u5c55\u793a\u89c6\u9891\u64ad\u653e\u9875\uff0c\u4fdd\u7559\u5e72\u51c0\u7684\u5a92\u4f53\u533a\u57df\u3001\u6807\u9898\u548c\u64ad\u653e\u533a\u57df\u3002"
+            },
+            "play-video-poster": {
+                title: "\u89c6\u9891\u64ad\u653e\u9875 / Poster",
+                desc: "\u4ee5 Poster \u98ce\u683c\u5c55\u793a\u89c6\u9891\u64ad\u653e\u9875\uff0c\u5f3a\u8c03\u6d77\u62a5\u611f\u7684\u5a92\u4f53\u4e3b\u89c6\u89c9\u548c\u91cd\u64ad\u64cd\u4f5c\u3002"
+            },
+            "play-missing": {
+                title: "\u64ad\u653e\u9875 / \u94fe\u63a5\u4e0d\u5b58\u5728",
+                desc: "\u6587\u4ef6\u6216\u5173\u8054\u5206\u4eab\u5df2\u88ab\u5220\u9664\u65f6\uff0c\u64ad\u653e\u9875\u63d0\u793a\u94fe\u63a5\u4e0d\u5b58\u5728\u6216\u5df2\u5220\u9664\u3002"
+            },
+            "play-error": {
+                title: "\u64ad\u653e\u9875 / \u52a0\u8f7d\u5931\u8d25",
+                desc: "\u8bf7\u6c42\u5206\u4eab\u8be6\u60c5\u5931\u8d25\u65f6\uff0c\u63d0\u4f9b\u91cd\u8bd5\u5165\u53e3\u548c\u9519\u8bef\u63d0\u793a\u3002"
+            }
+        };
+
+        const buttons = Array.from(document.querySelectorAll(".nav-btn"));
+        const screens = Array.from(document.querySelectorAll(".screen"));
+        const surfaceNode = document.getElementById("screen-surface");
+        const titleNode = document.getElementById("screen-title");
+        const descNode = document.getElementById("screen-desc");
+
+        function activateScreen(key) {
+            buttons.forEach((button) => {
+                button.classList.toggle("is-active", button.dataset.target === key);
+            });
+
+            screens.forEach((screen) => {
+                screen.classList.toggle("is-active", screen.id === `screen-${key}`);
+            });
+
+            const meta = metaMap[key];
+            if (meta) {
+                const isWebSurface = key.startsWith("play-");
+                surfaceNode.textContent = isWebSurface
+                    ? "当前端侧：网页端（浏览器播放页）"
+                    : "当前端侧：小程序端（NFC卡片助手）";
+                titleNode.textContent = meta.title;
+                descNode.textContent = meta.desc;
+            }
+        }
+
+        buttons.forEach((button) => {
+            button.addEventListener("click", () => activateScreen(button.dataset.target));
+        });
+    </script>
+</body>
+</html>
+

@@ -1,12 +1,8 @@
-# 微信小程序编译产物
+# 微信小程序构建产物
 /miniprogram_npm/
 /dist/
-*.wxss
-*.wxml
-*.js
 
-# 微信开发者工具配置（包含 appid 等敏感信息）
-project.config.json
+# 本地私有配置
 project.private.config.json
 
 # IDE 配置
@@ -26,19 +22,11 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
-# 云开发相关（可选）
-/cloudfunctions/
-/cloudfunctionTemplate/
-
-# 图片资源（可选，不影响核心代码理解）
-/miniprogram/images/
-
-# 第三方依赖（如果有）
+# 本地依赖
 /node_modules/
-/package-lock.json
-/yarn.lock
+/play-web-service/node_modules/
 
-# 其他
+# 临时文件
 *.bak
 *.tmp
 *.temp

@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFC卡片助手 - V3.0 网页端播放页原型</title>
+    <style>
+        :root {
+            --scene: #88aa67;
+            --paper: #f4edd6;
+            --paper-2: #efe5c6;
+            --ink: #2d2d2d;
+            --muted: #626262;
+            --yellow: #efd86c;
+            --green: #b8d98b;
+            --red: #e86a58;
+            --shadow: 4px 4px 0 rgba(0, 0, 0, 0.16);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Courier New", Courier, monospace;
+            background:
+                radial-gradient(circle at 20px 20px, rgba(255,255,255,0.12) 0 2px, transparent 2px),
+                linear-gradient(180deg, #93b673 0%, #7e9f5f 100%);
+            background-size: 36px 36px, auto;
+            color: var(--ink);
+            padding: 24px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 280px minmax(360px, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .panel {
+            border: 4px solid var(--ink);
+            background: var(--paper);
+            box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.18);
+        }
+
+        .sidebar {
+            padding: 18px;
+            position: sticky;
+            top: 24px;
+        }
+
+        .sidebar h1 {
+            margin: 0 0 10px;
+            font-size: 18px;
+        }
+
+        .sidebar p {
+            margin: 0 0 14px;
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--muted);
+        }
+
+        .group {
+            margin-top: 16px;
+        }
+
+        .group-title {
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        .nav-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            border: 3px solid var(--ink);
+            background: var(--paper-2);
+            box-shadow: var(--shadow);
+            min-height: 40px;
+            padding: 8px 10px;
+            text-align: left;
+            font: inherit;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .nav-btn.is-active {
+            background: var(--yellow);
+        }
+
+        .stage {
+            padding: 18px;
+        }
+
+        .stage-surface {
+            display: inline-flex;
+            align-items: center;
+            min-height: 28px;
+            padding: 0 10px;
+            margin-bottom: 8px;
+            border: 3px solid var(--ink);
+            background: var(--paper-2);
+            box-shadow: var(--shadow);
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .stage h2 {
+            margin: 0 0 6px;
+            font-size: 18px;
+        }
+
+        .stage p {
+            margin: 0 0 16px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.6;
+            max-width: 560px;
+        }
+
+        .phone {
+            width: 360px;
+            margin: 0 auto;
+            padding: 10px;
+            border: 5px solid var(--ink);
+            border-radius: 26px;
+            background: #24303d;
+            box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.22);
+        }
+
+        .phone-screen {
+            position: relative;
+            height: 712px;
+            border: 4px solid #121821;
+            border-radius: 18px;
+            overflow: hidden;
+            background: var(--paper);
+        }
+
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: none;
+            background: var(--paper);
+        }
+
+        .screen.is-active {
+            display: block;
+        }
+
+        .topbar {
+            padding: 12px 16px 10px;
+            border-bottom: 4px solid var(--ink);
+            color: #fff;
+        }
+
+        .topbar--pixel { background: linear-gradient(180deg, #226c60 0%, #184e45 100%); }
+        .topbar--minimal { background: linear-gradient(180deg, #59606d 0%, #3f444d 100%); }
+        .topbar--poster { background: linear-gradient(180deg, #c96559 0%, #92453e 100%); }
+        .topbar--state { background: linear-gradient(180deg, #334b93 0%, #26386f 100%); }
+
+        .status {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .navrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .navtitle {
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .page {
+            height: calc(100% - 82px);
+            padding: 18px 16px 24px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .box, .state-card {
+            border: 3px solid var(--ink);
+            box-shadow: var(--shadow);
+            background: var(--paper-2);
+        }
+
+        .media-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            padding: 16px;
+        }
+
+        .title-box {
+            padding: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            line-height: 1.55;
+            background: #f8f3e2;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .control-btn {
+            flex: 1 1 120px;
+            min-height: 42px;
+            border: 3px solid var(--ink);
+            background: var(--paper);
+            box-shadow: var(--shadow);
+            font: inherit;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .state-card {
+            padding: 18px;
+            background: #f8f3e2;
+        }
+
+        .state-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .state-desc {
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--muted);
+        }
+
+        .state-action {
+            margin-top: 16px;
+            width: 100%;
+            min-height: 44px;
+            border: 3px solid var(--ink);
+            background: var(--green);
+            box-shadow: var(--shadow);
+            font: inherit;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .media-pixel { background: #f3c96a; }
+        .media-minimal { background: #faf8f1; }
+        .media-poster { background: linear-gradient(180deg, #d96e63 0%, #8f3f3a 100%); color: #fff; }
+
+        .title-minimal { background: #fcfbf7; }
+        .title-poster { background: #f8e7d4; }
+
+        .btn-pixel { background: var(--yellow); }
+        .btn-green { background: var(--green); }
+        .btn-red { background: var(--red); color: #fff; }
+
+        @media (max-width: 980px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { position: static; }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="panel sidebar">
+            <h1>NFC卡片助手 · V3.0</h1>
+            <p>这份原型只展示网页端播放页。音频、视频与状态页独立拆开，便于单独推敲风格、标题和播放区布局。</p>
+
+            <div class="group">
+                <div class="group-title">音频播放页</div>
+                <div class="nav-list">
+                    <button class="nav-btn is-active" data-target="audio-pixel">音频 / Pixel</button>
+                    <button class="nav-btn" data-target="audio-minimal">音频 / Minimal</button>
+                    <button class="nav-btn" data-target="audio-poster">音频 / Poster</button>
+                </div>
+            </div>
+
+            <div class="group">
+                <div class="group-title">视频播放页</div>
+                <div class="nav-list">
+                    <button class="nav-btn" data-target="video-pixel">视频 / Pixel</button>
+                    <button class="nav-btn" data-target="video-minimal">视频 / Minimal</button>
+                    <button class="nav-btn" data-target="video-poster">视频 / Poster</button>
+                </div>
+            </div>
+
+            <div class="group">
+                <div class="group-title">状态页</div>
+                <div class="nav-list">
+                    <button class="nav-btn" data-target="loading">加载中</button>
+                    <button class="nav-btn" data-target="missing">链接不存在或已删除</button>
+                    <button class="nav-btn" data-target="error">加载失败</button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="panel stage">
+            <div class="stage-surface">当前端侧：网页端（浏览器播放页）</div>
+            <h2 id="screen-title">音频播放页 / Pixel</h2>
+            <p id="screen-desc">以 Pixel 风格展示音频播放页，只保留媒体区域、标题、播放区域三块内容。</p>
+
+            <div class="phone">
+                <div class="phone-screen">
+                    <section class="screen is-active" id="screen-audio-pixel">
+                        <div class="topbar topbar--pixel">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow"><div class="navtitle">播放页</div></div>
+                        </div>
+                        <div class="page">
+                            <div class="box media-box media-pixel">像素音频媒体区域</div>
+                            <div class="box title-box">给未来的自己留一段语音</div>
+                            <div class="controls">
+                                <button class="control-btn btn-pixel">播放</button>
+                                <button class="control-btn btn-green">暂停</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-audio-minimal">
+                        <div class="topbar topbar--minimal">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow"><div class="navtitle">播放页</div></div>
+                        </div>
+                        <div class="page">
+                            <div class="box media-box media-minimal">极简音频媒体区域</div>
+                            <div class="box title-box title-minimal">深夜电台里的晚安故事</div>
+                            <div class="controls">
+                                <button class="control-btn">播放</button>
+                                <button class="control-btn">暂停</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-audio-poster">
+                        <div class="topbar topbar--poster">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow"><div class="navtitle">播放页</div></div>
+                        </div>
+                        <div class="page">
+                            <div class="box media-box media-poster">海报音频媒体区域</div>
+                            <div class="box title-box title-poster">周年纪念语音留言</div>
+                            <div class="controls">
+                                <button class="control-btn btn-red">播放</button>
+                                <button class="control-btn">暂停</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-video-pixel">
+                        <div class="topbar topbar--pixel">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow"><div class="navtitle">播放页</div></div>
+                        </div>
+                        <div class="page">
+                            <div class="box media-box media-pixel">像素视频媒体区域</div>
+                            <div class="box title-box">春日活动回顾与现场记录</div>
+                            <div class="controls">
+                                <button class="control-btn btn-pixel">播放</button>
+                                <button class="control-btn btn-green">全屏</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-video-minimal">
+                        <div class="topbar topbar--minimal">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow"><div class="navtitle">播放页</div></div>
+                        </div>
+                        <div class="page">
+                            <div class="box media-box media-minimal">极简视频媒体区域</div>
+                            <div class="box title-box title-minimal">限定礼盒发布会开场影片</div>
+                            <div class="controls">
+                                <button class="control-btn">播放</button>
+                                <button class="control-btn">全屏</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-video-poster">
+                        <div class="topbar topbar--poster">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow"><div class="navtitle">播放页</div></div>
+                        </div>
+                        <div class="page">
+                            <div class="box media-box media-poster">海报视频媒体区域</div>
+                            <div class="box title-box title-poster">城市纪念展映开场短片</div>
+                            <div class="controls">
+                                <button class="control-btn btn-red">播放</button>
+                                <button class="control-btn">重播</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-loading">
+                        <div class="topbar topbar--state">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow"><div class="navtitle">播放页</div></div>
+                        </div>
+                        <div class="page">
+                            <div class="state-card">
+                                <div class="state-title">正在加载内容</div>
+                                <div class="state-desc">页面正在请求分享详情，并准备渲染对应的音频或视频播放器。</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-missing">
+                        <div class="topbar topbar--state">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow"><div class="navtitle">播放页</div></div>
+                        </div>
+                        <div class="page">
+                            <div class="state-card">
+                                <div class="state-title">链接不存在或已删除</div>
+                                <div class="state-desc">当前分享内容已被删除，或链接输入错误，请返回小程序重新生成新的播放页链接。</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="screen" id="screen-error">
+                        <div class="topbar topbar--state">
+                            <div class="status"><span>9:41</span><span>5G · 86%</span></div>
+                            <div class="navrow"><div class="navtitle">播放页</div></div>
+                        </div>
+                        <div class="page">
+                            <div class="state-card">
+                                <div class="state-title">加载失败</div>
+                                <div class="state-desc">分享详情请求失败，请检查网络后重试。</div>
+                                <button class="state-action">重新加载</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const metaMap = {
+            "audio-pixel": {
+                title: "音频播放页 / Pixel",
+                desc: "以 Pixel 风格展示音频播放页，只保留媒体区域、标题、播放区域三块内容。"
+            },
+            "audio-minimal": {
+                title: "音频播放页 / Minimal",
+                desc: "以 Minimal 风格展示音频播放页，重点验证长标题换行后依然保持简洁布局。"
+            },
+            "audio-poster": {
+                title: "音频播放页 / Poster",
+                desc: "以 Poster 风格展示音频播放页，强调更强的展示感和标题表现。"
+            },
+            "video-pixel": {
+                title: "视频播放页 / Pixel",
+                desc: "以 Pixel 风格展示视频播放页，播放区域提供播放和全屏操作。"
+            },
+            "video-minimal": {
+                title: "视频播放页 / Minimal",
+                desc: "以 Minimal 风格展示视频播放页，保持媒体区域、标题、播放区域的干净层级。"
+            },
+            "video-poster": {
+                title: "视频播放页 / Poster",
+                desc: "以 Poster 风格展示视频播放页，突出海报感媒体主视觉和重播操作。"
+            },
+            loading: {
+                title: "播放页 / 加载中",
+                desc: "浏览器打开 /play 后，页面先请求分享详情，再根据返回结果渲染对应风格。"
+            },
+            missing: {
+                title: "播放页 / 链接不存在",
+                desc: "文件或关联分享已被删除时，播放页提示链接不存在或已删除。"
+            },
+            error: {
+                title: "播放页 / 加载失败",
+                desc: "分享详情请求失败时，提供重试入口和错误提示。"
+            }
+        };
+
+        const buttons = Array.from(document.querySelectorAll(".nav-btn"));
+        const screens = Array.from(document.querySelectorAll(".screen"));
+        const titleNode = document.getElementById("screen-title");
+        const descNode = document.getElementById("screen-desc");
+
+        function activateScreen(key) {
+            buttons.forEach((button) => {
+                button.classList.toggle("is-active", button.dataset.target === key);
+            });
+
+            screens.forEach((screen) => {
+                screen.classList.toggle("is-active", screen.id === `screen-${key}`);
+            });
+
+            const meta = metaMap[key];
+            if (meta) {
+                titleNode.textContent = meta.title;
+                descNode.textContent = meta.desc;
+            }
+        }
+
+        buttons.forEach((button) => {
+            button.addEventListener("click", () => activateScreen(button.dataset.target));
+        });
+    </script>
+</body>
+</html>

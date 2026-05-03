@@ -12,11 +12,11 @@
             bindinput="handleShareUrlInput"
         ></textarea>
     </view>
-    
+
     <view class="btn-wrap">
         <button class="btn" bindtap="handlePasteTap">粘贴</button>
     </view>
-    
+
     <button class="primary-btn" disabled="{{!canSubmit || writeStatus !== 'input'}}" bindtap="handleOpenScanDialog">
         <text wx:if="{{writeStatus === 'input'}}">写入 NFC 标签</text>
         <text wx:elif="{{writeStatus === 'parsing'}}">解析中...</text>
