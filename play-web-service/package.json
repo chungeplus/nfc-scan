@@ -5,9 +5,10 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx watch src/server.ts",
-    "lint": "eslint src eslint.config.mjs",
-    "lint:fix": "eslint src eslint.config.mjs --fix",
-    "start": "node ./dist/server.js"
+    "lint": "eslint --config eslint.config.mjs \"src/**/*.ts\"",
+    "lint:fix": "eslint --config eslint.config.mjs \"src/**/*.ts\" --fix",
+    "start": "node ./dist/server.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@cloudbase/node-sdk": "^3.18.1",
