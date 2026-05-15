@@ -1,0 +1,26 @@
+{
+  "name": "nfc-scan",
+  "private": true,
+  "scripts": {
+    "lint": "npm run lint:code && npm run lint:styles",
+    "lint:code": "eslint \"miniprogram/**/*.{js,ts}\" \"cloudfunctions/**/*.ts\" \"play-web-service/src/**/*.ts\" \"tools/**/*.mjs\"",
+    "lint:styles": "stylelint \"miniprogram/**/*.scss\"",
+    "typecheck": "npm run typecheck:miniprogram && npm run typecheck:play-web-service && npm run typecheck:cloudfunctions",
+    "typecheck:miniprogram": "tsc -p miniprogram/tsconfig.json --noEmit",
+    "typecheck:play-web-service": "npm --prefix play-web-service run typecheck",
+    "typecheck:cloudfunctions": "npm --prefix cloudfunctions/media-share-service run typecheck",
+    "build": "npm run build:cloudfunctions && npm run build:play-web-service",
+    "build:cloudfunctions": "npm --prefix cloudfunctions/media-share-service run build",
+    "build:play-web-service": "npm --prefix play-web-service run build",
+    "verify": "node tools/verify-modernization-foundation.mjs && npm run lint && npm run typecheck && npm run build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.0",
+    "globals": "^17.6.0",
+    "stylelint": "^17.11.1",
+    "stylelint-config-standard-scss": "^17.0.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.3"
+  }
+}
