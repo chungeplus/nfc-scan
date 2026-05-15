@@ -58,6 +58,10 @@ function buildPickerWifiList(currentWifi = null, nearbyWifiList = [], activeSsid
     }));
 }
 
+function isDevtoolsRuntime(runtime = {}) {
+    return String(runtime.platform || '').toLowerCase() === 'devtools';
+}
+
 Page({
     data: {
         navHeight: 64,
@@ -76,7 +80,6 @@ Page({
         pickerAction: '',
         formMessage: '',
         wifiRuntime: null,
-        pageHint: '仅限 WPA2-Personal',
         pickerVisible: false,
     },
 
@@ -127,7 +130,8 @@ Page({
         } catch (error) {
             this.setData({
                 loadingCurrentWifi: false,
-                currentWifiMessage: shouldShowConnectedWifiError(error, this.data.wifiRuntime)
+                currentWifiMessage: !isDevtoolsRuntime(this.data.wifiRuntime)
+                    && shouldShowConnectedWifiError(error, this.data.wifiRuntime)
                     ? describeWifiError(error, this.data.wifiRuntime, { context: 'current' })
                     : '',
             }, () => {
@@ -170,10 +174,13 @@ Page({
             });
         } catch (error) {
             const nextScanIssue = readWifiScanIssue(this.data.wifiRuntime);
+            const pickerMessage = isDevtoolsRuntime(this.data.wifiRuntime)
+                ? ''
+                : describeWifiError(error, this.data.wifiRuntime, { context: 'scan' });
 
             this.setData({
                 scanningNearbyWifi: false,
-                pickerMessage: describeWifiError(error, this.data.wifiRuntime, { context: 'scan' }),
+                pickerMessage,
                 pickerAction: nextScanIssue && nextScanIssue.action ? nextScanIssue.action : '',
             });
         }

@@ -7,21 +7,6 @@
     background: $color-paper;
 }
 
-.support-chip {
-    display: inline-flex;
-    align-items: center;
-    height: 28px;
-    padding: 0 12px;
-    margin-bottom: 14px;
-    background: rgba(111, 135, 212, 0.22);
-    border: $border-width-sm solid $color-ink;
-    box-shadow: $shadow-sm;
-    font-size: 10px;
-    font-weight: bold;
-    color: $color-blue-deep;
-    letter-spacing: 1rpx;
-}
-
 .field {
     margin-bottom: 18px;
 }

@@ -1,8 +1,6 @@
 <pixel-navbar title="写入 WLAN" theme="web" showBack="{{true}}" showHome="{{false}}" />
 
 <view class="write-wifi" style="min-height: calc(100vh - {{navHeight}}px);">
-    <view class="support-chip">{{pageHint}}</view>
-
     <view class="field">
         <view class="label">WLAN</view>
         <view class="box box--select" bindtap="handleOpenPicker">
@@ -16,8 +14,6 @@
             </view>
             <view class="box__arrow {{pickerVisible ? 'box__arrow--open' : ''}}">▶</view>
         </view>
-        <view class="hint" wx:if="{{loadingCurrentWifi}}">读取当前 WLAN...</view>
-        <view class="field__error" wx:elif="{{currentWifiMessage && !selectedSsid}}">{{currentWifiMessage}}</view>
     </view>
 
     <view class="field">
