@@ -61,7 +61,7 @@ Page({
             this.setData({
                 loadingCurrentWifi: false,
                 currentWifiMessage: shouldShowConnectedWifiError(error, this.data.wifiRuntime)
-                    ? describeWifiError(error, this.data.wifiRuntime)
+                    ? describeWifiError(error, this.data.wifiRuntime, { context: 'current' })
                     : '',
             });
         }
@@ -86,7 +86,7 @@ Page({
         } catch (error) {
             this.setData({
                 scanningNearbyWifi: false,
-                nearbyWifiMessage: describeWifiError(error, this.data.wifiRuntime),
+                nearbyWifiMessage: describeWifiError(error, this.data.wifiRuntime, { context: 'scan' }),
             });
         }
     },

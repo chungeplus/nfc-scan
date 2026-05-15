@@ -86,8 +86,28 @@ function inferWifiErrorCode(error = {}) {
     return null;
 }
 
-function describeWifiError(error = {}, runtime = {}) {
+function getInternalWifiErrorKind(error = {}) {
+    const errMsg = getErrMsg(error);
+
+    if (errMsg.includes('wifi not turned on')) {
+        return 'wifi_off';
+    }
+    if (errMsg.includes('gps not turned on')) {
+        return 'gps_off';
+    }
+    if (errMsg.includes('user denied')) {
+        return 'permission_denied';
+    }
+    if (errMsg.includes('weapp in background')) {
+        return 'background';
+    }
+
+    return '';
+}
+
+function describeWifiError(error = {}, runtime = {}, options = {}) {
     const errCode = inferWifiErrorCode(error);
+    const context = options.context || 'scan';
 
     switch (errCode) {
     case 12000:
@@ -104,7 +124,7 @@ function describeWifiError(error = {}, runtime = {}) {
     case 12007:
         return '扫描附近 WLAN 需要位置权限，请在微信设置中允许。';
     case 12010:
-        return describeInternalWifiError(error, runtime);
+        return describeInternalWifiError(error, runtime, context);
     case 12011:
         return '请回到前台后重试，后台状态下无法读取 WLAN 列表。';
     case 12013:
@@ -115,29 +135,38 @@ function describeWifiError(error = {}, runtime = {}) {
         if (isDevtoolsRuntime(runtime)) {
             return '开发者工具可能读不到真实 WLAN，请用安卓真机预览。';
         }
-        return '未读取到 WLAN 信息，可尝试扫描附近网络。';
+
+        if (context === 'current') {
+            return '';
+        }
+
+        return '扫描失败，请确认已开启 Wi-Fi、定位，并允许微信获取位置信息。';
     }
 }
 
-function describeInternalWifiError(error = {}, runtime = {}) {
-    const errMsg = getErrMsg(error);
+function describeInternalWifiError(error = {}, runtime = {}, context = 'scan') {
+    const errorKind = getInternalWifiErrorKind(error);
 
-    if (errMsg.includes('wifi not turned on')) {
+    if (errorKind === 'wifi_off') {
         return '请先打开手机 Wi-Fi 开关后再重试。';
     }
-    if (errMsg.includes('gps not turned on')) {
+    if (errorKind === 'gps_off') {
         return '请先打开手机定位/GPS 开关后再扫描附近 WLAN。';
     }
-    if (errMsg.includes('user denied')) {
+    if (errorKind === 'permission_denied') {
         return '扫描附近 WLAN 需要位置权限，请在微信设置中允许。';
     }
-    if (errMsg.includes('weapp in background')) {
+    if (errorKind === 'background') {
         return '请回到前台后重试，后台状态下无法读取 WLAN 列表。';
     }
     if (isDevtoolsRuntime(runtime)) {
         return '开发者工具可能读不到真实 WLAN，请用安卓真机预览。';
     }
-    return '系统返回了 WLAN 内部错误，请稍后重试。';
+    if (context === 'current') {
+        return '';
+    }
+
+    return '扫描失败，请确认已开启 Wi-Fi、定位，并允许微信获取位置信息。';
 }
 
 function shouldShowConnectedWifiError(error = {}, runtime = {}) {
@@ -147,7 +176,15 @@ function shouldShowConnectedWifiError(error = {}, runtime = {}) {
         return false;
     }
 
-    return [12001, 12005, 12006, 12007, 12010, 12011, 12013, 12014].includes(errCode);
+    if ([12001, 12005, 12006, 12007, 12011, 12013, 12014].includes(errCode)) {
+        return true;
+    }
+
+    if (errCode === 12010) {
+        return Boolean(getInternalWifiErrorKind(error));
+    }
+
+    return false;
 }
 
 function initWifiModule() {
