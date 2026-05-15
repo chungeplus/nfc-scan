@@ -6,6 +6,7 @@
     "ignoreDeprecations": "6.0",
     "lib": ["ES2020"],
     "noEmit": true,
+    "types": ["miniprogram-api-typings"],
     "allowJs": true,
     "checkJs": false
   },

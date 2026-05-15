@@ -9,7 +9,57 @@ import {
     VIDEO_MAX_SIZE,
 } from './cloud-config';
 
-function getFileExtension(fileName = '') {
+type MediaType = 'audio' | 'video' | '';
+
+export interface MediaLikeRecord {
+    _id?: string;
+    createdAt?: number;
+    fileExt?: string;
+    fileName?: string;
+    fileSize?: number;
+    id?: string;
+    latestPlayUrl?: string;
+    latestShareId?: string;
+    latestShareTitle?: string;
+    latestThemeKey?: string;
+    mediaType?: string;
+    name?: string;
+    shareCount?: number;
+    size?: number;
+    [key: string]: unknown;
+}
+
+export interface NormalizedMediaRecord extends MediaLikeRecord {
+    fileExt: string;
+    fileName: string;
+    fileSize: number;
+    fileSizeText: string;
+    id: string;
+    latestPlayUrl: string;
+    latestShareId: string;
+    latestShareTitle: string;
+    latestThemeKey: string;
+    mediaType: 'audio' | 'video';
+    mediaTypeLabel: string;
+    shareCount: number;
+    uploadedAtText: string;
+}
+
+export interface ValidateMediaFileFailure {
+    message: string;
+    valid: false;
+}
+
+export interface ValidateMediaFileSuccess {
+    extension: string;
+    mediaType: MediaType;
+    sizeLimit: number;
+    valid: true;
+}
+
+export type ValidateMediaFileResult = ValidateMediaFileFailure | ValidateMediaFileSuccess;
+
+export function getFileExtension(fileName = ''): string {
     const normalized = String(fileName || '').trim();
     const lastDotIndex = normalized.lastIndexOf('.');
 
@@ -20,7 +70,7 @@ function getFileExtension(fileName = '') {
     return normalized.slice(lastDotIndex + 1).toLowerCase();
 }
 
-function getMediaTypeByExtension(extension = '') {
+export function getMediaTypeByExtension(extension = ''): MediaType {
     const normalized = String(extension || '').toLowerCase();
 
     if (AUDIO_ACCEPT_EXTENSIONS.includes(normalized)) {
@@ -34,11 +84,11 @@ function getMediaTypeByExtension(extension = '') {
     return '';
 }
 
-function getMediaTypeLabel(mediaType = '') {
+export function getMediaTypeLabel(mediaType = ''): string {
     return mediaType === 'video' ? '视频' : '音频';
 }
 
-function formatFileSize(size = 0) {
+export function formatFileSize(size = 0): string {
     const bytes = Number(size) || 0;
 
     if (bytes >= 1024 * 1024) {
@@ -52,7 +102,7 @@ function formatFileSize(size = 0) {
     return `${bytes}B`;
 }
 
-function formatUploadTime(timestamp) {
+export function formatUploadTime(timestamp: number | string | undefined): string {
     const time = Number(timestamp);
 
     if (!time) {
@@ -69,20 +119,20 @@ function formatUploadTime(timestamp) {
     return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
 
-function trimPlayBaseUrl() {
+function trimPlayBaseUrl(): string {
     return String(PLAY_BASE_URL || '').trim().replace(/\/+$/, '');
 }
 
-function hasConfiguredPlayBaseUrl() {
+export function hasConfiguredPlayBaseUrl(): boolean {
     return Boolean(trimPlayBaseUrl());
 }
 
-function normalizeThemeKey(themeKey = '') {
+export function normalizeThemeKey(themeKey = ''): string {
     const normalized = String(themeKey || '').toLowerCase();
     return THEME_KEYS.includes(normalized) ? normalized : DEFAULT_THEME_KEY;
 }
 
-function buildPlayPageUrl(shareId = '', themeKey = '') {
+export function buildPlayPageUrl(shareId = '', themeKey = ''): string {
     const baseUrl = trimPlayBaseUrl();
     const normalizedShareId = String(shareId || '').trim();
     const normalizedThemeKey = normalizeThemeKey(themeKey);
@@ -94,19 +144,19 @@ function buildPlayPageUrl(shareId = '', themeKey = '') {
     return `${baseUrl}/play/${encodeURIComponent(normalizedThemeKey)}/${encodeURIComponent(normalizedShareId)}`;
 }
 
-function getSuggestedTitle(fileName = '') {
+export function getSuggestedTitle(fileName = ''): string {
     const normalized = String(fileName || '').trim();
     const withoutExtension = normalized.replace(/\.[^./\\]+$/, '').trim();
     return withoutExtension || '未命名内容';
 }
 
-function normalizeMediaRecord(record = {}) {
-    const id = record.id || record._id || '';
-    const fileName = record.fileName || record.name || '未命名文件';
+export function normalizeMediaRecord(record: MediaLikeRecord = {}): NormalizedMediaRecord {
+    const id = String(record.id || record._id || '');
+    const fileName = String(record.fileName || record.name || '未命名文件');
     const fileSize = Number(record.fileSize || record.size || 0);
     const createdAt = Number(record.createdAt || 0);
-    const fileExt = (record.fileExt || getFileExtension(fileName) || '').toLowerCase();
-    const mediaType = record.mediaType || getMediaTypeByExtension(fileExt) || 'audio';
+    const fileExt = String(record.fileExt || getFileExtension(fileName) || '').toLowerCase();
+    const mediaType = (record.mediaType || getMediaTypeByExtension(fileExt) || 'audio') as 'audio' | 'video';
     const latestShareId = String(record.latestShareId || '').trim();
     const shareCount = Number(record.shareCount || 0);
 
@@ -122,18 +172,18 @@ function normalizeMediaRecord(record = {}) {
         uploadedAtText: formatUploadTime(createdAt),
         shareCount,
         latestShareId,
-        latestShareTitle: record.latestShareTitle || '',
-        latestThemeKey: normalizeThemeKey(record.latestThemeKey),
-        latestPlayUrl: record.latestPlayUrl || buildPlayPageUrl(latestShareId, record.latestThemeKey),
+        latestShareTitle: String(record.latestShareTitle || ''),
+        latestThemeKey: normalizeThemeKey(String(record.latestThemeKey || '')),
+        latestPlayUrl: String(record.latestPlayUrl || buildPlayPageUrl(latestShareId, String(record.latestThemeKey || ''))),
     };
 }
 
-function sumMediaFileSize(records = []) {
+export function sumMediaFileSize(records: MediaLikeRecord[] = []): number {
     return records.reduce((total, item) => total + (Number(item.fileSize) || 0), 0);
 }
 
-function validateMediaFile(file = {}) {
-    const fileName = file.name || '';
+export function validateMediaFile(file: MediaLikeRecord = {}): ValidateMediaFileResult {
+    const fileName = String(file.name || '');
     const fileSize = Number(file.size || 0);
     const extension = getFileExtension(fileName);
     const mediaType = getMediaTypeByExtension(extension);
@@ -161,7 +211,7 @@ function validateMediaFile(file = {}) {
     };
 }
 
-function getSupportText() {
+export function getSupportText(): string {
     return `音频 ${AUDIO_ACCEPT_EXTENSIONS.join(' / ')}，${formatFileSize(AUDIO_MAX_SIZE)} 内；视频 ${VIDEO_ACCEPT_EXTENSIONS.join(' / ')}，${formatFileSize(VIDEO_MAX_SIZE)} 内`;
 }
 
@@ -174,17 +224,4 @@ export {
     THEME_KEYS,
     VIDEO_ACCEPT_EXTENSIONS,
     VIDEO_MAX_SIZE,
-    buildPlayPageUrl,
-    formatFileSize,
-    formatUploadTime,
-    getFileExtension,
-    getMediaTypeByExtension,
-    getMediaTypeLabel,
-    getSuggestedTitle,
-    getSupportText,
-    hasConfiguredPlayBaseUrl,
-    normalizeMediaRecord,
-    normalizeThemeKey,
-    sumMediaFileSize,
-    validateMediaFile,
 };

@@ -3,28 +3,36 @@ const WIFI_WSC_MIME_TYPE = 'application/vnd.wfa.wsc';
 const WSC_FIELD_ID = {
     AUTH_TYPE: 0x1003,
     CREDENTIAL: 0x100E,
+    ENCR_TYPE: 0x100F,
+    NETWORK_INDEX: 0x1026,
     NETWORK_KEY: 0x1027,
     SSID: 0x1045,
-};
+} as const;
 
 const AUTH_TYPE_WPA2_PSK = 0x0020;
+const ENCR_TYPE_AES = 0x0008;
+const DEFAULT_NETWORK_INDEX = 0x01;
 
-function assertNonEmptyString(value, fieldName) {
-    const normalized = typeof value === 'string' ? value.trim() : '';
+function assertNonEmptyString(value: unknown, fieldName: string): string {
+    const normalized = typeof value === 'string' ? value : '';
 
-    if (!normalized) {
+    if (!normalized || normalized.trim().length === 0) {
         throw new Error(`${fieldName} is required`);
     }
 
     return normalized;
 }
 
-function encodeUtf8(value) {
+function encodeUtf8(value: unknown): Uint8Array {
     const normalized = String(value);
-    const bytes = [];
+    const bytes: number[] = [];
 
     for (const char of normalized) {
         const codePoint = char.codePointAt(0);
+
+        if (codePoint == null) {
+            continue;
+        }
 
         if (codePoint <= 0x7F) {
             bytes.push(codePoint);
@@ -53,11 +61,15 @@ function encodeUtf8(value) {
     return new Uint8Array(bytes);
 }
 
-function encodeUint16(value) {
+function encodeUint16(value: number): Uint8Array {
     return new Uint8Array([(value >> 8) & 0xFF, value & 0xFF]);
 }
 
-function concatBytes(parts) {
+function encodeUint8(value: number): Uint8Array {
+    return new Uint8Array([value & 0xFF]);
+}
+
+function concatBytes(parts: Uint8Array[]): Uint8Array {
     const totalLength = parts.reduce((sum, part) => sum + part.length, 0);
     const result = new Uint8Array(totalLength);
     let offset = 0;
@@ -70,7 +82,7 @@ function concatBytes(parts) {
     return result;
 }
 
-function createTlv(fieldId, valueBytes) {
+function createTlv(fieldId: number, valueBytes: Uint8Array): Uint8Array {
     return concatBytes([
         encodeUint16(fieldId),
         encodeUint16(valueBytes.length),
@@ -78,21 +90,29 @@ function createTlv(fieldId, valueBytes) {
     ]);
 }
 
-function buildWifiConfigPayload({ ssid, password }) {
+export function buildWifiConfigPayload({
+    ssid,
+    password,
+}: {
+    password: string;
+    ssid: string;
+}): ArrayBuffer {
     const normalizedSsid = assertNonEmptyString(ssid, 'ssid');
     const normalizedPassword = assertNonEmptyString(password, 'password');
 
     const credentialValue = concatBytes([
+        createTlv(WSC_FIELD_ID.NETWORK_INDEX, encodeUint8(DEFAULT_NETWORK_INDEX)),
         createTlv(WSC_FIELD_ID.SSID, encodeUtf8(normalizedSsid)),
-        createTlv(WSC_FIELD_ID.NETWORK_KEY, encodeUtf8(normalizedPassword)),
         createTlv(WSC_FIELD_ID.AUTH_TYPE, encodeUint16(AUTH_TYPE_WPA2_PSK)),
+        createTlv(WSC_FIELD_ID.ENCR_TYPE, encodeUint16(ENCR_TYPE_AES)),
+        createTlv(WSC_FIELD_ID.NETWORK_KEY, encodeUtf8(normalizedPassword)),
     ]);
 
-    return createTlv(WSC_FIELD_ID.CREDENTIAL, credentialValue).buffer;
+    return createTlv(WSC_FIELD_ID.CREDENTIAL, credentialValue).buffer as ArrayBuffer;
 }
 
 export {
     AUTH_TYPE_WPA2_PSK,
+    ENCR_TYPE_AES,
     WIFI_WSC_MIME_TYPE,
-    buildWifiConfigPayload,
 };

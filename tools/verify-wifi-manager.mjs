@@ -1,11 +1,18 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import ts from 'typescript';
 
 const source = await fs.readFile(
-  new URL('../miniprogram/utils/wifi-manager.js', import.meta.url),
+  new URL('../miniprogram/utils/wifi-manager.ts', import.meta.url),
   'utf8'
 );
-const moduleUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(source)}`;
+const transpiled = ts.transpileModule(source, {
+  compilerOptions: {
+    module: ts.ModuleKind.ES2020,
+    target: ts.ScriptTarget.ES2020,
+  },
+}).outputText;
+const moduleUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(transpiled)}`;
 const {
   describeWifiError,
   getWifiScanIssue,

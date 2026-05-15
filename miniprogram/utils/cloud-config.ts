@@ -2,7 +2,7 @@ const CLOUD_ENV_ID = 'cloud1-5gsbvhr91440e872';
 const MEDIA_SHARE_SERVICE_NAME = 'media-share-service';
 const MEDIA_FILE_COLLECTION = 'media_files';
 const MEDIA_SHARE_COLLECTION = 'media_shares';
-const PLAY_BASE_URL = 'https://www.huazhou.love';
+const PLAY_BASE_URL = 'https://nfc.huazhou.love';
 
 const AUDIO_ACCEPT_EXTENSIONS = ['mp3', 'm4a', 'wav'];
 const VIDEO_ACCEPT_EXTENSIONS = ['mp4'];

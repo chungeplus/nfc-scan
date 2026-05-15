@@ -1,5 +1,48 @@
-function normalizeWifiList(wifiList = []) {
-    const strongestBySsid = new Map();
+interface WifiListEntry {
+    BSSID?: string;
+    SSID?: string;
+    secure?: boolean;
+    signalStrength?: number;
+}
+
+interface NormalizedWifiItem {
+    BSSID: string;
+    SSID: string;
+    secure: boolean;
+    signalStrength: number;
+}
+
+interface WifiRuntime {
+    platform: string;
+}
+
+interface WifiErrorLike {
+    errCode?: number;
+    errMsg?: string;
+    errmsg?: string;
+}
+
+interface WifiDescribeOptions {
+    context?: 'current' | 'scan';
+}
+
+interface WifiSystemSetting {
+    locationEnabled?: boolean;
+    wifiEnabled?: boolean;
+}
+
+interface WifiAppAuthorizeSetting {
+    locationAuthorized?: string;
+}
+
+interface WifiScanIssue {
+    action?: 'open_app_authorize_setting';
+    code: 'app_location_denied' | 'location_disabled' | 'wifi_disabled';
+    message: string;
+}
+
+function normalizeWifiList(wifiList: WifiListEntry[] = []): NormalizedWifiItem[] {
+    const strongestBySsid = new Map<string, NormalizedWifiItem>();
 
     wifiList.forEach((wifi) => {
         const ssid = wifi && typeof wifi.SSID === 'string' ? wifi.SSID.trim() : '';
@@ -8,7 +51,7 @@ function normalizeWifiList(wifiList = []) {
             return;
         }
 
-        const normalizedItem = {
+        const normalizedItem: NormalizedWifiItem = {
             SSID: ssid,
             BSSID: wifi && typeof wifi.BSSID === 'string' ? wifi.BSSID : '',
             secure: Boolean(wifi && wifi.secure),
@@ -26,35 +69,35 @@ function normalizeWifiList(wifiList = []) {
     );
 }
 
-function getWifiRuntime() {
+function getWifiRuntime(): WifiRuntime {
     try {
-        const systemInfo = wx.getSystemInfoSync ? wx.getSystemInfoSync() : {};
+        const systemInfo = wx.getSystemInfoSync ? wx.getSystemInfoSync() : undefined;
 
         return {
-            platform: typeof systemInfo.platform === 'string' ? systemInfo.platform : '',
+            platform: typeof systemInfo?.platform === 'string' ? systemInfo.platform : '',
         };
-    } catch (error) {
+    } catch {
         return {
             platform: '',
         };
     }
 }
 
-function isDevtoolsRuntime(runtime = {}) {
+function isDevtoolsRuntime(runtime: WifiRuntime = { platform: '' }): boolean {
     return String(runtime.platform || '').toLowerCase() === 'devtools';
 }
 
-function getErrMsg(error = {}) {
+function getErrMsg(error: WifiErrorLike = {}): string {
     return String(error.errMsg || error.errmsg || '').toLowerCase();
 }
 
-function normalizeAuthorizeState(value) {
+function normalizeAuthorizeState(value: unknown): string {
     return String(value || '').toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
-function inferWifiErrorCode(error = {}) {
+function inferWifiErrorCode(error: WifiErrorLike = {}): number | null {
     if (Number.isFinite(error.errCode)) {
-        return error.errCode;
+        return Number(error.errCode);
     }
 
     const errMsg = getErrMsg(error);
@@ -90,7 +133,7 @@ function inferWifiErrorCode(error = {}) {
     return null;
 }
 
-function getInternalWifiErrorKind(error = {}) {
+function getInternalWifiErrorKind(error: WifiErrorLike = {}): '' | 'background' | 'gps_off' | 'permission_denied' | 'wifi_off' {
     const errMsg = getErrMsg(error);
 
     if (errMsg.includes('wifi not turned on')) {
@@ -109,7 +152,11 @@ function getInternalWifiErrorKind(error = {}) {
     return '';
 }
 
-function describeWifiError(error = {}, runtime = {}, options = {}) {
+function describeWifiError(
+    error: WifiErrorLike = {},
+    runtime: WifiRuntime = { platform: '' },
+    options: WifiDescribeOptions = {},
+): string {
     const errCode = inferWifiErrorCode(error);
     const context = options.context || 'scan';
 
@@ -148,7 +195,11 @@ function describeWifiError(error = {}, runtime = {}, options = {}) {
     }
 }
 
-function describeInternalWifiError(error = {}, runtime = {}, context = 'scan') {
+function describeInternalWifiError(
+    error: WifiErrorLike = {},
+    runtime: WifiRuntime = { platform: '' },
+    context: 'current' | 'scan' = 'scan',
+): string {
     const errorKind = getInternalWifiErrorKind(error);
 
     if (errorKind === 'wifi_off') {
@@ -173,14 +224,14 @@ function describeInternalWifiError(error = {}, runtime = {}, context = 'scan') {
     return '扫描失败，请确认已开启 Wi-Fi、定位，并允许微信获取位置信息。';
 }
 
-function shouldShowConnectedWifiError(error = {}, runtime = {}) {
+function shouldShowConnectedWifiError(error: WifiErrorLike = {}, runtime: WifiRuntime = { platform: '' }): boolean {
     const errCode = inferWifiErrorCode(error);
 
     if (isDevtoolsRuntime(runtime)) {
         return false;
     }
 
-    if ([12001, 12005, 12006, 12007, 12011, 12013, 12014].includes(errCode)) {
+    if (errCode !== null && [12001, 12005, 12006, 12007, 12011, 12013, 12014].includes(errCode)) {
         return true;
     }
 
@@ -191,27 +242,31 @@ function shouldShowConnectedWifiError(error = {}, runtime = {}) {
     return false;
 }
 
-function getWifiSystemSetting() {
+function getWifiSystemSetting(): WifiSystemSetting {
     try {
         return wx.getSystemSetting ? wx.getSystemSetting() : {};
-    } catch (error) {
+    } catch {
         return {};
     }
 }
 
-function getWifiAppAuthorizeSetting() {
+function getWifiAppAuthorizeSetting(): WifiAppAuthorizeSetting {
     try {
         return wx.getAppAuthorizeSetting ? wx.getAppAuthorizeSetting() : {};
-    } catch (error) {
+    } catch {
         return {};
     }
 }
 
 function getWifiScanIssue({
-    runtime = {},
+    runtime = { platform: '' },
     systemSetting = {},
     appAuthorizeSetting = {},
-} = {}) {
+}: {
+    appAuthorizeSetting?: WifiAppAuthorizeSetting;
+    runtime?: WifiRuntime;
+    systemSetting?: WifiSystemSetting;
+} = {}): WifiScanIssue | null {
     if (isDevtoolsRuntime(runtime)) {
         return null;
     }
@@ -243,7 +298,7 @@ function getWifiScanIssue({
     return null;
 }
 
-function readWifiScanIssue(runtime = {}) {
+function readWifiScanIssue(runtime: WifiRuntime = { platform: '' }): WifiScanIssue | null {
     return getWifiScanIssue({
         runtime,
         systemSetting: getWifiSystemSetting(),
@@ -251,7 +306,7 @@ function readWifiScanIssue(runtime = {}) {
     });
 }
 
-function openWifiAppAuthorizeSetting() {
+function openWifiAppAuthorizeSetting(): Promise<boolean> {
     return new Promise((resolve, reject) => {
         if (!wx.openAppAuthorizeSetting) {
             resolve(false);
@@ -265,16 +320,16 @@ function openWifiAppAuthorizeSetting() {
     });
 }
 
-function initWifiModule() {
+function initWifiModule(): Promise<void> {
     return new Promise((resolve, reject) => {
         wx.startWifi({
-            success: resolve,
+            success: () => resolve(),
             fail: reject,
         });
     });
 }
 
-function getConnectedWifiInfo() {
+function getConnectedWifiInfo(): Promise<WechatMiniprogram.WifiInfo | null> {
     return new Promise((resolve, reject) => {
         wx.getConnectedWifi({
             success: (res) => resolve(res && res.wifi ? res.wifi : null),
@@ -283,11 +338,11 @@ function getConnectedWifiInfo() {
     });
 }
 
-function ensureLocationPermission() {
+function ensureLocationPermission(): Promise<void> {
     return new Promise((resolve, reject) => {
         wx.getSetting({
             success: ({ authSetting = {} }) => {
-                const authState = authSetting['scope.userLocation'];
+                const authState = (authSetting as Record<string, boolean | undefined>)['scope.userLocation'];
 
                 if (authState === true) {
                     resolve();
@@ -311,7 +366,7 @@ function ensureLocationPermission() {
 
                 wx.authorize({
                     scope: 'scope.userLocation',
-                    success: resolve,
+                    success: () => resolve(),
                     fail: () => reject({ errCode: 12007 }),
                 });
             },
@@ -320,10 +375,10 @@ function ensureLocationPermission() {
     });
 }
 
-function scanNearbyWifi() {
+function scanNearbyWifi(): Promise<WifiListEntry[]> {
     return ensureLocationPermission().then(
         () => new Promise((resolve, reject) => {
-            const handleResult = (res) => {
+            const handleResult = (res: { wifiList?: WifiListEntry[] }) => {
                 if (wx.offGetWifiList) {
                     wx.offGetWifiList(handleResult);
                 }

@@ -1,12 +1,15 @@
-/**
- * 将字符串转换为 UTF-8 编码的 ArrayBuffer。
- * @param {string} str 输入字符串
- * @returns {ArrayBuffer}
- */
-function string2ArrayBuffer(str) {
+function toUint8Array(input: ArrayBuffer | ArrayBufferView): Uint8Array {
+    if (input instanceof ArrayBuffer) {
+        return new Uint8Array(input);
+    }
+
+    return new Uint8Array(input.buffer, input.byteOffset, input.byteLength);
+}
+
+export function string2ArrayBuffer(str: string): ArrayBuffer {
     let bytes = 0;
 
-    for (let i = 0; i < str.length; i++) {
+    for (let i = 0; i < str.length; i += 1) {
         const code = str.charCodeAt(i);
         if (code < 0x007F) {
             bytes += 1;
@@ -23,38 +26,37 @@ function string2ArrayBuffer(str) {
     const uint8 = new Uint8Array(buffer);
     let offset = 0;
 
-    for (let i = 0; i < str.length; i++) {
+    for (let i = 0; i < str.length; i += 1) {
         const code = str.charCodeAt(i);
         if (code < 0x007F) {
-            uint8[offset++] = code;
+            uint8[offset] = code;
+            offset += 1;
         } else if (code < 0x07FF) {
-            uint8[offset++] = 0xC0 | (code >>> 6);
-            uint8[offset++] = 0x80 | (code & 0x3F);
+            uint8[offset] = 0xC0 | (code >>> 6);
+            uint8[offset + 1] = 0x80 | (code & 0x3F);
+            offset += 2;
         } else if (code < 0xFFFF) {
-            uint8[offset++] = 0xE0 | (code >>> 12);
-            uint8[offset++] = 0x80 | ((code >>> 6) & 0x3F);
-            uint8[offset++] = 0x80 | (code & 0x3F);
+            uint8[offset] = 0xE0 | (code >>> 12);
+            uint8[offset + 1] = 0x80 | ((code >>> 6) & 0x3F);
+            uint8[offset + 2] = 0x80 | (code & 0x3F);
+            offset += 3;
         } else {
-            uint8[offset++] = 0xF0 | (code >>> 18);
-            uint8[offset++] = 0x80 | ((code >>> 12) & 0x3F);
-            uint8[offset++] = 0x80 | ((code >>> 6) & 0x3F);
-            uint8[offset++] = 0x80 | (code & 0x3F);
+            uint8[offset] = 0xF0 | (code >>> 18);
+            uint8[offset + 1] = 0x80 | ((code >>> 12) & 0x3F);
+            uint8[offset + 2] = 0x80 | ((code >>> 6) & 0x3F);
+            uint8[offset + 3] = 0x80 | (code & 0x3F);
+            offset += 4;
         }
     }
 
     return buffer;
 }
 
-/**
- * 将字节数组转换为字符串，支持 UTF-8 多字节字符。
- * @param {ArrayBuffer} bytes 输入字节数组
- * @returns {string}
- */
-function bytesToString(bytes) {
+export function bytesToString(bytes: ArrayBuffer | ArrayBufferView): string {
     let result = '';
-    const input = new Uint8Array(bytes);
+    const input = toUint8Array(bytes);
 
-    for (let i = 0; i < input.length; i++) {
+    for (let i = 0; i < input.length; i += 1) {
         const binary = input[i].toString(2).padStart(8, '0');
         const leadingOnesMatch = binary.match(/^1+?(?=0)/);
 
@@ -62,7 +64,7 @@ function bytesToString(bytes) {
             const numBytes = leadingOnesMatch[0].length;
             let codeBits = binary.slice(7 - numBytes);
 
-            for (let offset = 1; offset < numBytes; offset++) {
+            for (let offset = 1; offset < numBytes; offset += 1) {
                 codeBits += input[i + offset].toString(2).padStart(8, '0').slice(2);
             }
 
@@ -76,12 +78,39 @@ function bytesToString(bytes) {
     return result;
 }
 
-/**
- * 生成符合 NDEF 规范的 URI Payload。
- * @param {string} targetUrl 目标链接
- * @returns {ArrayBuffer}
- */
-function encodeNdefUriPayload(targetUrl) {
+export function arrayBufferToHex(buffer: ArrayBuffer | ArrayBufferView | null | undefined): string {
+    if (!buffer) {
+        return '';
+    }
+
+    return Array.from(toUint8Array(buffer))
+        .map((byte) => byte.toString(16).padStart(2, '0'))
+        .join('');
+}
+
+export function hexToArrayBuffer(hexValue: string): ArrayBuffer {
+    const normalizedHex = typeof hexValue === 'string'
+        ? hexValue.trim().replace(/\s+/g, '').toLowerCase()
+        : '';
+
+    if (!normalizedHex) {
+        return new ArrayBuffer(0);
+    }
+
+    if (normalizedHex.length % 2 !== 0 || /[^0-9a-f]/.test(normalizedHex)) {
+        throw new Error('invalid hex string');
+    }
+
+    const output = new Uint8Array(normalizedHex.length / 2);
+
+    for (let index = 0; index < normalizedHex.length; index += 2) {
+        output[index / 2] = parseInt(normalizedHex.slice(index, index + 2), 16);
+    }
+
+    return output.buffer;
+}
+
+export function encodeNdefUriPayload(targetUrl: string): ArrayBuffer {
     let ndefPrefix = 0x00;
     let uriContent = targetUrl;
 
@@ -113,9 +142,3 @@ function encodeNdefUriPayload(targetUrl) {
 
     return totalPayloadBuffer;
 }
-
-export {
-    string2ArrayBuffer,
-    bytesToString,
-    encodeNdefUriPayload,
-};
