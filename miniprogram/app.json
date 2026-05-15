@@ -10,7 +10,7 @@
   ],
   "permission": {
     "scope.userLocation": {
-      "desc": "Used to scan nearby WLANs before writing Wi-Fi credentials to NFC"
+      "desc": "用于扫描附近WLAN并写入NFC"
     }
   },
   "window": {
