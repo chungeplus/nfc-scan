@@ -32,8 +32,11 @@ Thumbs.db
 *.temp
 
 # Local tooling artifacts
+# Keep package-lock.json tracked at the repository root.
 /.agents/
 /.cloudbase/
 /.trae/
+/.claude/
+/.env.local
 /skills/
 skills-lock.json

@@ -62,4 +62,12 @@ assert.match(globalScssSource, /styles\/variables\.scss/, 'global.scss should ex
 const typingsSource = await fs.readFile(path.join(rootDir, 'miniprogram/typings/index.d.ts'), 'utf8');
 assert.match(typingsSource, /interface IAppOption/, 'mini program typings should declare IAppOption');
 
+const readmeSource = await fs.readFile(path.join(rootDir, 'README.md'), 'utf8');
+assert.match(readmeSource, /npm run verify/, 'README should document the root verify command');
+assert.match(readmeSource, /TypeScript/, 'README should document the TypeScript migration direction');
+
+const gitignoreSource = await fs.readFile(path.join(rootDir, '.gitignore'), 'utf8');
+assert.match(gitignoreSource, /package-lock\.json/, 'gitignore should keep package-lock.json committed by omission');
+assert.doesNotMatch(gitignoreSource, /^package-lock\.json$/m, 'gitignore should not ignore the root package lockfile');
+
 console.log('PASS verify-modernization-foundation task1');

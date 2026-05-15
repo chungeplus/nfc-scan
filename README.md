@@ -5,11 +5,12 @@
 ## 当前能力
 
 - 支持 `应用 / 音乐 / 网页 / WLAN / 本地音视频` 五类写卡入口
-- `WLAN` 写卡面向 Android 场景，写入标准 `application/vnd.wfa.wsc` Wi-Fi NDEF 记录
-- WLAN 页面支持优先带出当前已连接网络，并按需扫描附近 WLAN
-- 当前 WLAN 写卡版本聚焦 `WPA2-Personal`，不支持开放网络 / WEP / 企业网络
-- 支持本地音视频上传后生成播放页并写入 NFC
-- 支持“我的文件”查看、复用和删除媒体写卡记录
+- `应用` 写卡仅支持 Android 包名直达，iPhone 微信进入首页会直接提示当前设备不支持 NFC 写卡
+- `音乐` 写卡当前支持 `网易云音乐` 和 `QQ 音乐` 分享链接解析后写入
+- `网页` 写卡支持手动输入或粘贴链接，自动补全 `https://`
+- `WLAN` 写卡面向 Android，写入标准 `application/vnd.wfa.wsc` Wi-Fi NDEF 记录
+- `本地音视频` 支持上传微信会话文件、生成播放页并写入 NFC
+- 支持“我的文件”查看、复用、复制链接和删除媒体写卡记录
 
 ## 项目结构
 
@@ -19,7 +20,7 @@ nfc-scan/
 ├─ cloudfunctions/      # 云函数
 ├─ play-web-service/    # 云托管服务与播放页
 ├─ tools/               # 本地校验脚本
-├─ docs/                # 设计、原型、计划
+├─ docs/                # 功能说明与原型
 └─ README.md
 ```
 
@@ -35,11 +36,23 @@ nfc-scan/
 ## 文档
 
 - [文档目录](docs/README.md)
-- [WLAN NFC 需求设计](docs/superpowers/specs/2026-05-14-wlan-nfc-design.md)
-- [WLAN NFC 原型同步稿](docs/superpowers/specs/2026-05-15-wlan-nfc-prototype.md)
-- [WLAN NFC 实施计划](docs/superpowers/plans/2026-05-14-wlan-nfc-implementation.md)
+- [当前功能说明](docs/current-feature.md)
+- [当前版本原型](docs/current-prototype.md)
 
 ## 版本说明
 
-- 当前实现以 `write-local-media + media-share-service + play-web-service + write-wifi` 为准
-- 当前 `master` 已同步 WLAN 入口、Wi-Fi NDEF 编码和相关文档
+- 当前实现以 `miniprogram + media-share-service + play-web-service` 的完整联动为准
+- 文档默认描述当前 `master` 的真实页面与功能，阅读时建议先看“当前功能说明”，再看“当前版本原型”
+
+## Repository Tooling
+
+- `npm run lint`: run shared code and style linting
+- `npm run typecheck`: run mini program, web service, and cloud function type checks
+- `npm run build`: build the cloud function and web service outputs
+- `npm run verify`: run the full repository verification gate
+
+## Modernization Rules
+
+- Mini program TypeScript uses the official WeChat `typescript` compiler plugin together with `sass`.
+- New and migrated async code should prefer `Promise`, `async`, and `await`.
+- Once a module is migrated to `*.ts`, that `*.ts` file becomes the source of truth.
