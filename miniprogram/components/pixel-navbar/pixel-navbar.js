@@ -1,4 +1,4 @@
-const HOME_ROUTE = '/miniprogram/pages/write-menu/write-menu';
+const HOME_ROUTE = '/pages/write-menu/write-menu';
 
 function getNavMetrics() {
     try {

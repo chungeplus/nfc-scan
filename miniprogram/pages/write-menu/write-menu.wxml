@@ -54,6 +54,20 @@
                     </view>
                 </view>
 
+                <view class="card card--blue card--pixel-cut home-sub home-sub--wide" bindtap="handleWriteWifi">
+                    <view class="card__bite card__bite--tl"></view>
+                    <view class="card__bite card__bite--br"></view>
+                    <view class="row">
+                        <view class="home-sub__visual home-sub__visual--wifi">
+                            <pixel-icon name="nfc" size="48" />
+                        </view>
+                        <view class="body">
+                            <view class="card__title">WLAN 涓撳尯</view>
+                            <view class="meta">鑷姩甯﹀嚭褰撳墠缃戠粶锛屾垨鎵弿闄勮繎 WLAN锛屽啀鎶婇厤缃戜俊鎭啓鍏?NFC銆?/view>
+                        </view>
+                    </view>
+                </view>
+
                 <view class="card card--green card--pixel-cut home-sub home-sub--wide" bindtap="handleWriteLocalMedia">
                     <view class="card__bite card__bite--tl"></view>
                     <view class="card__bite card__bite--br"></view>

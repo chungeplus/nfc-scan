@@ -1,7 +1,7 @@
 import { showPixelToast } from '../../utils/pixel-toast';
 import { getNavMetrics } from '../../utils/system-info';
 
-const ROOT_PAGE_PREFIX = '/miniprogram/pages';
+const ROOT_PAGE_PREFIX = '/pages';
 
 const DEVELOPER_PROMISE_ACK_KEY = 'developerPromiseAcknowledged';
 
@@ -92,6 +92,16 @@ Page({
 
         wx.navigateTo({
             url: `${ROOT_PAGE_PREFIX}/write-web/write-web`,
+        });
+    },
+
+    handleWriteWifi() {
+        if (!this.ensureNfcSupport()) {
+            return;
+        }
+
+        wx.navigateTo({
+            url: `${ROOT_PAGE_PREFIX}/write-wifi/write-wifi`,
         });
     },
 

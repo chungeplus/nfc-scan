@@ -164,9 +164,11 @@ Component({
             const writeRecords = () => {
                 runNfcAdapter.writeNdefMessage({
                     records: this.properties.records.map((recordItem) => {
-                        const payload = recordItem.tnf === 1 && recordItem.type === 'U'
-                            ? encodeNdefUriPayload(recordItem.payload)
-                            : string2ArrayBuffer(recordItem.payload);
+                        const payload = recordItem.payload instanceof ArrayBuffer
+                            ? recordItem.payload
+                            : recordItem.tnf === 1 && recordItem.type === 'U'
+                                ? encodeNdefUriPayload(recordItem.payload)
+                                : string2ArrayBuffer(recordItem.payload);
 
                         return {
                             tnf: recordItem.tnf,

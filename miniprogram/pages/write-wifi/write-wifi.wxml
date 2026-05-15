@@ -1,0 +1,71 @@
+<pixel-navbar title="写入 WLAN" theme="web" showBack="{{true}}" showHome="{{false}}" />
+<pixel-toast id="pixel-toast" />
+
+<view class="write-wifi" style="height: calc(100vh - {{navHeight}}px);">
+    <view class="notice">{{pageHint}}</view>
+
+    <view class="field">
+        <view class="label">当前 WLAN</view>
+        <view
+            wx:if="{{currentWifi && currentWifi.SSID}}"
+            class="wifi-card {{selectedSsid === currentWifi.SSID ? 'wifi-card--active' : ''}}"
+            bindtap="handleSelectCurrentWifi"
+        >
+            <view class="wifi-card__head">
+                <view class="wifi-name">{{currentWifi.SSID}}</view>
+                <view class="wifi-tag">已连接</view>
+            </view>
+            <view class="wifi-meta">点按即可直接使用当前网络写卡</view>
+        </view>
+        <view class="hint" wx:elif="{{loadingCurrentWifi}}">正在读取当前连接的 WLAN...</view>
+        <view class="hint" wx:else>当前没有读取到已连接 WLAN，可以改为扫描附近网络。</view>
+    </view>
+
+    <view class="field">
+        <button class="btn" bindtap="handleScanNearbyWifi" loading="{{scanningNearbyWifi}}">
+            扫描附近 WLAN
+        </button>
+
+        <scroll-view class="wifi-list" scroll-y="{{true}}" wx:if="{{nearbyWifiList.length}}">
+            <view
+                wx:for="{{nearbyWifiList}}"
+                wx:key="SSID"
+                class="wifi-list__item {{selectedSsid === item.SSID ? 'wifi-list__item--active' : ''}}"
+                data-ssid="{{item.SSID}}"
+                bindtap="handleSelectNearbyWifi"
+            >
+                <view class="wifi-card__head">
+                    <view class="wifi-name">{{item.SSID}}</view>
+                    <view class="wifi-signal">信号 {{item.signalStrength}}</view>
+                </view>
+                <view class="wifi-meta">点按切换为这个 WLAN</view>
+            </view>
+        </scroll-view>
+    </view>
+
+    <view class="field">
+        <view class="label">已选 WLAN</view>
+        <view class="box box--readonly">{{selectedSsid || '请先选择一个 WLAN'}}</view>
+    </view>
+
+    <view class="field">
+        <view class="label">Wi-Fi 密码</view>
+        <input
+            class="box"
+            password="{{true}}"
+            value="{{wifiPassword}}"
+            placeholder="请输入 WLAN 密码"
+            bindinput="handlePasswordInput"
+        />
+    </view>
+
+    <button
+        class="primary-btn"
+        disabled="{{!selectedSsid || !wifiPassword}}"
+        bindtap="handleOpenScanDialog"
+    >
+        写入 NFC 标签
+    </button>
+</view>
+
+<scan-dialog visible="{{scanVisible}}" records="{{records}}" bind:close="handleCloseScanDialog" />

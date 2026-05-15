@@ -3,7 +3,7 @@ import { deleteMediaFile, listMediaFiles } from '../../utils/media-share-service
 import { formatFileSize, normalizeMediaRecord, sumMediaFileSize } from '../../utils/media';
 import { getNavMetrics } from '../../utils/system-info';
 
-const ROOT_PAGE_PREFIX = '/miniprogram/pages';
+const ROOT_PAGE_PREFIX = '/pages';
 
 Page({
     data: {
