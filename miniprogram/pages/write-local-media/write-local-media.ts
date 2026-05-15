@@ -13,34 +13,114 @@ import {
     normalizeMediaRecord,
     validateMediaFile,
 } from '../../utils/media';
+import type { NormalizedMediaRecord } from '../../utils/media';
 import { getNavMetrics } from '../../utils/system-info';
 
-const ROOT_PAGE_PREFIX = '/miniprogram/pages';
+const ROOT_PAGE_PREFIX = '/pages';
 
-const DEFAULT_LINK_PREVIEW = '生成后显示播放页链接';
+type ThemeKey = 'pixel' | 'minimal' | 'poster';
+
+interface ScanRecord {
+    tnf: number;
+    id: string;
+    type: string;
+    payload: string;
+}
+
+interface ThemeOption {
+    key: ThemeKey;
+    label: string;
+}
+
+interface SelectedLocalFile {
+    name: string;
+    size: number;
+    path: string;
+    type: string;
+    extension: string;
+    mediaType: 'audio' | 'video';
+    [key: string]: unknown;
+}
+
+interface LocalChooseFile {
+    name?: string;
+    size?: number;
+    path?: string;
+    tempFilePath?: string;
+    type?: string;
+}
+
+interface WriteLocalMediaPageData {
+    navHeight: number;
+    selectedFileName: string;
+    selectedFileSizeText: string;
+    selectedFileTagText: string;
+    currentRecord: NormalizedMediaRecord | null;
+    errorMessage: string;
+    primaryButtonText: string;
+    canSubmitMedia: boolean;
+    submitting: boolean;
+    submittingText: string;
+    scanVisible: boolean;
+    records: ScanRecord[];
+    themeKey: ThemeKey;
+    themeOptions: ThemeOption[];
+}
+
+interface PrepareUploadResponse {
+    cloudPath?: string;
+}
+
+interface CreateShareResponse {
+    shareId?: string;
+    themeKey?: string;
+}
+
+interface UploadFileResult {
+    fileID: string;
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+    if (
+        typeof error === 'object'
+        && error !== null
+        && 'message' in error
+        && typeof error.message === 'string'
+        && error.message
+    ) {
+        return error.message;
+    }
+
+    return fallback;
+}
+
+function isThemeKey(value: string): value is ThemeKey {
+    return value === 'pixel' || value === 'minimal' || value === 'poster';
+}
 
 Page({
+    selectedLocalFile: null as SelectedLocalFile | null,
+
     data: {
         navHeight: 64,
         selectedFileName: '',
         selectedFileSizeText: '',
         selectedFileTagText: '',
-        currentRecord: null,
-        currentShareUrl: '',
+        currentRecord: null as WriteLocalMediaPageData['currentRecord'],
         errorMessage: '',
-        linkPreviewText: DEFAULT_LINK_PREVIEW,
         primaryButtonText: '上传并写入 NFC',
+        canSubmitMedia: false,
         submitting: false,
         submittingText: '上传中...',
         scanVisible: false,
-        records: [],
-        themeKey: DEFAULT_THEME_KEY,
+        records: [] as ScanRecord[],
+        themeKey: DEFAULT_THEME_KEY as ThemeKey,
         themeOptions: [
             { key: 'pixel', label: 'Pixel' },
             { key: 'minimal', label: 'Minimal' },
             { key: 'poster', label: 'Poster' },
-        ],
-    },
+        ] as ThemeOption[],
+    } as WriteLocalMediaPageData,
 
     onLoad() {
         const { navHeight } = getNavMetrics();
@@ -69,40 +149,33 @@ Page({
         });
     },
 
-    getPendingLinkText() {
-        return DEFAULT_LINK_PREVIEW;
-    },
-
-    getPrimaryButtonText(hasRecord) {
+    getPrimaryButtonText(hasRecord: boolean) {
         return hasRecord ? '生成链接并写入 NFC' : '上传并写入 NFC';
     },
 
-    applyExistingRecord(record) {
+    applyExistingRecord(record: Parameters<typeof normalizeMediaRecord>[0]) {
         const normalizedRecord = normalizeMediaRecord(record);
 
         this.setData({
             currentRecord: normalizedRecord,
-            currentShareUrl: normalizedRecord.latestPlayUrl || '',
             selectedFileName: normalizedRecord.fileName,
             selectedFileSizeText: normalizedRecord.fileSizeText,
             selectedFileTagText: `${normalizedRecord.mediaTypeLabel} / 已上传`,
             errorMessage: '',
-            themeKey: normalizedRecord.latestThemeKey || DEFAULT_THEME_KEY,
-            linkPreviewText: normalizedRecord.latestPlayUrl || this.getPendingLinkText(),
             primaryButtonText: this.getPrimaryButtonText(true),
+            canSubmitMedia: true,
         });
     },
 
-    resetSelectedState(extraData = {}) {
+    resetSelectedState(extraData: Partial<WriteLocalMediaPageData> = {}) {
         this.setData({
             currentRecord: null,
-            currentShareUrl: '',
             selectedFileName: '',
             selectedFileSizeText: '',
             selectedFileTagText: '',
-            linkPreviewText: this.getPendingLinkText(),
             primaryButtonText: this.getPrimaryButtonText(false),
-            themeKey: DEFAULT_THEME_KEY,
+            canSubmitMedia: false,
+            themeKey: this.data.themeKey || DEFAULT_THEME_KEY,
             ...extraData,
         });
     },
@@ -117,7 +190,9 @@ Page({
             type: 'file',
             extension: ['mp3', 'm4a', 'wav', 'mp4'],
             success: (res) => {
-                const tempFile = res && res.tempFiles && res.tempFiles[0] ? res.tempFiles[0] : null;
+                const tempFile = res && res.tempFiles && res.tempFiles[0]
+                    ? res.tempFiles[0] as LocalChooseFile
+                    : null;
 
                 if (!tempFile) {
                     showPixelToast({
@@ -163,14 +238,14 @@ Page({
                 this.selectedLocalFile = {
                     ...localFile,
                     extension: validation.extension,
-                    mediaType: validation.mediaType,
+                    mediaType: validation.mediaType as SelectedLocalFile['mediaType'],
                 };
 
                 this.resetSelectedState({
                     selectedFileName: localFile.name,
                     selectedFileSizeText: formatFileSize(localFile.size),
                     selectedFileTagText: `${getMediaTypeLabel(validation.mediaType)} / 待上传`,
-                    themeKey: this.data.themeKey || DEFAULT_THEME_KEY,
+                    canSubmitMedia: true,
                     errorMessage: '',
                 });
 
@@ -179,7 +254,7 @@ Page({
                     theme: 'success',
                 });
             },
-            fail: (error) => {
+            fail: (error: WechatMiniprogram.GeneralCallbackResult) => {
                 if (error && /cancel/i.test(error.errMsg || '')) {
                     return;
                 }
@@ -192,14 +267,14 @@ Page({
         });
     },
 
-    handleSelectTheme(event) {
+    handleSelectTheme(event: WechatMiniprogram.BaseEvent) {
         const themeKey = String(
             event && event.currentTarget && event.currentTarget.dataset
                 ? event.currentTarget.dataset.key || ''
                 : ''
         );
 
-        if (!themeKey || themeKey === this.data.themeKey) {
+        if (!isThemeKey(themeKey) || themeKey === this.data.themeKey) {
             return;
         }
 
@@ -224,11 +299,10 @@ Page({
         if (this.data.currentRecord) {
             try {
                 await this.createShareAndOpenDialog(this.data.currentRecord, this.data.themeKey);
-            } catch (error) {
-                const message = error && error.message ? error.message : '生成链接失败，请稍后重试';
+            } catch (error: unknown) {
+                const message = getErrorMessage(error, '生成链接失败，请稍后重试');
                 this.setData({
                     errorMessage: message,
-                    linkPreviewText: this.data.currentShareUrl || this.getPendingLinkText(),
                 });
                 showPixelToast({
                     message,
@@ -259,7 +333,7 @@ Page({
         }
 
         let uploadedFileId = '';
-        let createdRecord = null;
+        let createdRecord: NormalizedMediaRecord | null = null;
 
         try {
             this.setData({
@@ -273,9 +347,10 @@ Page({
                 fileExt: this.selectedLocalFile.extension,
                 mediaType: this.selectedLocalFile.mediaType,
             });
+            const uploadConfig = (prepareUploadResult.upload || {}) as PrepareUploadResponse;
             const uploadResult = await this.uploadLocalMedia(
                 this.selectedLocalFile,
-                prepareUploadResult.upload ? prepareUploadResult.upload.cloudPath : '',
+                uploadConfig.cloudPath || '',
             );
             uploadedFileId = uploadResult.fileID;
 
@@ -283,7 +358,7 @@ Page({
                 submittingText: '登记中...',
             });
 
-            const createFileResult = await createMediaFile({
+            const createFileResult = await createMediaFile<Parameters<typeof normalizeMediaRecord>[0]>({
                 fileId: uploadedFileId,
                 fileName: this.selectedLocalFile.name,
                 fileSize: this.selectedLocalFile.size,
@@ -296,15 +371,18 @@ Page({
             this.applyExistingRecord(createdRecord);
 
             await this.createShareAndOpenDialog(createdRecord, this.data.themeKey, false);
-        } catch (error) {
+        } catch (error: unknown) {
             if (uploadedFileId && !createdRecord) {
-                this.deleteCloudFile(uploadedFileId);
+                try {
+                    await this.deleteCloudFile(uploadedFileId);
+                } catch (cleanupError) {
+                    console.error('[write-local-media] 清理已上传文件失败:', cleanupError);
+                }
             }
 
-            const message = error && error.message ? error.message : '上传失败，请稍后重试';
+            const message = getErrorMessage(error, '上传失败，请稍后重试');
             this.setData({
                 errorMessage: message,
-                linkPreviewText: this.data.currentShareUrl || this.getPendingLinkText(),
             });
             showPixelToast({
                 message,
@@ -318,7 +396,7 @@ Page({
         }
     },
 
-    async createShareAndOpenDialog(record, themeKey, updateSubmitting = true) {
+    async createShareAndOpenDialog(record: NormalizedMediaRecord, themeKey: ThemeKey, updateSubmitting = true) {
         try {
             if (updateSubmitting) {
                 this.setData({
@@ -332,7 +410,7 @@ Page({
                 });
             }
 
-            const createShareResult = await createMediaShare({
+            const createShareResult = await createMediaShare<CreateShareResponse>({
                 fileRecordId: record.id,
                 themeKey,
             });
@@ -351,9 +429,7 @@ Page({
 
             this.setData({
                 currentRecord: nextRecord,
-                currentShareUrl: shareUrl,
                 selectedFileTagText: `${nextRecord.mediaTypeLabel} / 已上传`,
-                linkPreviewText: shareUrl,
                 primaryButtonText: this.getPrimaryButtonText(true),
             });
 
@@ -368,7 +444,7 @@ Page({
         }
     },
 
-    uploadLocalMedia(file, cloudPath = '') {
+    uploadLocalMedia(file: SelectedLocalFile, cloudPath = ''): Promise<UploadFileResult> {
         return new Promise((resolve, reject) => {
             if (!cloudPath) {
                 reject(new Error('上传路径生成失败，请稍后重试'));
@@ -378,23 +454,23 @@ Page({
             wx.cloud.uploadFile({
                 cloudPath,
                 filePath: file.path,
-                success: resolve,
+                success: (result) => resolve({ fileID: result.fileID }),
                 fail: reject,
             });
         });
     },
 
-    deleteCloudFile(fileId) {
+    deleteCloudFile(fileId: string) {
         if (!fileId || !wx.cloud || !wx.cloud.deleteFile) {
-            return;
+            return Promise.resolve();
         }
 
-        wx.cloud.deleteFile({
+        return wx.cloud.deleteFile({
             fileList: [fileId],
         });
     },
 
-    openScanDialog(playUrl) {
+    openScanDialog(playUrl: string) {
         if (!playUrl) {
             showPixelToast({
                 message: '播放页链接生成失败，请稍后重试',

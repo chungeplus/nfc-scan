@@ -1,25 +1,39 @@
 import { showPixelToast } from '../../utils/pixel-toast';
-import { getNavMetrics } from '../../utils/system-info';
+import { getClientPlatformInfo, getNavMetrics } from '../../utils/system-info';
 
 const ROOT_PAGE_PREFIX = '/pages';
 
 const DEVELOPER_PROMISE_ACK_KEY = 'developerPromiseAcknowledged';
+
+interface WriteMenuPageData {
+    navHeight: number;
+    developerPromiseDialogVisible: boolean;
+    canDeviceProcessNFC: boolean;
+    isIOSClient: boolean;
+    iosBlockedDialogVisible: boolean;
+    nfcUnsupportedDialogVisible: boolean;
+}
 
 Page({
     data: {
         navHeight: 64,
         developerPromiseDialogVisible: false,
         canDeviceProcessNFC: false,
+        isIOSClient: false,
+        iosBlockedDialogVisible: false,
         nfcUnsupportedDialogVisible: false,
-    },
+    } as WriteMenuPageData,
 
     onLoad() {
         const { navHeight } = getNavMetrics();
+        const { isIOS } = getClientPlatformInfo();
+
         this.setData({
             navHeight,
-            developerPromiseDialogVisible: this.shouldShowDeveloperPromiseDialog(),
+            isIOSClient: isIOS,
+            developerPromiseDialogVisible: !isIOS && this.shouldShowDeveloperPromiseDialog(),
         });
-        this.checkDeviceProcessNFC();
+        this.checkDeviceProcessNFC(isIOS);
     },
 
     onShow() {
@@ -44,7 +58,20 @@ Page({
         }
     },
 
-    checkDeviceProcessNFC() {
+    checkDeviceProcessNFC(isIOSClient?: boolean) {
+        const nextIsIOSClient = typeof isIOSClient === 'boolean'
+            ? isIOSClient
+            : this.data.isIOSClient;
+
+        if (nextIsIOSClient) {
+            this.setData({
+                canDeviceProcessNFC: false,
+                iosBlockedDialogVisible: true,
+                nfcUnsupportedDialogVisible: false,
+            });
+            return;
+        }
+
         const nfcAdapter = wx.getNFCAdapter ? wx.getNFCAdapter() : null;
 
         this.setData({
@@ -54,6 +81,13 @@ Page({
     },
 
     ensureNfcSupport() {
+        if (this.data.isIOSClient) {
+            this.setData({
+                iosBlockedDialogVisible: true,
+            });
+            return false;
+        }
+
         if (this.data.canDeviceProcessNFC) {
             return true;
         }
@@ -106,6 +140,11 @@ Page({
     },
 
     handleWriteLocalMedia() {
+        if (this.data.isIOSClient) {
+            this.ensureNfcSupport();
+            return;
+        }
+
         wx.navigateTo({
             url: `${ROOT_PAGE_PREFIX}/write-local-media/write-local-media`,
         });
@@ -119,6 +158,12 @@ Page({
 
         this.setData({
             developerPromiseDialogVisible: false,
+        });
+    },
+
+    handleCloseIosBlockedDialog() {
+        this.setData({
+            iosBlockedDialogVisible: false,
         });
     },
 

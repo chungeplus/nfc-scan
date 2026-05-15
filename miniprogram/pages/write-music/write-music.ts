@@ -1,4 +1,4 @@
-import { extractCloudMusicSongId, extractQqMusicSongId } from '../../utils/extract.js';
+import { extractCloudMusicSongId, extractQqMusicSongId } from '../../utils/extract';
 import { showPixelToast } from '../../utils/pixel-toast';
 import { getNavMetrics } from '../../utils/system-info';
 
@@ -13,7 +13,7 @@ Page({
         writeStatus: 'input',
         parsingLoading: false,
         scanVisible: false,
-        records: [],
+        records: [] as Array<{ id: string; payload: string; tnf: number; type: string }>,
     },
 
     onLoad() {
@@ -25,22 +25,22 @@ Page({
 
     handlePasteTap() {
         wx.getClipboardData({
-            success: (res) => {
+            success: (res: { data?: string }) => {
                 this.updateShareUrlState(res.data || '');
             },
         });
     },
 
-    handleShareUrlChange(event) {
+    handleShareUrlChange(event: WechatMiniprogram.Input) {
         this.updateShareUrlState(event.detail.value || '');
     },
 
-    handleShareUrlInput(event) {
+    handleShareUrlInput(event: WechatMiniprogram.Input) {
         const shareUrl = event && event.detail ? event.detail.value || '' : '';
         this.updateShareUrlState(shareUrl);
     },
 
-    updateShareUrlState(shareUrl) {
+    updateShareUrlState(shareUrl: string) {
         const normalizedInput = (shareUrl || '').trim();
         this.setData({
             shareUrl,
@@ -59,7 +59,7 @@ Page({
         });
     },
 
-    handleParseError(message) {
+    handleParseError(message: string) {
         showPixelToast({
             message,
             theme: 'error',
@@ -67,7 +67,7 @@ Page({
         this.resetParsingState();
     },
 
-    openScanDialog(records) {
+    openScanDialog(records: Array<{ id: string; payload: string; tnf: number; type: string }>) {
         this.setData({
             scanVisible: true,
             records,
@@ -75,7 +75,7 @@ Page({
         this.resetParsingState();
     },
 
-    getRedirectLocation(res) {
+    getRedirectLocation(res: { header?: Record<string, string> }) {
         const header = res && res.header ? res.header : {};
         return header.Location || header.location || '';
     },
@@ -103,13 +103,20 @@ Page({
 
     handleCloudShareUrl() {
         const { shareUrl } = this.data;
-        const musicUrl = shareUrl.match(CLOUD_MUSIC_SHARE_URL_REGEX)[0];
+        const match = shareUrl.match(CLOUD_MUSIC_SHARE_URL_REGEX);
+
+        if (!match) {
+            this.handleParseError('解析失败');
+            return;
+        }
+
+        const musicUrl = match[0];
 
         wx.request({
             url: musicUrl,
             method: 'GET',
             redirect: 'manual',
-            success: (res) => {
+            success: (res: { header?: Record<string, string> }) => {
                 const location = this.getRedirectLocation(res);
                 const songId = location ? extractCloudMusicSongId(location) : '';
 
@@ -141,13 +148,20 @@ Page({
 
     handleQqShareUrl() {
         const { shareUrl } = this.data;
-        const musicUrl = shareUrl.match(QQ_MUSIC_SHARE_URL_REGEX)[0];
+        const match = shareUrl.match(QQ_MUSIC_SHARE_URL_REGEX);
+
+        if (!match) {
+            this.handleParseError('解析失败');
+            return;
+        }
+
+        const musicUrl = match[0];
 
         wx.request({
             url: musicUrl,
             method: 'GET',
             redirect: 'manual',
-            success: (res) => {
+            success: (res: { header?: Record<string, string> }) => {
                 const location = this.getRedirectLocation(res);
                 const songId = location ? extractQqMusicSongId(location) : '';
 

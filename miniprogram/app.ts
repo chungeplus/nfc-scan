@@ -1,6 +1,11 @@
 import { CLOUD_ENV_ID } from './utils/cloud-config';
 
-App({
+interface AppInstance extends IAppOption {
+    checkForMiniProgramUpdate(): void;
+    initCloud(): void;
+}
+
+App<AppInstance>({
     globalData: {
         cloudEnvId: CLOUD_ENV_ID,
         pendingMediaRecord: null,
@@ -35,7 +40,7 @@ App({
                 content: '新版本已经准备好了，是否立即重启更新？',
                 confirmText: '立即更新',
                 cancelText: '稍后',
-                success: (res) => {
+                success: (res: WechatMiniprogram.ShowModalSuccessCallbackResult) => {
                     if (res && res.confirm) {
                         updateManager.applyUpdate();
                     }

@@ -1,7 +1,63 @@
 import { showPixelToast } from '../../utils/pixel-toast';
 import { getNavMetrics } from '../../utils/system-info';
 
-const APP_DATA = [
+interface AppCatalogItem {
+    appName: string;
+    packageName: string;
+}
+
+interface AppCatalogType {
+    typeName: string;
+    apps: AppCatalogItem[];
+}
+
+interface PickerOption {
+    label: string;
+    value: number;
+}
+
+interface TypeViewItem {
+    typeName: string;
+    index: number;
+    className: string;
+}
+
+interface AppViewItem {
+    appName: string;
+    index: number;
+    className: string;
+}
+
+interface ScanRecord {
+    tnf: number;
+    id: string;
+    type: string;
+    payload: string;
+}
+
+interface WriteAppPageData {
+    navHeight: number;
+    appTypeLabel: string;
+    packagePlaceholder: string;
+    canWrite: boolean;
+    packageError: string;
+    APP_DATA: AppCatalogType[];
+    typePickerOptions: PickerOption[];
+    appPickerOptions: PickerOption[];
+    typeViewList: TypeViewItem[];
+    appViewList: AppViewItem[];
+    pickerValue: [number, number];
+    pickerVisible: boolean;
+    tempTypeIndex: number;
+    tempAppIndex: number;
+    appName: string;
+    packageName: string;
+    allowEditPackageName: boolean;
+    scanVisible: boolean;
+    records: ScanRecord[];
+}
+
+const APP_DATA: AppCatalogType[] = [
     {
         typeName: '自定义',
         apps: [
@@ -53,19 +109,16 @@ const APP_DATA = [
 Page({
     data: {
         navHeight: 64,
-        platform: 'android',
-        androidChipClass: 'chip chip--red chip--active',
-        iosChipClass: 'chip chip--blue',
         appTypeLabel: 'Android 应用',
         packagePlaceholder: 'com.tencent.mobileqq',
         canWrite: false,
         packageError: '',
         APP_DATA,
-        typePickerOptions: [],
-        appPickerOptions: [],
-        typeViewList: [],
-        appViewList: [],
-        pickerValue: [1, 0],
+        typePickerOptions: [] as PickerOption[],
+        appPickerOptions: [] as PickerOption[],
+        typeViewList: [] as TypeViewItem[],
+        appViewList: [] as AppViewItem[],
+        pickerValue: [1, 0] as [number, number],
         pickerVisible: false,
         tempTypeIndex: 1,
         tempAppIndex: 0,
@@ -73,8 +126,8 @@ Page({
         packageName: '',
         allowEditPackageName: false,
         scanVisible: false,
-        records: [],
-    },
+        records: [] as ScanRecord[],
+    } as WriteAppPageData,
 
     onLoad() {
         const { navHeight } = getNavMetrics();
@@ -95,9 +148,9 @@ Page({
     handleDefaultPickerValue() {
         const { pickerValue } = this.data;
         const currentType = APP_DATA[pickerValue[0]] || { apps: [] };
-        const currentApp = currentType.apps[pickerValue[1]] || {};
-        const packageName = currentApp.packageName || '';
-        const appName = currentApp.appName || '';
+        const currentApp = currentType.apps[pickerValue[1]];
+        const packageName = currentApp ? currentApp.packageName : '';
+        const appName = currentApp ? currentApp.appName : '';
 
         this.setData({
             packageName,
@@ -107,39 +160,11 @@ Page({
         this.syncPlatformView();
     },
 
-    handleSelectPlatform(event) {
-        const platform = event && event.currentTarget && event.currentTarget.dataset
-            ? event.currentTarget.dataset.platform || 'android'
-            : 'android';
-
-        if (platform === 'ios') {
-            this.setData({
-                platform,
-                appName: this.data.appName || 'iOS 应用',
-                packageName: '',
-                allowEditPackageName: true,
-            });
-            showPixelToast({
-                message: 'iOS 直达能力暂未接入',
-                theme: 'info',
-            });
-            this.syncPlatformView();
-            return;
-        }
-
-        this.setData({
-            platform,
-        });
-        this.handleDefaultPickerValue();
-    },
-
     syncPlatformView() {
-        const platform = this.data.platform;
         const packageName = (this.data.packageName || '').trim();
-        const isAndroid = platform === 'android';
         let packageError = '';
 
-        if (isAndroid && packageName) {
+        if (packageName) {
             const packageRegex = /^[a-zA-Z][\w]*(\.[a-zA-Z][\w]*)+$/;
             if (!packageRegex.test(packageName)) {
                 packageError = '包名格式不正确';
@@ -147,11 +172,9 @@ Page({
         }
 
         this.setData({
-            androidChipClass: isAndroid ? 'chip chip--red chip--active' : 'chip chip--red',
-            iosChipClass: isAndroid ? 'chip chip--blue' : 'chip chip--blue chip--active',
-            appTypeLabel: this.data.appName || (isAndroid ? 'Android 应用' : 'iOS 应用'),
-            packagePlaceholder: isAndroid ? 'com.tencent.mobileqq' : 'com.example.iosapp',
-            canWrite: isAndroid ? Boolean(packageName) && !packageError : false,
+            appTypeLabel: this.data.appName || 'Android 应用',
+            packagePlaceholder: 'com.tencent.mobileqq',
+            canWrite: Boolean(packageName) && !packageError,
             packageError,
         });
     },
@@ -193,7 +216,7 @@ Page({
         });
     },
 
-    handleSelectType(event) {
+    handleSelectType(event: WechatMiniprogram.BaseEvent) {
         const index = Number(
             event && event.currentTarget && event.currentTarget.dataset
                 ? event.currentTarget.dataset.index || 0
@@ -207,7 +230,7 @@ Page({
         });
     },
 
-    handleSelectApp(event) {
+    handleSelectApp(event: WechatMiniprogram.BaseEvent) {
         const index = Number(
             event && event.currentTarget && event.currentTarget.dataset
                 ? event.currentTarget.dataset.index || 0
@@ -221,20 +244,18 @@ Page({
     },
 
     handleConfirmPicker() {
-        const pickerValue = [this.data.tempTypeIndex, this.data.tempAppIndex];
+        const pickerValue = [this.data.tempTypeIndex, this.data.tempAppIndex] as [number, number];
         const currentType = APP_DATA[pickerValue[0]] || { apps: [] };
-        const currentApp = currentType.apps[pickerValue[1]] || {};
-        const packageName = this.data.platform === 'ios'
-            ? ''
-            : currentApp.packageName || '';
-        const appName = currentApp.appName || '';
+        const currentApp = currentType.apps[pickerValue[1]];
+        const packageName = currentApp ? currentApp.packageName : '';
+        const appName = currentApp ? currentApp.appName : '';
 
         this.setData({
             pickerValue,
             packageName,
             appName,
             pickerVisible: false,
-            allowEditPackageName: this.data.platform === 'ios' || pickerValue[0] === 0,
+            allowEditPackageName: pickerValue[0] === 0,
         }, () => {
             this.syncPlatformView();
             this.buildPickerViewData();
@@ -249,7 +270,7 @@ Page({
 
     handlePasteTap() {
         wx.getClipboardData({
-            success: (res) => {
+            success: (res: { data?: string }) => {
                 const packageName = res.data || '';
                 this.setData({
                     packageName,
@@ -259,7 +280,7 @@ Page({
         });
     },
 
-    handlePackageNameInput(event) {
+    handlePackageNameInput(event: WechatMiniprogram.Input) {
         const packageName = event && event.detail ? event.detail.value || '' : '';
         this.setData({
             packageName,
@@ -268,14 +289,6 @@ Page({
     },
 
     handleOpenScanDialog() {
-        if (this.data.platform === 'ios') {
-            showPixelToast({
-                message: 'iOS 直达能力暂未接入',
-                theme: 'warning',
-            });
-            return;
-        }
-
         const packageName = (this.data.packageName || '').trim();
         if (!packageName) {
             showPixelToast({

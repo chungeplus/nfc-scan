@@ -8,14 +8,69 @@ import {
     readWifiScanIssue,
     scanNearbyWifi,
 } from '../../utils/wifi-manager';
+import type { WifiErrorLike, WifiListEntry, WifiRuntime } from '../../utils/wifi-manager';
 import {
     WIFI_WSC_MIME_TYPE,
     buildWifiConfigPayload,
 } from '../../utils/wifi-ndef';
+import { arrayBufferToHex, string2ArrayBuffer } from '../../utils/convert';
 
-function buildPickerWifiList(currentWifi = null, nearbyWifiList = [], activeSsid = '') {
+interface PickerWifiItem {
+    SSID: string;
+    className: string;
+}
+
+interface WifiWriteRecord {
+    idHex: string;
+    typeHex: string;
+    payloadHex: string;
+}
+
+interface WifiWriteRequest {
+    recordStrategy: 'documented-records';
+    records: WifiWriteRecord[];
+}
+
+interface FetchNearbyWifiOptions {
+    showEmptyMessage?: boolean;
+}
+
+interface WriteWifiPageData {
+    navHeight: number;
+    currentWifi: WechatMiniprogram.WifiInfo | null;
+    selectedSsid: string;
+    pendingSelectedSsid: string;
+    pickerWifiList: PickerWifiItem[];
+    nearbyWifiList: WifiListEntry[];
+    wifiPassword: string;
+    showPassword: boolean;
+    scanVisible: boolean;
+    records: Array<Record<string, unknown>>;
+    writeRequest: WifiWriteRequest | null;
+    scanningNearbyWifi: boolean;
+    pickerMessage: string;
+    pickerAction: '' | 'open_app_authorize_setting';
+    formMessage: string;
+    wifiRuntime: WifiRuntime | null;
+    pickerVisible: boolean;
+}
+
+function asWifiErrorLike(error: unknown): WifiErrorLike {
+    if (typeof error === 'object' && error !== null) {
+        return error as WifiErrorLike;
+    }
+
+    return {};
+}
+
+function buildPickerWifiList(
+    currentWifi: WechatMiniprogram.WifiInfo | null = null,
+    nearbyWifiList: WifiListEntry[] = [],
+    activeSsid = '',
+    committedSsid = '',
+): PickerWifiItem[] {
     const currentSsid = currentWifi && currentWifi.SSID ? currentWifi.SSID : '';
-    const nearbyBySsid = new Map();
+    const nearbyBySsid = new Map<string, WifiListEntry>();
 
     nearbyWifiList.forEach((item) => {
         if (item && item.SSID) {
@@ -23,7 +78,7 @@ function buildPickerWifiList(currentWifi = null, nearbyWifiList = [], activeSsid
         }
     });
 
-    const combinedList = [];
+    const combinedList: Array<{ SSID: string }> = [];
 
     if (currentSsid) {
         combinedList.push({
@@ -31,7 +86,9 @@ function buildPickerWifiList(currentWifi = null, nearbyWifiList = [], activeSsid
         });
     }
 
-    nearbyWifiList.forEach((item) => {
+    const dedupedNearbyWifiList = Array.from(nearbyBySsid.values());
+
+    dedupedNearbyWifiList.forEach((item) => {
         if (!item || !item.SSID || item.SSID === currentSsid) {
             return;
         }
@@ -41,37 +98,58 @@ function buildPickerWifiList(currentWifi = null, nearbyWifiList = [], activeSsid
         });
     });
 
-    return combinedList.map((item) => ({
-        ...item,
-        className: item.SSID === activeSsid
-            ? 'picker-preview__item picker-preview__item--active'
-            : 'picker-preview__item',
-    }));
+    return combinedList.map((item) => {
+        const isActive = item.SSID === activeSsid;
+        const shouldLock = isActive && activeSsid && activeSsid !== committedSsid;
+
+        return {
+            ...item,
+            className: [
+                'picker-preview__item',
+                isActive ? 'picker-preview__item--active' : '',
+                shouldLock ? 'motion-scan-lock' : '',
+            ].filter(Boolean).join(' '),
+        };
+    });
 }
 
-function isDevtoolsRuntime(runtime = {}) {
+function isDevtoolsRuntime(runtime: Partial<WifiRuntime> = {}) {
     return String(runtime.platform || '').toLowerCase() === 'devtools';
+}
+
+function buildWifiWriteRequest(ssid: string, password: string): WifiWriteRequest {
+    return {
+        recordStrategy: 'documented-records',
+        records: [
+            {
+                idHex: '',
+                typeHex: arrayBufferToHex(string2ArrayBuffer(WIFI_WSC_MIME_TYPE)),
+                payloadHex: arrayBufferToHex(buildWifiConfigPayload({ ssid, password })),
+            },
+        ],
+    };
 }
 
 Page({
     data: {
         navHeight: 64,
-        currentWifi: null,
+        currentWifi: null as WechatMiniprogram.WifiInfo | null,
         selectedSsid: '',
         pendingSelectedSsid: '',
-        pickerWifiList: [],
-        nearbyWifiList: [],
+        pickerWifiList: [] as PickerWifiItem[],
+        nearbyWifiList: [] as WifiListEntry[],
         wifiPassword: '',
         showPassword: false,
         scanVisible: false,
-        records: [],
+        records: [] as Array<Record<string, unknown>>,
+        writeRequest: null as WifiWriteRequest | null,
         scanningNearbyWifi: false,
         pickerMessage: '',
-        pickerAction: '',
+        pickerAction: '' as WriteWifiPageData['pickerAction'],
         formMessage: '',
-        wifiRuntime: null,
+        wifiRuntime: null as WifiRuntime | null,
         pickerVisible: false,
-    },
+    } as WriteWifiPageData,
 
     onLoad() {
         const { navHeight } = getNavMetrics();
@@ -88,7 +166,7 @@ Page({
         this.resetSensitiveState();
     },
 
-    syncPickerWifiList(activeSsid) {
+    syncPickerWifiList(activeSsid?: string) {
         const nextActiveSsid = typeof activeSsid === 'string'
             ? activeSsid
             : this.data.pendingSelectedSsid || this.data.selectedSsid;
@@ -97,7 +175,8 @@ Page({
             pickerWifiList: buildPickerWifiList(
                 this.data.currentWifi,
                 this.data.nearbyWifiList,
-                nextActiveSsid
+                nextActiveSsid,
+                this.data.selectedSsid
             ),
         });
     },
@@ -110,7 +189,7 @@ Page({
             const hasManualSelection = Boolean(
                 (this.data.selectedSsid || '').trim() || (this.data.pendingSelectedSsid || '').trim()
             );
-            const nextState = {
+            const nextState: Partial<WriteWifiPageData> = {
                 currentWifi,
             };
 
@@ -122,7 +201,7 @@ Page({
             this.setData(nextState, () => {
                 this.syncPickerWifiList(hasManualSelection ? undefined : selectedSsid);
             });
-        } catch (error) {
+        } catch (error: unknown) {
             this.setData({
                 currentWifi: null,
             }, () => {
@@ -131,7 +210,7 @@ Page({
         }
     },
 
-    async fetchNearbyWifi(options = {}) {
+    async fetchNearbyWifi(options: FetchNearbyWifiOptions = {}) {
         const showEmptyMessage = Boolean(options.showEmptyMessage);
 
         this.setData({
@@ -141,7 +220,7 @@ Page({
             formMessage: '',
         });
 
-        const scanIssue = readWifiScanIssue(this.data.wifiRuntime);
+        const scanIssue = readWifiScanIssue(this.data.wifiRuntime || undefined);
         if (scanIssue) {
             this.setData({
                 scanningNearbyWifi: false,
@@ -163,11 +242,11 @@ Page({
             }, () => {
                 this.syncPickerWifiList();
             });
-        } catch (error) {
-            const nextScanIssue = readWifiScanIssue(this.data.wifiRuntime);
-            const pickerMessage = isDevtoolsRuntime(this.data.wifiRuntime)
+        } catch (error: unknown) {
+            const nextScanIssue = readWifiScanIssue(this.data.wifiRuntime || undefined);
+            const pickerMessage = isDevtoolsRuntime(this.data.wifiRuntime || undefined)
                 ? ''
-                : describeWifiError(error, this.data.wifiRuntime, { context: 'scan' });
+                : describeWifiError(asWifiErrorLike(error), this.data.wifiRuntime || undefined, { context: 'scan' });
 
             this.setData({
                 scanningNearbyWifi: false,
@@ -208,7 +287,7 @@ Page({
         });
     },
 
-    handlePickWifi(event) {
+    handlePickWifi(event: WechatMiniprogram.BaseEvent) {
         const pendingSelectedSsid = event && event.currentTarget && event.currentTarget.dataset
             ? event.currentTarget.dataset.ssid || ''
             : '';
@@ -268,7 +347,7 @@ Page({
         }
     },
 
-    handlePasswordInput(event) {
+    handlePasswordInput(event: WechatMiniprogram.Input) {
         const wifiPassword = event && event.detail ? event.detail.value || '' : '';
 
         this.setData({
@@ -303,17 +382,8 @@ Page({
         this.setData({
             scanVisible: true,
             formMessage: '',
-            records: [
-                {
-                    tnf: 2,
-                    id: 'wifi',
-                    type: WIFI_WSC_MIME_TYPE,
-                    payload: buildWifiConfigPayload({
-                        ssid: selectedSsid,
-                        password: wifiPassword,
-                    }),
-                },
-            ],
+            records: [],
+            writeRequest: buildWifiWriteRequest(selectedSsid, wifiPassword),
         });
     },
 
@@ -321,6 +391,7 @@ Page({
         this.setData({
             scanVisible: false,
             records: [],
+            writeRequest: null,
         });
     },
 
@@ -328,6 +399,7 @@ Page({
         this.setData({
             scanVisible: false,
             records: [],
+            writeRequest: null,
             wifiPassword: '',
             showPassword: false,
         });

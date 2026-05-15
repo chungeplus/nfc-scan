@@ -39,4 +39,20 @@ for (const relativePath of uiTsFiles) {
   assert.match(source, /(Component|Page)\(/, `${relativePath} should remain a mini program runtime module`);
 }
 
+const pageTsFiles = [
+  'miniprogram/app.ts',
+  'miniprogram/pages/my-files/my-files.ts',
+  'miniprogram/pages/write-menu/write-menu.ts',
+  'miniprogram/pages/write-app/write-app.ts',
+  'miniprogram/pages/write-web/write-web.ts',
+  'miniprogram/pages/write-music/write-music.ts',
+  'miniprogram/pages/write-local-media/write-local-media.ts',
+  'miniprogram/pages/write-wifi/write-wifi.ts',
+];
+
+for (const relativePath of pageTsFiles) {
+  const source = await read(relativePath);
+  assert.match(source, /(App|Page)(<[\s\S]*?>)?\(/, `${relativePath} should remain a mini program entrypoint`);
+}
+
 console.log('PASS verify-miniprogram-typescript-migration task1');

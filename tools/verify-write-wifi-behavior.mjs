@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import ts from 'typescript';
 import vm from 'node:vm';
 
-const sourcePath = new URL('../miniprogram/pages/write-wifi/write-wifi.js', import.meta.url);
+const sourcePath = new URL('../miniprogram/pages/write-wifi/write-wifi.ts', import.meta.url);
 const rawSource = await fs.readFile(sourcePath, 'utf8');
 
 function stripImports(source) {
@@ -20,7 +21,14 @@ function createPageHarness(stubs = {}) {
     ...stubs,
   };
 
-  vm.runInNewContext(stripImports(rawSource), context, {
+  const transpiled = ts.transpileModule(stripImports(rawSource), {
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2020,
+    },
+  }).outputText;
+
+  vm.runInNewContext(transpiled, context, {
     filename: sourcePath.pathname,
   });
 
@@ -50,6 +58,71 @@ function createPageHarness(stubs = {}) {
 
     return page;
   };
+}
+
+{
+  const createPage = createPageHarness({
+    getNavMetrics: () => ({ navHeight: 64 }),
+    describeWifiError: () => 'error',
+    getConnectedWifiInfo: async () => null,
+    getWifiRuntime: () => ({ platform: 'android' }),
+    initWifiModule: async () => {},
+    openWifiAppAuthorizeSetting: async () => true,
+    readWifiScanIssue: () => null,
+    scanNearbyWifi: async () => [{ SSID: 'Wifi-B' }],
+    WIFI_WSC_MIME_TYPE: 'application/vnd.wfa.wsc',
+    buildWifiConfigPayload: () => new Uint8Array(),
+  });
+  const page = createPage();
+
+  page.setData({
+    selectedSsid: 'Wifi-A',
+    pendingSelectedSsid: 'Wifi-B',
+    nearbyWifiList: [{ SSID: 'Wifi-B' }],
+  });
+  page.syncPickerWifiList('Wifi-B');
+
+  assert.match(page.data.pickerWifiList[0].className, /motion-scan-lock/);
+
+  page.handleConfirmWifiSelection();
+  assert.equal(page.data.selectedSsid, 'Wifi-B');
+  assert.doesNotMatch(page.data.pickerWifiList[0].className, /motion-scan-lock/);
+}
+
+{
+  const createPage = createPageHarness({
+    getNavMetrics: () => ({ navHeight: 64 }),
+    describeWifiError: () => 'error',
+    getConnectedWifiInfo: async () => null,
+    getWifiRuntime: () => ({ platform: 'android' }),
+    initWifiModule: async () => {},
+    openWifiAppAuthorizeSetting: async () => true,
+    readWifiScanIssue: () => null,
+    scanNearbyWifi: async () => [],
+    WIFI_WSC_MIME_TYPE: 'application/vnd.wfa.wsc',
+    buildWifiConfigPayload: () => new Uint8Array(),
+  });
+  const page = createPage();
+
+  page.setData({
+    selectedSsid: 'Wifi-A',
+    pendingSelectedSsid: 'Wifi-B',
+    nearbyWifiList: [
+      { SSID: 'Wifi-B' },
+      { SSID: 'Wifi-B' },
+      { SSID: 'Wifi-C' },
+    ],
+  });
+  page.syncPickerWifiList('Wifi-B');
+
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(page.data.pickerWifiList.map((item) => item.SSID))),
+    ['Wifi-B', 'Wifi-C']
+  );
+  assert.equal(
+    page.data.pickerWifiList.filter((item) => item.SSID === 'Wifi-B').length,
+    1
+  );
 }
 
 {
@@ -187,6 +260,113 @@ function createPageHarness(stubs = {}) {
   page.handleConfirmWifiSelection();
 
   assert.equal(page.data.showPassword, false);
+}
+
+{
+  const typeBuffer = new Uint8Array([0xaa, 0xbb]).buffer;
+  const payloadBuffer = new Uint8Array([0x10, 0x0e]).buffer;
+  const toHex = (buffer) =>
+    Array.from(new Uint8Array(buffer))
+      .map((byte) => byte.toString(16).padStart(2, '0'))
+      .join('');
+  const createPage = createPageHarness({
+    getNavMetrics: () => ({ navHeight: 64 }),
+    describeWifiError: () => 'error',
+    getConnectedWifiInfo: async () => null,
+    getWifiRuntime: () => ({ platform: 'android' }),
+    initWifiModule: async () => {},
+    openWifiAppAuthorizeSetting: async () => true,
+    readWifiScanIssue: () => null,
+    scanNearbyWifi: async () => [],
+    string2ArrayBuffer: () => typeBuffer,
+    arrayBufferToHex: toHex,
+    WIFI_WSC_MIME_TYPE: 'application/vnd.wfa.wsc',
+    buildWifiConfigPayload: () => payloadBuffer,
+  });
+  const page = createPage();
+
+  page.setData({
+    selectedSsid: 'Wifi-A',
+    wifiPassword: 'Pixel12345678',
+  });
+  page.handleOpenScanDialog();
+
+  assert.equal(page.data.scanVisible, true);
+  assert.equal(page.data.records.length, 0);
+  assert.equal(page.data.writeRequest.recordStrategy, 'documented-records');
+  assert.deepEqual(JSON.parse(JSON.stringify(page.data.writeRequest.records)), [
+    {
+      idHex: '',
+      typeHex: 'aabb',
+      payloadHex: '100e',
+    },
+  ]);
+}
+
+{
+  const firstTypeBuffer = new Uint8Array([0xaa, 0xbb]).buffer;
+  const payloadBySsid = {
+    'Wifi-A': new Uint8Array([0x10, 0x0e]).buffer,
+    'Wifi-B': new Uint8Array([0x20, 0x0f]).buffer,
+  };
+  const toHex = (buffer) =>
+    Array.from(new Uint8Array(buffer))
+      .map((byte) => byte.toString(16).padStart(2, '0'))
+      .join('');
+  const createPage = createPageHarness({
+    getNavMetrics: () => ({ navHeight: 64 }),
+    describeWifiError: () => 'error',
+    getConnectedWifiInfo: async () => null,
+    getWifiRuntime: () => ({ platform: 'android' }),
+    initWifiModule: async () => {},
+    openWifiAppAuthorizeSetting: async () => true,
+    readWifiScanIssue: () => null,
+    scanNearbyWifi: async () => [],
+    string2ArrayBuffer: () => firstTypeBuffer,
+    arrayBufferToHex: toHex,
+    WIFI_WSC_MIME_TYPE: 'application/vnd.wfa.wsc',
+    buildWifiConfigPayload: ({ ssid }) => payloadBySsid[ssid],
+  });
+  const page = createPage();
+
+  page.setData({
+    selectedSsid: 'Wifi-A',
+    wifiPassword: 'Pixel12345678',
+  });
+  page.handleOpenScanDialog();
+
+  const firstRequest = JSON.parse(JSON.stringify(page.data.writeRequest));
+
+  page.setData({
+    selectedSsid: 'Wifi-B',
+    wifiPassword: 'Pixel87654321',
+    writeRequest: {
+      recordStrategy: 'documented-records',
+      records: [
+        {
+          idHex: 'stale-id',
+          typeHex: 'stale-type',
+          payloadHex: 'stale-payload',
+        },
+      ],
+    },
+  });
+  page.handleOpenScanDialog();
+
+  assert.notDeepEqual(
+    JSON.parse(JSON.stringify(page.data.writeRequest)),
+    firstRequest
+  );
+  assert.deepEqual(JSON.parse(JSON.stringify(page.data.writeRequest)), {
+    recordStrategy: 'documented-records',
+    records: [
+      {
+        idHex: '',
+        typeHex: 'aabb',
+        payloadHex: '200f',
+      },
+    ],
+  });
 }
 
 console.log('PASS verify-write-wifi-behavior');

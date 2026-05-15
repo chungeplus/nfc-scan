@@ -1,15 +1,43 @@
 import { showPixelToast } from '../../utils/pixel-toast';
 import { deleteMediaFile, listMediaFiles } from '../../utils/media-share-service';
 import { formatFileSize, normalizeMediaRecord, sumMediaFileSize } from '../../utils/media';
+import type { NormalizedMediaRecord } from '../../utils/media';
 import { getNavMetrics } from '../../utils/system-info';
 
 const ROOT_PAGE_PREFIX = '/pages';
+
+interface MyFilesPageData {
+    navHeight: number;
+    loading: boolean;
+    records: NormalizedMediaRecord[];
+    totalCount: number;
+    totalSize: number;
+    totalSizeText: string;
+    deleteDialogVisible: boolean;
+    deleting: boolean;
+    pendingDeleteId: string;
+    pendingDeleteName: string;
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+    if (
+        typeof error === 'object'
+        && error !== null
+        && 'message' in error
+        && typeof error.message === 'string'
+        && error.message
+    ) {
+        return error.message;
+    }
+
+    return fallback;
+}
 
 Page({
     data: {
         navHeight: 64,
         loading: false,
-        records: [],
+        records: [] as MyFilesPageData['records'],
         totalCount: 0,
         totalSize: 0,
         totalSizeText: '0B',
@@ -17,7 +45,7 @@ Page({
         deleting: false,
         pendingDeleteId: '',
         pendingDeleteName: '',
-    },
+    } as MyFilesPageData,
 
     onLoad() {
         const { navHeight } = getNavMetrics();
@@ -60,7 +88,10 @@ Page({
             const records = Array.isArray(result.records)
                 ? result.records.map(item => normalizeMediaRecord(item))
                 : [];
-            const summary = result.summary || {};
+            const summary = (result.summary || {}) as {
+                totalCount?: number;
+                totalSize?: number;
+            };
             const totalCount = Number.isFinite(Number(summary.totalCount))
                 ? Number(summary.totalCount)
                 : records.length;
@@ -74,9 +105,9 @@ Page({
                 totalSize,
                 totalSizeText: formatFileSize(totalSize),
             });
-        } catch (error) {
+        } catch (error: unknown) {
             showPixelToast({
-                message: error && error.message ? error.message : '加载文件失败',
+                message: getErrorMessage(error, '加载文件失败'),
                 theme: 'error',
             });
         } finally {
@@ -93,7 +124,7 @@ Page({
         });
     },
 
-    handleReuseRecord(event) {
+    handleReuseRecord(event: WechatMiniprogram.BaseEvent) {
         const recordId = event && event.currentTarget && event.currentTarget.dataset
             ? event.currentTarget.dataset.id || ''
             : '';
@@ -115,7 +146,7 @@ Page({
         });
     },
 
-    handleCopyLink(event) {
+    handleCopyLink(event: WechatMiniprogram.BaseEvent) {
         const recordId = event && event.currentTarget && event.currentTarget.dataset
             ? event.currentTarget.dataset.id || ''
             : '';
@@ -146,7 +177,7 @@ Page({
         });
     },
 
-    handlePromptDelete(event) {
+    handlePromptDelete(event: WechatMiniprogram.BaseEvent) {
         const recordId = event && event.currentTarget && event.currentTarget.dataset
             ? event.currentTarget.dataset.id || ''
             : '';
@@ -215,9 +246,9 @@ Page({
                 message: '文件已删除，相关 NFC 链接已失效',
                 theme: 'success',
             });
-        } catch (error) {
+        } catch (error: unknown) {
             showPixelToast({
-                message: error && error.message ? error.message : '删除失败',
+                message: getErrorMessage(error, '删除失败'),
                 theme: 'error',
             });
         } finally {

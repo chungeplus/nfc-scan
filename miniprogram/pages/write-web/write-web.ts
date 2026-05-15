@@ -8,7 +8,7 @@ Page({
         urlError: '',
         canSubmit: false,
         scanVisible: false,
-        records: [],
+        records: [] as Array<{ id: string; payload: string; tnf: number; type: string }>,
     },
 
     onLoad() {
@@ -27,12 +27,12 @@ Page({
         });
     },
 
-    handleWebUrlInput(event) {
+    handleWebUrlInput(event: WechatMiniprogram.Input) {
         const webUrl = event && event.detail ? event.detail.value || '' : '';
         this.updateWebUrlState(webUrl);
     },
 
-    updateWebUrlState(webUrl) {
+    updateWebUrlState(webUrl: string) {
         const normalizedInput = (webUrl || '').trim();
         let urlError = '';
 
@@ -72,13 +72,13 @@ Page({
         this.parseShareUrl();
     },
 
-    validateUrl(url) {
+    validateUrl(url: string) {
         const normalizedUrl = this.normalizeUrl(url);
         const urlRegex = /^https?:\/\/(?:(?:localhost)|(?:\d{1,3}(?:\.\d{1,3}){3})|(?:[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+))(?::\d{1,5})?(?:[/?#][^\s]*)?$/i;
         return urlRegex.test(normalizedUrl);
     },
 
-    normalizeUrl(url) {
+    normalizeUrl(url: string) {
         const trimmedUrl = (url || '').trim();
 
         if (!trimmedUrl.startsWith('http://') && !trimmedUrl.startsWith('https://')) {
