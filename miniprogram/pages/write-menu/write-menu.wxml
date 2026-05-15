@@ -62,8 +62,8 @@
                             <pixel-icon name="nfc" size="48" />
                         </view>
                         <view class="body">
-                            <view class="card__title">WLAN 涓撳尯</view>
-                            <view class="meta">鑷姩甯﹀嚭褰撳墠缃戠粶锛屾垨鎵弿闄勮繎 WLAN锛屽啀鎶婇厤缃戜俊鎭啓鍏?NFC銆?/view>
+                            <view class="card__title">WLAN 专区</view>
+                            <view class="meta">自动带出当前网络，或扫描附近 WLAN，再把配网信息写入 NFC。</view>
                         </view>
                     </view>
                 </view>
