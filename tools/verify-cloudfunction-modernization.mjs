@@ -20,4 +20,12 @@ assert.equal(tsconfig.extends, '../../tsconfig.base.json');
 assert.equal(tsconfig.compilerOptions.rootDir, 'src');
 assert.equal(tsconfig.compilerOptions.outDir, '.');
 
+const sourceEntry = await fs.readFile(
+  path.join(rootDir, 'cloudfunctions/media-share-service/src/index.ts'),
+  'utf8',
+);
+
+assert.match(sourceEntry, /export async function main/, 'src/index.ts should export the typed main entrypoint');
+assert.match(sourceEntry, /MediaShareServiceEvent/, 'src/index.ts should type the incoming event');
+
 console.log('PASS verify-cloudfunction-modernization task1');
