@@ -4,69 +4,30 @@
     <view class="support-chip">{{pageHint}}</view>
 
     <view class="field">
-        <view class="field__head">
-            <view class="label">当前网络</view>
-            <view class="selection-pill" wx:if="{{selectedSsid}}">{{selectedSsid}}</view>
-        </view>
-
-        <view
-            wx:if="{{currentWifi && currentWifi.SSID}}"
-            class="wifi-card {{selectedSsid === currentWifi.SSID ? 'wifi-card--active' : ''}}"
-            bindtap="handleSelectCurrentWifi"
-        >
-            <view class="wifi-card__head">
-                <view class="wifi-name">{{currentWifi.SSID}}</view>
-                <view class="wifi-tag">当前</view>
-            </view>
-        </view>
-
-        <view class="hint" wx:elif="{{loadingCurrentWifi}}">读取当前连接中...</view>
-        <view class="field__error" wx:elif="{{currentWifiMessage}}">{{currentWifiMessage}}</view>
-        <view class="hint" wx:else>未读取到当前连接，可改为扫描附近网络</view>
-    </view>
-
-    <view class="field">
-        <view class="field__head">
-            <view class="label">附近网络</view>
-        </view>
-
-        <button class="btn btn--scan" bindtap="handleScanNearbyWifi" loading="{{scanningNearbyWifi}}">
-            扫描附近网络
-        </button>
-        <view class="field__error" wx:if="{{nearbyWifiMessage}}">{{nearbyWifiMessage}}</view>
-        <button
-            wx:if="{{nearbyWifiAction === 'open_app_authorize_setting'}}"
-            class="btn btn--secondary"
-            bindtap="handleOpenWechatLocationSetting"
-        >
-            打开微信定位权限
-        </button>
-
-        <scroll-view class="wifi-list" scroll-y="{{true}}" wx:if="{{nearbyWifiList.length}}">
-            <view
-                wx:for="{{nearbyWifiList}}"
-                wx:key="SSID"
-                class="wifi-list__item {{selectedSsid === item.SSID ? 'wifi-list__item--active' : ''}}"
-                data-ssid="{{item.SSID}}"
-                bindtap="handleSelectNearbyWifi"
-            >
-                <view class="wifi-card__head">
-                    <view class="wifi-name">{{item.SSID}}</view>
-                    <view class="wifi-signal">信号 {{item.signalStrength}}</view>
+        <view class="label">WLAN</view>
+        <view class="box box--select" bindtap="handleOpenPicker">
+            <view class="box__main">
+                <view class="box__value {{selectedSsid ? '' : 'box__value--placeholder'}}">
+                    {{selectedSsid || '选择 WLAN'}}
+                </view>
+                <view class="box__meta" wx:if="{{currentWifi && currentWifi.SSID && selectedSsid === currentWifi.SSID}}">
+                    当前网络
                 </view>
             </view>
-        </scroll-view>
+            <view class="box__arrow {{pickerVisible ? 'box__arrow--open' : ''}}">▶</view>
+        </view>
+        <view class="hint" wx:if="{{loadingCurrentWifi}}">读取当前 WLAN...</view>
+        <view class="field__error" wx:elif="{{currentWifiMessage && !selectedSsid}}">{{currentWifiMessage}}</view>
     </view>
 
     <view class="field">
-        <view class="field__head">
-            <view class="label">密码</view>
-        </view>
+        <view class="label">密码</view>
         <input
-            class="box"
+            class="box box--input {{selectedSsid ? '' : 'box--disabled'}}"
             password="{{true}}"
             value="{{wifiPassword}}"
-            placeholder="输入 WLAN 密码"
+            placeholder="{{selectedSsid ? '输入 WLAN 密码' : '先选择 WLAN'}}"
+            disabled="{{!selectedSsid}}"
             bindinput="handlePasswordInput"
         />
     </view>
@@ -79,6 +40,71 @@
         写入 NFC 标签
     </button>
     <view class="field__error field__error--submit" wx:if="{{formMessage}}">{{formMessage}}</view>
+</view>
+
+<view wx:if="{{pickerVisible}}" class="picker-preview" style="top: {{navHeight}}px;" bindtap="handleClosePicker">
+    <view class="picker-preview__card animate-slideUpFromBottom" catchtap="noop">
+        <view class="picker-preview__titlebar">
+            <view class="picker-preview__title">选择 WLAN</view>
+            <button
+                class="picker-preview__refresh"
+                bindtap="handleRefreshNearbyWifi"
+                loading="{{scanningNearbyWifi}}"
+            >
+                刷新
+            </button>
+        </view>
+
+        <view class="picker-preview__message" wx:if="{{pickerMessage}}">
+            {{pickerMessage}}
+        </view>
+
+        <button
+            wx:if="{{pickerAction === 'open_app_authorize_setting'}}"
+            class="dialog-btn dialog-btn--blue dialog-btn--inline"
+            bindtap="handleOpenWechatLocationSetting"
+        >
+            打开微信定位权限
+        </button>
+
+        <scroll-view class="picker-preview__list" scroll-y="{{true}}">
+            <view
+                wx:for="{{pickerWifiList}}"
+                wx:key="SSID"
+                class="{{item.className}}"
+                data-ssid="{{item.SSID}}"
+                bindtap="handlePickWifi"
+            >
+                <view class="picker-preview__item-main">
+                    <view class="picker-preview__ssid">{{item.SSID}}</view>
+                    <view class="picker-preview__meta">
+                        <view class="picker-preview__badge" wx:if="{{item.isCurrent}}">当前</view>
+                        <view class="picker-preview__signal" wx:if="{{item.signalLabel}}">
+                            {{item.signalLabel}}
+                        </view>
+                    </view>
+                </view>
+            </view>
+
+            <view class="picker-preview__empty" wx:if="{{!pickerWifiList.length && scanningNearbyWifi}}">
+                扫描附近 WLAN...
+            </view>
+            <view class="picker-preview__empty" wx:elif="{{!pickerWifiList.length}}">
+                暂无可用 WLAN
+            </view>
+        </scroll-view>
+
+        <view class="picker-preview__actions">
+            <button class="dialog-btn" bindtap="handleClosePicker">取消</button>
+            <button
+                class="dialog-btn dialog-btn--green"
+                disabled="{{!pendingSelectedSsid}}"
+                bindtap="handleConfirmWifiSelection"
+            >
+                确认
+            </button>
+        </view>
+    </view>
 </view>
 
 <scan-dialog visible="{{scanVisible}}" records="{{records}}" bind:close="handleCloseScanDialog" />

@@ -13,13 +13,20 @@ const [wxmlSource, jsSource] = await Promise.all([
 ]);
 
 assert.doesNotMatch(wxmlSource, /status-banner/);
-assert.match(wxmlSource, /field__error/);
-assert.match(wxmlSource, /打开微信定位权限/);
-assert.match(jsSource, /currentWifiMessage/);
-assert.match(jsSource, /nearbyWifiMessage/);
-assert.match(jsSource, /nearbyWifiAction/);
+assert.match(wxmlSource, /box--select/);
+assert.match(wxmlSource, /picker-preview/);
+assert.match(wxmlSource, /picker-preview__list/);
+assert.match(jsSource, /pickerVisible/);
+assert.match(jsSource, /pendingSelectedSsid/);
+assert.match(jsSource, /pickerWifiList/);
+assert.match(jsSource, /handleOpenPicker/);
+assert.match(jsSource, /handleRefreshNearbyWifi/);
+assert.match(jsSource, /handleConfirmWifiSelection/);
 assert.match(jsSource, /handleOpenWechatLocationSetting/);
 assert.match(jsSource, /formMessage/);
+assert.doesNotMatch(wxmlSource, /wifi-list__item/);
+assert.doesNotMatch(jsSource, /handleSelectNearbyWifi/);
+assert.doesNotMatch(jsSource, /handleSelectCurrentWifi/);
 assert.doesNotMatch(wxmlSource, /<pixel-toast/i);
 assert.doesNotMatch(jsSource, /statusMessage/);
 

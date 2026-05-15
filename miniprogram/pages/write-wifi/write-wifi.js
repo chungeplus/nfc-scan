@@ -14,11 +14,57 @@ import {
     buildWifiConfigPayload,
 } from '../../utils/wifi-ndef';
 
+function buildPickerWifiList(currentWifi = null, nearbyWifiList = [], activeSsid = '') {
+    const currentSsid = currentWifi && currentWifi.SSID ? currentWifi.SSID : '';
+    const nearbyBySsid = new Map();
+
+    nearbyWifiList.forEach((item) => {
+        if (item && item.SSID) {
+            nearbyBySsid.set(item.SSID, item);
+        }
+    });
+
+    const combinedList = [];
+
+    if (currentSsid) {
+        const currentMatch = nearbyBySsid.get(currentSsid);
+
+        combinedList.push({
+            SSID: currentSsid,
+            signalStrength: currentMatch ? currentMatch.signalStrength : 0,
+            isCurrent: true,
+        });
+    }
+
+    nearbyWifiList.forEach((item) => {
+        if (!item || !item.SSID || item.SSID === currentSsid) {
+            return;
+        }
+
+        combinedList.push({
+            ...item,
+            isCurrent: false,
+        });
+    });
+
+    return combinedList.map((item) => ({
+        ...item,
+        className: item.SSID === activeSsid
+            ? 'picker-preview__item picker-preview__item--active'
+            : 'picker-preview__item',
+        signalLabel: Number.isFinite(item.signalStrength) && item.signalStrength > 0
+            ? `信号 ${item.signalStrength}`
+            : '',
+    }));
+}
+
 Page({
     data: {
         navHeight: 64,
         currentWifi: null,
         selectedSsid: '',
+        pendingSelectedSsid: '',
+        pickerWifiList: [],
         nearbyWifiList: [],
         wifiPassword: '',
         scanVisible: false,
@@ -26,11 +72,12 @@ Page({
         loadingCurrentWifi: true,
         scanningNearbyWifi: false,
         currentWifiMessage: '',
-        nearbyWifiMessage: '',
-        nearbyWifiAction: '',
+        pickerMessage: '',
+        pickerAction: '',
         formMessage: '',
         wifiRuntime: null,
         pageHint: '仅限 WPA2-Personal',
+        pickerVisible: false,
     },
 
     onLoad() {
@@ -48,6 +95,20 @@ Page({
         this.resetSensitiveState();
     },
 
+    syncPickerWifiList(activeSsid) {
+        const nextActiveSsid = typeof activeSsid === 'string'
+            ? activeSsid
+            : this.data.pendingSelectedSsid || this.data.selectedSsid;
+
+        this.setData({
+            pickerWifiList: buildPickerWifiList(
+                this.data.currentWifi,
+                this.data.nearbyWifiList,
+                nextActiveSsid
+            ),
+        });
+    },
+
     async bootstrapWifiPage() {
         try {
             await initWifiModule();
@@ -57,8 +118,11 @@ Page({
             this.setData({
                 currentWifi,
                 selectedSsid,
+                pendingSelectedSsid: selectedSsid,
                 loadingCurrentWifi: false,
                 currentWifiMessage: '',
+            }, () => {
+                this.syncPickerWifiList(selectedSsid);
             });
         } catch (error) {
             this.setData({
@@ -66,15 +130,19 @@ Page({
                 currentWifiMessage: shouldShowConnectedWifiError(error, this.data.wifiRuntime)
                     ? describeWifiError(error, this.data.wifiRuntime, { context: 'current' })
                     : '',
+            }, () => {
+                this.syncPickerWifiList();
             });
         }
     },
 
-    async handleScanNearbyWifi() {
+    async fetchNearbyWifi(options = {}) {
+        const showEmptyMessage = Boolean(options.showEmptyMessage);
+
         this.setData({
             scanningNearbyWifi: true,
-            nearbyWifiMessage: '',
-            nearbyWifiAction: '',
+            pickerMessage: '',
+            pickerAction: '',
             formMessage: '',
         });
 
@@ -82,8 +150,8 @@ Page({
         if (scanIssue) {
             this.setData({
                 scanningNearbyWifi: false,
-                nearbyWifiMessage: scanIssue.message,
-                nearbyWifiAction: scanIssue.action || '',
+                pickerMessage: scanIssue.message,
+                pickerAction: scanIssue.action || '',
             });
             return;
         }
@@ -95,16 +163,87 @@ Page({
             this.setData({
                 nearbyWifiList,
                 scanningNearbyWifi: false,
-                nearbyWifiMessage: nearbyWifiList.length ? '' : '未扫描到附近 WLAN',
-                nearbyWifiAction: '',
+                pickerMessage: nearbyWifiList.length || !showEmptyMessage ? '' : '未扫描到附近 WLAN',
+                pickerAction: '',
+            }, () => {
+                this.syncPickerWifiList();
             });
         } catch (error) {
+            const nextScanIssue = readWifiScanIssue(this.data.wifiRuntime);
+
             this.setData({
                 scanningNearbyWifi: false,
-                nearbyWifiMessage: describeWifiError(error, this.data.wifiRuntime, { context: 'scan' }),
-                nearbyWifiAction: '',
+                pickerMessage: describeWifiError(error, this.data.wifiRuntime, { context: 'scan' }),
+                pickerAction: nextScanIssue && nextScanIssue.action ? nextScanIssue.action : '',
             });
         }
+    },
+
+    handleOpenPicker() {
+        const pendingSelectedSsid = this.data.selectedSsid
+            || (this.data.currentWifi && this.data.currentWifi.SSID)
+            || '';
+
+        this.setData({
+            pickerVisible: true,
+            pendingSelectedSsid,
+            pickerMessage: '',
+            pickerAction: '',
+            formMessage: '',
+        }, () => {
+            this.syncPickerWifiList(pendingSelectedSsid);
+
+            if (!this.data.nearbyWifiList.length && !this.data.scanningNearbyWifi) {
+                this.fetchNearbyWifi();
+            }
+        });
+    },
+
+    handleClosePicker() {
+        this.setData({
+            pickerVisible: false,
+            pendingSelectedSsid: this.data.selectedSsid,
+            pickerMessage: '',
+            pickerAction: '',
+        }, () => {
+            this.syncPickerWifiList(this.data.selectedSsid);
+        });
+    },
+
+    handlePickWifi(event) {
+        const pendingSelectedSsid = event && event.currentTarget && event.currentTarget.dataset
+            ? event.currentTarget.dataset.ssid || ''
+            : '';
+
+        this.setData({
+            pendingSelectedSsid,
+            formMessage: '',
+        }, () => {
+            this.syncPickerWifiList(pendingSelectedSsid);
+        });
+    },
+
+    handleConfirmWifiSelection() {
+        const selectedSsid = (this.data.pendingSelectedSsid || '').trim();
+
+        if (!selectedSsid) {
+            this.setData({
+                pickerMessage: '请选择一个 WLAN',
+            });
+            return;
+        }
+
+        this.setData({
+            selectedSsid,
+            pickerVisible: false,
+            formMessage: '',
+        }, () => {
+            this.syncPickerWifiList(selectedSsid);
+        });
+    },
+
+    async handleRefreshNearbyWifi() {
+        await this.fetchNearbyWifi({ showEmptyMessage: true });
     },
 
     async handleOpenWechatLocationSetting() {
@@ -112,45 +251,17 @@ Page({
             const opened = await openWifiAppAuthorizeSetting();
 
             this.setData({
-                nearbyWifiMessage: opened
-                    ? '请在系统里允许微信使用定位，返回后再重新扫描。'
+                pickerMessage: opened
+                    ? '请在系统里允许微信使用定位，返回后再刷新 WLAN 列表。'
                     : '当前微信版本不支持直接打开权限设置，请手动允许微信使用定位。',
-                nearbyWifiAction: opened ? '' : 'open_app_authorize_setting',
+                pickerAction: opened ? '' : 'open_app_authorize_setting',
             });
         } catch (error) {
             this.setData({
-                nearbyWifiMessage: '无法打开微信权限设置，请手动在系统设置中允许微信使用定位。',
-                nearbyWifiAction: 'open_app_authorize_setting',
+                pickerMessage: '无法打开微信权限设置，请手动在系统设置中允许微信使用定位。',
+                pickerAction: 'open_app_authorize_setting',
             });
         }
-    },
-
-    handleSelectCurrentWifi() {
-        const currentWifi = this.data.currentWifi;
-        const selectedSsid = currentWifi && currentWifi.SSID ? currentWifi.SSID : '';
-
-        if (!selectedSsid) {
-            return;
-        }
-
-        this.setData({
-            selectedSsid,
-            currentWifiMessage: '',
-            formMessage: '',
-        });
-    },
-
-    handleSelectNearbyWifi(event) {
-        const selectedSsid = event && event.currentTarget && event.currentTarget.dataset
-            ? event.currentTarget.dataset.ssid || ''
-            : '';
-
-        this.setData({
-            selectedSsid,
-            nearbyWifiMessage: '',
-            nearbyWifiAction: '',
-            formMessage: '',
-        });
     },
 
     handlePasswordInput(event) {
@@ -162,13 +273,15 @@ Page({
         });
     },
 
+    noop() {},
+
     handleOpenScanDialog() {
         const selectedSsid = (this.data.selectedSsid || '').trim();
         const wifiPassword = (this.data.wifiPassword || '').trim();
 
         if (!selectedSsid || !wifiPassword) {
             this.setData({
-                formMessage: '请先选择网络并输入密码',
+                formMessage: '请先选择 WLAN 并输入密码',
             });
             return;
         }
