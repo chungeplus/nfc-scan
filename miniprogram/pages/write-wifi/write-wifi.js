@@ -7,7 +7,6 @@ import {
     openWifiAppAuthorizeSetting,
     readWifiScanIssue,
     scanNearbyWifi,
-    shouldShowConnectedWifiError,
 } from '../../utils/wifi-manager';
 import {
     WIFI_WSC_MIME_TYPE,
@@ -73,9 +72,7 @@ Page({
         wifiPassword: '',
         scanVisible: false,
         records: [],
-        loadingCurrentWifi: true,
         scanningNearbyWifi: false,
-        currentWifiMessage: '',
         pickerMessage: '',
         pickerAction: '',
         formMessage: '',
@@ -117,23 +114,28 @@ Page({
             await initWifiModule();
             const currentWifi = await getConnectedWifiInfo();
             const selectedSsid = currentWifi && currentWifi.SSID ? currentWifi.SSID : '';
-
-            this.setData({
+            const hasManualSelection = Boolean(
+                (this.data.selectedSsid || '').trim() || (this.data.pendingSelectedSsid || '').trim()
+            );
+            const nextState = {
                 currentWifi,
-                selectedSsid,
-                pendingSelectedSsid: selectedSsid,
-                loadingCurrentWifi: false,
-                currentWifiMessage: '',
-            }, () => {
-                this.syncPickerWifiList(selectedSsid);
+            };
+
+            if (!hasManualSelection && selectedSsid) {
+                nextState.selectedSsid = selectedSsid;
+                nextState.pendingSelectedSsid = selectedSsid;
+            }
+
+            this.setData(nextState, () => {
+                this.syncPickerWifiList(
+                    hasManualSelection
+                        ? undefined
+                        : selectedSsid
+                );
             });
         } catch (error) {
             this.setData({
-                loadingCurrentWifi: false,
-                currentWifiMessage: !isDevtoolsRuntime(this.data.wifiRuntime)
-                    && shouldShowConnectedWifiError(error, this.data.wifiRuntime)
-                    ? describeWifiError(error, this.data.wifiRuntime, { context: 'current' })
-                    : '',
+                currentWifi: null,
             }, () => {
                 this.syncPickerWifiList();
             });
@@ -232,6 +234,7 @@ Page({
 
     handleConfirmWifiSelection() {
         const selectedSsid = (this.data.pendingSelectedSsid || '').trim();
+        const previousSelectedSsid = (this.data.selectedSsid || '').trim();
 
         if (!selectedSsid) {
             this.setData({
@@ -243,6 +246,9 @@ Page({
         this.setData({
             selectedSsid,
             pickerVisible: false,
+            wifiPassword: previousSelectedSsid && previousSelectedSsid !== selectedSsid
+                ? ''
+                : this.data.wifiPassword,
             formMessage: '',
         }, () => {
             this.syncPickerWifiList(selectedSsid);
