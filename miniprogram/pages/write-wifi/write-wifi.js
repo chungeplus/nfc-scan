@@ -5,6 +5,7 @@ import {
     getWifiRuntime,
     initWifiModule,
     scanNearbyWifi,
+    shouldShowConnectedWifiError,
 } from '../../utils/wifi-manager';
 import {
     WIFI_WSC_MIME_TYPE,
@@ -57,11 +58,9 @@ Page({
                 currentWifiMessage: '',
             });
         } catch (error) {
-            const shouldShowMessage = !this.isDevtoolsRuntime();
-
             this.setData({
                 loadingCurrentWifi: false,
-                currentWifiMessage: shouldShowMessage
+                currentWifiMessage: shouldShowConnectedWifiError(error, this.data.wifiRuntime)
                     ? describeWifiError(error, this.data.wifiRuntime)
                     : '',
             });
@@ -162,11 +161,6 @@ Page({
             records: [],
         });
     },
-
-    isDevtoolsRuntime() {
-        return String(this.data.wifiRuntime && this.data.wifiRuntime.platform || '').toLowerCase() === 'devtools';
-    },
-
     resetSensitiveState() {
         this.setData({
             scanVisible: false,

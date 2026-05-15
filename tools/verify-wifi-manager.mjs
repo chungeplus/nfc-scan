@@ -6,7 +6,11 @@ const source = await fs.readFile(
   'utf8'
 );
 const moduleUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(source)}`;
-const { normalizeWifiList, describeWifiError } = await import(moduleUrl);
+const {
+  describeWifiError,
+  normalizeWifiList,
+  shouldShowConnectedWifiError,
+} = await import(moduleUrl);
 
 const normalized = normalizeWifiList([
   { SSID: 'Cafe', signalStrength: 32 },
@@ -25,6 +29,13 @@ assert.deepEqual(
 
 assert.match(describeWifiError({ errCode: 12006 }), /GPS|定位/);
 assert.match(describeWifiError({ errCode: 12007 }), /权限|位置/);
+assert.match(describeWifiError({ errCode: 12010, errMsg: 'system internal error: gps not turned on' }), /GPS|定位/);
+assert.match(describeWifiError({ errMsg: 'getConnectedWifi:fail wifi not turned on' }), /Wi-Fi/);
 assert.match(describeWifiError({}, { platform: 'devtools' }), /开发者工具|真机|devtools/i);
+
+assert.equal(shouldShowConnectedWifiError({}), false);
+assert.equal(shouldShowConnectedWifiError({ errCode: 12005 }), true);
+assert.equal(shouldShowConnectedWifiError({ errCode: 12010, errMsg: 'system internal error: gps not turned on' }), true);
+assert.equal(shouldShowConnectedWifiError({ errMsg: 'unexpected failure' }), false);
 
 console.log('PASS verify-wifi-manager');
