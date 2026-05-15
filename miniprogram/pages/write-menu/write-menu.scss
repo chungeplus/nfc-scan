@@ -312,7 +312,8 @@
 }
 
 .home-sub__visual--wifi {
-    background: rgba(255, 255, 255, 0.38);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(228, 238, 255, 0.92) 100%);
+    box-shadow: $shadow-sm, inset 0 0 0 3px rgba(68, 104, 198, 0.08);
 }
 
 .row {

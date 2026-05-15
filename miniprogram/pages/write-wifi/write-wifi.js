@@ -22,7 +22,7 @@ Page({
         records: [],
         loadingCurrentWifi: true,
         scanningNearbyWifi: false,
-        pageHint: '仅支持 WPA2-Personal 网络，请勿用于开放 / WEP / 企业网络。',
+        pageHint: '仅限 WPA2-Personal',
     },
 
     onLoad() {
@@ -51,10 +51,6 @@ Page({
         } catch (error) {
             this.setData({
                 loadingCurrentWifi: false,
-            });
-            showPixelToast({
-                message: describeWifiError(error),
-                theme: 'warning',
             });
         }
     },

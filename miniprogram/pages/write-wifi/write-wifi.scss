@@ -2,58 +2,78 @@
 
 .write-wifi {
     box-sizing: border-box;
-    padding: $spacing-md $spacing-sm;
-    padding-bottom: 90px;
+    min-height: 100%;
+    padding: 14px $spacing-sm 90px;
     background: $color-paper;
-    overflow: hidden;
 }
 
-.notice {
-    margin-bottom: 12px;
-    padding: 10px 12px;
-    background: #fff3bf;
+.support-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 10px;
+    margin-bottom: 14px;
+    background: #d7e8ff;
     border: $border-width-sm solid $color-ink;
     box-shadow: $shadow-sm;
-    font-size: 11px;
-    line-height: 1.7;
-    color: $color-ink;
+    font-size: 10px;
+    font-weight: bold;
+    color: #33518d;
+    letter-spacing: 1rpx;
 }
 
 .field {
-    margin-bottom: 14rpx;
+    margin-bottom: 16px;
+}
+
+.field__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
 }
 
 .label {
-    margin-bottom: 6px;
     font-size: 11px;
     font-weight: bold;
     letter-spacing: 1rpx;
     color: $color-muted;
+    flex-shrink: 0;
 }
 
-.hint {
-    padding: 10px 12px;
+.selection-pill {
+    max-width: 72%;
+    padding: 4px 8px;
+    background: #eef4ff;
+    border: 1px solid rgba(68, 104, 198, 0.3);
+    font-size: 10px;
+    color: #3d5da2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hint,
+.wifi-card,
+.wifi-list__item,
+.box {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
     background: $color-paper-2;
     border: $border-width-sm solid $color-ink;
     box-shadow: $shadow-inset, $shadow-sm;
+}
+
+.hint {
     font-size: 11px;
     line-height: 1.6;
     color: $color-muted;
 }
 
-.wifi-card,
-.wifi-list__item,
-.box {
-    width: 100%;
-    padding: 10px 12px;
-    background: $color-paper-2;
-    border: $border-width-sm solid $color-ink;
-    box-shadow: $shadow-inset, $shadow-sm;
-    box-sizing: border-box;
-}
-
-.wifi-card,
-.wifi-list__item {
+.wifi-list {
+    max-height: 212px;
     margin-top: 10px;
 }
 
@@ -66,7 +86,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
 }
 
 .wifi-name {
@@ -76,43 +96,26 @@
     word-break: break-all;
 }
 
-.wifi-meta,
-.wifi-signal,
-.wifi-tag {
-    margin-top: 6px;
+.wifi-tag,
+.wifi-signal {
+    flex-shrink: 0;
     font-size: 10px;
-    line-height: 1.5;
     color: $color-muted;
 }
 
 .wifi-tag {
-    margin-top: 0;
     padding: 2px 6px;
     background: $color-yellow;
     border: 1px solid $color-ink;
-    font-weight: bold;
     color: $color-ink;
-    flex-shrink: 0;
-}
-
-.wifi-signal {
-    margin-top: 0;
-    flex-shrink: 0;
-}
-
-.wifi-list {
-    max-height: 220px;
+    font-weight: bold;
 }
 
 .box {
     display: block;
-    min-height: 46px;
+    min-height: 48px;
     font-size: 12px;
     line-height: 1.6;
-}
-
-.box--readonly {
-    color: $color-ink;
 }
 
 .btn {
@@ -125,10 +128,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
-    font-weight: bold;
     padding: 0;
     color: $color-ink;
+    font-size: 11px;
+    font-weight: bold;
 
     &::after {
         border: none;
@@ -143,7 +146,7 @@
 .primary-btn {
     width: 100%;
     height: 52px;
-    margin-top: 16px;
+    margin-top: 8px;
     background: $color-green-deep;
     color: $color-white;
     border: $border-width solid $color-ink;
