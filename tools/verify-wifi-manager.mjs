@@ -25,5 +25,6 @@ assert.deepEqual(
 
 assert.match(describeWifiError({ errCode: 12006 }), /GPS|定位/);
 assert.match(describeWifiError({ errCode: 12007 }), /权限|位置/);
+assert.match(describeWifiError({}, { platform: 'devtools' }), /开发者工具|真机|devtools/i);
 
 console.log('PASS verify-wifi-manager');

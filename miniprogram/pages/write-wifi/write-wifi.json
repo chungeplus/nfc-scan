@@ -2,7 +2,6 @@
   "navigationStyle": "custom",
   "usingComponents": {
     "pixel-navbar": "/components/pixel-navbar/pixel-navbar",
-    "pixel-toast": "/components/pixel-toast/pixel-toast",
     "scan-dialog": "/components/scan-dialog/scan-dialog"
   }
 }

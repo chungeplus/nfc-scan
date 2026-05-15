@@ -12,7 +12,7 @@
     align-items: center;
     height: 28px;
     padding: 0 10px;
-    margin-bottom: 14px;
+    margin-bottom: 10px;
     background: #d7e8ff;
     border: $border-width-sm solid $color-ink;
     box-shadow: $shadow-sm;
@@ -20,6 +20,26 @@
     font-weight: bold;
     color: #33518d;
     letter-spacing: 1rpx;
+}
+
+.status-banner {
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border: $border-width-sm solid $color-ink;
+    box-shadow: $shadow-sm;
+    font-size: 11px;
+    line-height: 1.6;
+    font-weight: bold;
+}
+
+.status-banner--info {
+    background: #e4efff;
+    color: #33518d;
+}
+
+.status-banner--warning {
+    background: #fff0a6;
+    color: $color-ink;
 }
 
 .field {

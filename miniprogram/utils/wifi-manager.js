@@ -26,11 +26,32 @@ function normalizeWifiList(wifiList = []) {
     );
 }
 
-function describeWifiError(error = {}) {
+function getWifiRuntime() {
+    try {
+        const systemInfo = wx.getSystemInfoSync ? wx.getSystemInfoSync() : {};
+
+        return {
+            platform: typeof systemInfo.platform === 'string' ? systemInfo.platform : '',
+        };
+    } catch (error) {
+        return {
+            platform: '',
+        };
+    }
+}
+
+function isDevtoolsRuntime(runtime = {}) {
+    return String(runtime.platform || '').toLowerCase() === 'devtools';
+}
+
+function describeWifiError(error = {}, runtime = {}) {
     switch (error.errCode) {
     case 12000:
         return 'WLAN 模块尚未初始化，请重新进入页面后重试。';
     case 12001:
+        if (isDevtoolsRuntime(runtime)) {
+            return '开发者工具可能读不到真实 WLAN，请用安卓真机预览。';
+        }
         return '当前设备暂不支持 WLAN 能力。';
     case 12005:
         return '请先打开手机 Wi-Fi 开关后再重试。';
@@ -41,6 +62,9 @@ function describeWifiError(error = {}) {
     case 12011:
         return '请回到前台后重试，后台状态下无法读取 WLAN 列表。';
     default:
+        if (isDevtoolsRuntime(runtime)) {
+            return '开发者工具可能读不到真实 WLAN，请用安卓真机预览。';
+        }
         return '获取 WLAN 信息失败，请稍后重试。';
     }
 }
@@ -133,6 +157,7 @@ function scanNearbyWifi() {
 export {
     describeWifiError,
     getConnectedWifiInfo,
+    getWifiRuntime,
     initWifiModule,
     normalizeWifiList,
     scanNearbyWifi,

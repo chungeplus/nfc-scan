@@ -1,8 +1,10 @@
 <pixel-navbar title="写入 WLAN" theme="web" showBack="{{true}}" showHome="{{false}}" />
-<pixel-toast id="pixel-toast" />
 
 <view class="write-wifi" style="min-height: calc(100vh - {{navHeight}}px);">
     <view class="support-chip">{{pageHint}}</view>
+    <view class="status-banner status-banner--{{statusTone}}" wx:if="{{statusMessage}}">
+        {{statusMessage}}
+    </view>
 
     <view class="field">
         <view class="field__head">

@@ -1,8 +1,8 @@
-import { showPixelToast } from '../../utils/pixel-toast';
 import { getNavMetrics } from '../../utils/system-info';
 import {
     describeWifiError,
     getConnectedWifiInfo,
+    getWifiRuntime,
     initWifiModule,
     scanNearbyWifi,
 } from '../../utils/wifi-manager';
@@ -22,13 +22,22 @@ Page({
         records: [],
         loadingCurrentWifi: true,
         scanningNearbyWifi: false,
+        statusMessage: '',
+        statusTone: 'info',
+        wifiRuntime: null,
         pageHint: '仅限 WPA2-Personal',
     },
 
     onLoad() {
         const { navHeight } = getNavMetrics();
+        const wifiRuntime = getWifiRuntime();
+        const statusMessage = this.getInitialStatusMessage(wifiRuntime);
+
         this.setData({
             navHeight,
+            wifiRuntime,
+            statusMessage,
+            statusTone: 'info',
         });
         this.bootstrapWifiPage();
     },
@@ -47,10 +56,13 @@ Page({
                 currentWifi,
                 selectedSsid,
                 loadingCurrentWifi: false,
+                statusMessage: selectedSsid ? '' : this.data.statusMessage,
             });
         } catch (error) {
             this.setData({
                 loadingCurrentWifi: false,
+                statusMessage: describeWifiError(error, this.data.wifiRuntime),
+                statusTone: 'warning',
             });
         }
     },
@@ -61,18 +73,19 @@ Page({
         });
 
         try {
+            await initWifiModule();
             const nearbyWifiList = await scanNearbyWifi();
             this.setData({
                 nearbyWifiList,
                 scanningNearbyWifi: false,
+                statusMessage: nearbyWifiList.length ? '' : '未扫描到附近 WLAN',
+                statusTone: nearbyWifiList.length ? 'info' : 'warning',
             });
         } catch (error) {
             this.setData({
                 scanningNearbyWifi: false,
-            });
-            showPixelToast({
-                message: describeWifiError(error),
-                theme: 'warning',
+                statusMessage: describeWifiError(error, this.data.wifiRuntime),
+                statusTone: 'warning',
             });
         }
     },
@@ -87,6 +100,7 @@ Page({
 
         this.setData({
             selectedSsid,
+            statusMessage: '',
         });
     },
 
@@ -97,6 +111,7 @@ Page({
 
         this.setData({
             selectedSsid,
+            statusMessage: '',
         });
     },
 
@@ -105,6 +120,9 @@ Page({
 
         this.setData({
             wifiPassword,
+            statusMessage: this.data.statusMessage === '请先选择网络并输入密码'
+                ? ''
+                : this.data.statusMessage,
         });
     },
 
@@ -113,15 +131,16 @@ Page({
         const wifiPassword = (this.data.wifiPassword || '').trim();
 
         if (!selectedSsid || !wifiPassword) {
-            showPixelToast({
-                message: '请先选择 WLAN 并输入密码。',
-                theme: 'warning',
+            this.setData({
+                statusMessage: '请先选择网络并输入密码',
+                statusTone: 'warning',
             });
             return;
         }
 
         this.setData({
             scanVisible: true,
+            statusMessage: '',
             records: [
                 {
                     tnf: 2,
@@ -141,6 +160,14 @@ Page({
             scanVisible: false,
             records: [],
         });
+    },
+
+    getInitialStatusMessage(wifiRuntime) {
+        if (wifiRuntime && String(wifiRuntime.platform || '').toLowerCase() === 'devtools') {
+            return '开发者工具可能读不到真实 WLAN，请用安卓真机预览。';
+        }
+
+        return '';
     },
 
     resetSensitiveState() {
