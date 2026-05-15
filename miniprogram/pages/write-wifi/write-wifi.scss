@@ -12,7 +12,7 @@
     align-items: center;
     height: 28px;
     padding: 0 10px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     background: #d7e8ff;
     border: $border-width-sm solid $color-ink;
     box-shadow: $shadow-sm;
@@ -22,28 +22,8 @@
     letter-spacing: 1rpx;
 }
 
-.status-banner {
-    margin-bottom: 14px;
-    padding: 10px 12px;
-    border: $border-width-sm solid $color-ink;
-    box-shadow: $shadow-sm;
-    font-size: 11px;
-    line-height: 1.6;
-    font-weight: bold;
-}
-
-.status-banner--info {
-    background: #e4efff;
-    color: #33518d;
-}
-
-.status-banner--warning {
-    background: #fff0a6;
-    color: $color-ink;
-}
-
 .field {
-    margin-bottom: 16px;
+    margin-bottom: 18px;
 }
 
 .field__head {
@@ -52,6 +32,18 @@
     justify-content: space-between;
     gap: 10px;
     margin-bottom: 8px;
+}
+
+.field__error {
+    margin-top: 6px;
+    font-size: 10px;
+    line-height: 1.6;
+    font-weight: bold;
+    color: $color-red-deep;
+}
+
+.field__error--submit {
+    margin-top: 10px;
 }
 
 .label {
@@ -74,7 +66,6 @@
     text-overflow: ellipsis;
 }
 
-.hint,
 .wifi-card,
 .wifi-list__item,
 .box {
@@ -87,6 +78,7 @@
 }
 
 .hint {
+    padding: 2px 0 0;
     font-size: 11px;
     line-height: 1.6;
     color: $color-muted;

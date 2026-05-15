@@ -22,8 +22,9 @@ Page({
         records: [],
         loadingCurrentWifi: true,
         scanningNearbyWifi: false,
-        statusMessage: '',
-        statusTone: 'info',
+        currentWifiMessage: '',
+        nearbyWifiMessage: '',
+        formMessage: '',
         wifiRuntime: null,
         pageHint: '仅限 WPA2-Personal',
     },
@@ -31,13 +32,10 @@ Page({
     onLoad() {
         const { navHeight } = getNavMetrics();
         const wifiRuntime = getWifiRuntime();
-        const statusMessage = this.getInitialStatusMessage(wifiRuntime);
 
         this.setData({
             navHeight,
             wifiRuntime,
-            statusMessage,
-            statusTone: 'info',
         });
         this.bootstrapWifiPage();
     },
@@ -56,13 +54,16 @@ Page({
                 currentWifi,
                 selectedSsid,
                 loadingCurrentWifi: false,
-                statusMessage: selectedSsid ? '' : this.data.statusMessage,
+                currentWifiMessage: '',
             });
         } catch (error) {
+            const shouldShowMessage = !this.isDevtoolsRuntime();
+
             this.setData({
                 loadingCurrentWifi: false,
-                statusMessage: describeWifiError(error, this.data.wifiRuntime),
-                statusTone: 'warning',
+                currentWifiMessage: shouldShowMessage
+                    ? describeWifiError(error, this.data.wifiRuntime)
+                    : '',
             });
         }
     },
@@ -70,22 +71,23 @@ Page({
     async handleScanNearbyWifi() {
         this.setData({
             scanningNearbyWifi: true,
+            nearbyWifiMessage: '',
+            formMessage: '',
         });
 
         try {
             await initWifiModule();
             const nearbyWifiList = await scanNearbyWifi();
+
             this.setData({
                 nearbyWifiList,
                 scanningNearbyWifi: false,
-                statusMessage: nearbyWifiList.length ? '' : '未扫描到附近 WLAN',
-                statusTone: nearbyWifiList.length ? 'info' : 'warning',
+                nearbyWifiMessage: nearbyWifiList.length ? '' : '未扫描到附近 WLAN',
             });
         } catch (error) {
             this.setData({
                 scanningNearbyWifi: false,
-                statusMessage: describeWifiError(error, this.data.wifiRuntime),
-                statusTone: 'warning',
+                nearbyWifiMessage: describeWifiError(error, this.data.wifiRuntime),
             });
         }
     },
@@ -100,7 +102,8 @@ Page({
 
         this.setData({
             selectedSsid,
-            statusMessage: '',
+            currentWifiMessage: '',
+            formMessage: '',
         });
     },
 
@@ -111,7 +114,8 @@ Page({
 
         this.setData({
             selectedSsid,
-            statusMessage: '',
+            nearbyWifiMessage: '',
+            formMessage: '',
         });
     },
 
@@ -120,9 +124,7 @@ Page({
 
         this.setData({
             wifiPassword,
-            statusMessage: this.data.statusMessage === '请先选择网络并输入密码'
-                ? ''
-                : this.data.statusMessage,
+            formMessage: '',
         });
     },
 
@@ -132,15 +134,14 @@ Page({
 
         if (!selectedSsid || !wifiPassword) {
             this.setData({
-                statusMessage: '请先选择网络并输入密码',
-                statusTone: 'warning',
+                formMessage: '请先选择网络并输入密码',
             });
             return;
         }
 
         this.setData({
             scanVisible: true,
-            statusMessage: '',
+            formMessage: '',
             records: [
                 {
                     tnf: 2,
@@ -162,12 +163,8 @@ Page({
         });
     },
 
-    getInitialStatusMessage(wifiRuntime) {
-        if (wifiRuntime && String(wifiRuntime.platform || '').toLowerCase() === 'devtools') {
-            return '开发者工具可能读不到真实 WLAN，请用安卓真机预览。';
-        }
-
-        return '';
+    isDevtoolsRuntime() {
+        return String(this.data.wifiRuntime && this.data.wifiRuntime.platform || '').toLowerCase() === 'devtools';
     },
 
     resetSensitiveState() {

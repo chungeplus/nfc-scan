@@ -2,9 +2,6 @@
 
 <view class="write-wifi" style="min-height: calc(100vh - {{navHeight}}px);">
     <view class="support-chip">{{pageHint}}</view>
-    <view class="status-banner status-banner--{{statusTone}}" wx:if="{{statusMessage}}">
-        {{statusMessage}}
-    </view>
 
     <view class="field">
         <view class="field__head">
@@ -24,6 +21,7 @@
         </view>
 
         <view class="hint" wx:elif="{{loadingCurrentWifi}}">读取当前连接中...</view>
+        <view class="field__error" wx:elif="{{currentWifiMessage}}">{{currentWifiMessage}}</view>
         <view class="hint" wx:else>未读取到当前连接，可改为扫描附近网络</view>
     </view>
 
@@ -35,6 +33,7 @@
         <button class="btn btn--scan" bindtap="handleScanNearbyWifi" loading="{{scanningNearbyWifi}}">
             扫描附近网络
         </button>
+        <view class="field__error" wx:if="{{nearbyWifiMessage}}">{{nearbyWifiMessage}}</view>
 
         <scroll-view class="wifi-list" scroll-y="{{true}}" wx:if="{{nearbyWifiList.length}}">
             <view
@@ -72,6 +71,7 @@
     >
         写入 NFC 标签
     </button>
+    <view class="field__error field__error--submit" wx:if="{{formMessage}}">{{formMessage}}</view>
 </view>
 
 <scan-dialog visible="{{scanVisible}}" records="{{records}}" bind:close="handleCloseScanDialog" />

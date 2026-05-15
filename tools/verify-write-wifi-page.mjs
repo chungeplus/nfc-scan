@@ -12,8 +12,12 @@ const [wxmlSource, jsSource] = await Promise.all([
   ),
 ]);
 
-assert.match(wxmlSource, /status-banner/);
+assert.doesNotMatch(wxmlSource, /status-banner/);
+assert.match(wxmlSource, /field__error/);
+assert.match(jsSource, /currentWifiMessage/);
+assert.match(jsSource, /nearbyWifiMessage/);
+assert.match(jsSource, /formMessage/);
 assert.doesNotMatch(wxmlSource, /<pixel-toast/i);
-assert.doesNotMatch(jsSource, /showPixelToast/);
+assert.doesNotMatch(jsSource, /statusMessage/);
 
 console.log('PASS verify-write-wifi-page');
