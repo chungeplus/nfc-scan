@@ -28,4 +28,12 @@ const sourceEntry = await fs.readFile(
 assert.match(sourceEntry, /export async function main/, 'src/index.ts should export the typed main entrypoint');
 assert.match(sourceEntry, /MediaShareServiceEvent/, 'src/index.ts should type the incoming event');
 
+const contractsSource = await fs.readFile(
+  path.join(rootDir, 'cloudfunctions/media-share-service/src/contracts.ts'),
+  'utf8',
+);
+assert.match(contractsSource, /export interface MediaShareServiceEvent/, 'contracts.ts should define the event contract');
+assert.match(contractsSource, /export type MediaShareServiceResponse/, 'contracts.ts should define the response contract');
+assert.match(sourceEntry, /from '\.\/contracts'/, 'src/index.ts should import the shared contracts');
+
 console.log('PASS verify-cloudfunction-modernization task1');

@@ -1,3 +1,5 @@
+import type { MediaShareServiceEvent, MediaShareServiceResponse } from './contracts';
+
 const cloud = require('wx-server-sdk');
 
 cloud.init({
@@ -20,19 +22,6 @@ const STORAGE_ROOT = 'media-files';
 const SUMMARY_PAGE_SIZE = 100;
 
 type MediaSharePayload = Record<string, unknown>;
-
-interface MediaShareServiceEvent {
-    action?: string;
-    payload?: MediaSharePayload;
-}
-
-interface MediaShareServiceFailure {
-    success: false;
-    message: string;
-    code?: string;
-}
-
-type MediaShareServiceResponse = Record<string, unknown> | MediaShareServiceFailure;
 
 interface MediaFileRecord {
     _id?: string;
