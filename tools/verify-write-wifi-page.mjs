@@ -14,8 +14,11 @@ const [wxmlSource, jsSource] = await Promise.all([
 
 assert.doesNotMatch(wxmlSource, /status-banner/);
 assert.match(wxmlSource, /field__error/);
+assert.match(wxmlSource, /打开微信定位权限/);
 assert.match(jsSource, /currentWifiMessage/);
 assert.match(jsSource, /nearbyWifiMessage/);
+assert.match(jsSource, /nearbyWifiAction/);
+assert.match(jsSource, /handleOpenWechatLocationSetting/);
 assert.match(jsSource, /formMessage/);
 assert.doesNotMatch(wxmlSource, /<pixel-toast/i);
 assert.doesNotMatch(jsSource, /statusMessage/);

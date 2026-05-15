@@ -48,6 +48,10 @@ function getErrMsg(error = {}) {
     return String(error.errMsg || error.errmsg || '').toLowerCase();
 }
 
+function normalizeAuthorizeState(value) {
+    return String(value || '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
 function inferWifiErrorCode(error = {}) {
     if (Number.isFinite(error.errCode)) {
         return error.errCode;
@@ -187,6 +191,80 @@ function shouldShowConnectedWifiError(error = {}, runtime = {}) {
     return false;
 }
 
+function getWifiSystemSetting() {
+    try {
+        return wx.getSystemSetting ? wx.getSystemSetting() : {};
+    } catch (error) {
+        return {};
+    }
+}
+
+function getWifiAppAuthorizeSetting() {
+    try {
+        return wx.getAppAuthorizeSetting ? wx.getAppAuthorizeSetting() : {};
+    } catch (error) {
+        return {};
+    }
+}
+
+function getWifiScanIssue({
+    runtime = {},
+    systemSetting = {},
+    appAuthorizeSetting = {},
+} = {}) {
+    if (isDevtoolsRuntime(runtime)) {
+        return null;
+    }
+
+    if (systemSetting && systemSetting.wifiEnabled === false) {
+        return {
+            code: 'wifi_disabled',
+            message: '请先打开手机 Wi-Fi 开关后再重试。',
+        };
+    }
+
+    if (systemSetting && systemSetting.locationEnabled === false) {
+        return {
+            code: 'location_disabled',
+            message: '请先打开手机定位/GPS 开关后再扫描附近 WLAN。',
+        };
+    }
+
+    const locationAuthorized = normalizeAuthorizeState(appAuthorizeSetting.locationAuthorized);
+
+    if (locationAuthorized === 'denied') {
+        return {
+            code: 'app_location_denied',
+            message: '请在系统设置中允许微信使用定位。',
+            action: 'open_app_authorize_setting',
+        };
+    }
+
+    return null;
+}
+
+function readWifiScanIssue(runtime = {}) {
+    return getWifiScanIssue({
+        runtime,
+        systemSetting: getWifiSystemSetting(),
+        appAuthorizeSetting: getWifiAppAuthorizeSetting(),
+    });
+}
+
+function openWifiAppAuthorizeSetting() {
+    return new Promise((resolve, reject) => {
+        if (!wx.openAppAuthorizeSetting) {
+            resolve(false);
+            return;
+        }
+
+        wx.openAppAuthorizeSetting({
+            success: () => resolve(true),
+            fail: reject,
+        });
+    });
+}
+
 function initWifiModule() {
     return new Promise((resolve, reject) => {
         wx.startWifi({
@@ -276,8 +354,11 @@ export {
     describeWifiError,
     getConnectedWifiInfo,
     getWifiRuntime,
+    getWifiScanIssue,
     initWifiModule,
     normalizeWifiList,
+    openWifiAppAuthorizeSetting,
+    readWifiScanIssue,
     scanNearbyWifi,
     shouldShowConnectedWifiError,
 };

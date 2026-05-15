@@ -4,6 +4,8 @@ import {
     getConnectedWifiInfo,
     getWifiRuntime,
     initWifiModule,
+    openWifiAppAuthorizeSetting,
+    readWifiScanIssue,
     scanNearbyWifi,
     shouldShowConnectedWifiError,
 } from '../../utils/wifi-manager';
@@ -25,6 +27,7 @@ Page({
         scanningNearbyWifi: false,
         currentWifiMessage: '',
         nearbyWifiMessage: '',
+        nearbyWifiAction: '',
         formMessage: '',
         wifiRuntime: null,
         pageHint: '仅限 WPA2-Personal',
@@ -71,8 +74,19 @@ Page({
         this.setData({
             scanningNearbyWifi: true,
             nearbyWifiMessage: '',
+            nearbyWifiAction: '',
             formMessage: '',
         });
+
+        const scanIssue = readWifiScanIssue(this.data.wifiRuntime);
+        if (scanIssue) {
+            this.setData({
+                scanningNearbyWifi: false,
+                nearbyWifiMessage: scanIssue.message,
+                nearbyWifiAction: scanIssue.action || '',
+            });
+            return;
+        }
 
         try {
             await initWifiModule();
@@ -82,11 +96,31 @@ Page({
                 nearbyWifiList,
                 scanningNearbyWifi: false,
                 nearbyWifiMessage: nearbyWifiList.length ? '' : '未扫描到附近 WLAN',
+                nearbyWifiAction: '',
             });
         } catch (error) {
             this.setData({
                 scanningNearbyWifi: false,
                 nearbyWifiMessage: describeWifiError(error, this.data.wifiRuntime, { context: 'scan' }),
+                nearbyWifiAction: '',
+            });
+        }
+    },
+
+    async handleOpenWechatLocationSetting() {
+        try {
+            const opened = await openWifiAppAuthorizeSetting();
+
+            this.setData({
+                nearbyWifiMessage: opened
+                    ? '请在系统里允许微信使用定位，返回后再重新扫描。'
+                    : '当前微信版本不支持直接打开权限设置，请手动允许微信使用定位。',
+                nearbyWifiAction: opened ? '' : 'open_app_authorize_setting',
+            });
+        } catch (error) {
+            this.setData({
+                nearbyWifiMessage: '无法打开微信权限设置，请手动在系统设置中允许微信使用定位。',
+                nearbyWifiAction: 'open_app_authorize_setting',
             });
         }
     },
@@ -114,6 +148,7 @@ Page({
         this.setData({
             selectedSsid,
             nearbyWifiMessage: '',
+            nearbyWifiAction: '',
             formMessage: '',
         });
     },
@@ -161,6 +196,7 @@ Page({
             records: [],
         });
     },
+
     resetSensitiveState() {
         this.setData({
             scanVisible: false,

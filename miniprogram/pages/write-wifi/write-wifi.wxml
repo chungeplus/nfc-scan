@@ -34,6 +34,13 @@
             扫描附近网络
         </button>
         <view class="field__error" wx:if="{{nearbyWifiMessage}}">{{nearbyWifiMessage}}</view>
+        <button
+            wx:if="{{nearbyWifiAction === 'open_app_authorize_setting'}}"
+            class="btn btn--secondary"
+            bindtap="handleOpenWechatLocationSetting"
+        >
+            打开微信定位权限
+        </button>
 
         <scroll-view class="wifi-list" scroll-y="{{true}}" wx:if="{{nearbyWifiList.length}}">
             <view

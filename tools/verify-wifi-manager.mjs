@@ -8,6 +8,7 @@ const source = await fs.readFile(
 const moduleUrl = `data:text/javascript;charset=utf-8,${encodeURIComponent(source)}`;
 const {
   describeWifiError,
+  getWifiScanIssue,
   normalizeWifiList,
   shouldShowConnectedWifiError,
 } = await import(moduleUrl);
@@ -45,13 +46,42 @@ assert.match(
   describeWifiError({}, { platform: 'devtools' }),
   /开发者工具|真机|devtools/i
 );
-assert.equal(
-  describeWifiError({}, {}, { context: 'current' }),
-  ''
-);
+assert.equal(describeWifiError({}, {}, { context: 'current' }), '');
 assert.match(
   describeWifiError({}, {}, { context: 'scan' }),
   /扫描失败|Wi-Fi|定位|权限/
+);
+
+assert.deepEqual(
+  getWifiScanIssue({
+    systemSetting: { wifiEnabled: false, locationEnabled: true },
+    appAuthorizeSetting: { locationAuthorized: 'authorized' },
+  }),
+  {
+    code: 'wifi_disabled',
+    message: '请先打开手机 Wi-Fi 开关后再重试。',
+  }
+);
+assert.deepEqual(
+  getWifiScanIssue({
+    systemSetting: { wifiEnabled: true, locationEnabled: false },
+    appAuthorizeSetting: { locationAuthorized: 'authorized' },
+  }),
+  {
+    code: 'location_disabled',
+    message: '请先打开手机定位/GPS 开关后再扫描附近 WLAN。',
+  }
+);
+assert.deepEqual(
+  getWifiScanIssue({
+    systemSetting: { wifiEnabled: true, locationEnabled: true },
+    appAuthorizeSetting: { locationAuthorized: 'denied' },
+  }),
+  {
+    code: 'app_location_denied',
+    message: '请在系统设置中允许微信使用定位。',
+    action: 'open_app_authorize_setting',
+  }
 );
 
 assert.equal(shouldShowConnectedWifiError({}), false);
