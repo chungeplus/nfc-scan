@@ -18,4 +18,20 @@ assert.equal(tsconfig.extends, '../tsconfig.base.json');
 assert.equal(tsconfig.compilerOptions.rootDir, 'src');
 assert.equal(tsconfig.compilerOptions.outDir, 'dist');
 
+const eslintConfigSource = await fs.readFile(
+  path.join(rootDir, 'play-web-service/eslint.config.mjs'),
+  'utf8',
+);
+
+assert.match(
+  eslintConfigSource,
+  /\.\.\/eslint\.config\.mjs/,
+  'play-web-service ESLint config should import the shared root config',
+);
+assert.match(
+  eslintConfigSource,
+  /no-console/,
+  'play-web-service ESLint config should keep explicit local rule overrides',
+);
+
 console.log('PASS verify-play-web-service-modernization task1');

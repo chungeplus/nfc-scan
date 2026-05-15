@@ -30,6 +30,22 @@ export interface GeneratePosterResult {
   };
 }
 
+interface GeneratedImagePayload {
+  Url?: string;
+  image_url?: string;
+  imageUrl?: string;
+  revisedPrompt?: string;
+  revised_prompt?: string;
+  url?: string;
+}
+
+interface GenerateImageResponse {
+  Response?: {
+    Data?: GeneratedImagePayload[];
+  };
+  data?: GeneratedImagePayload[];
+}
+
 export class PosterGeneratorError extends Error {
   code: string;
   statusCode: number;
@@ -61,7 +77,7 @@ export async function generatePoster(options: GeneratePosterOptions): Promise<Ge
       prompt,
       size,
       n: 1,
-    }) as any;
+    }) as GenerateImageResponse;
 
     console.log('[海报生成] API完整响应:', JSON.stringify(result, null, 2));
 
@@ -124,7 +140,7 @@ export async function generatePoster(options: GeneratePosterOptions): Promise<Ge
       errorCode = error.code;
     }
 
-    let errorDetails = '';
+    let errorDetails: string;
     try {
       errorDetails = JSON.stringify(error);
     }
