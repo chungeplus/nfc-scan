@@ -40,6 +40,7 @@
     "localPlugins": false,
     "disableUseStrict": false,
     "useCompilerPlugins": [
+      "typescript",
       "sass"
     ],
     "condition": false,
