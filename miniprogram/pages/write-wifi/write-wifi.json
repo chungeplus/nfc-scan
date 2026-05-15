@@ -2,6 +2,7 @@
   "navigationStyle": "custom",
   "usingComponents": {
     "pixel-navbar": "/components/pixel-navbar/pixel-navbar",
+    "pixel-icon": "/components/pixel-icon/pixel-icon",
     "scan-dialog": "/components/scan-dialog/scan-dialog"
   }
 }

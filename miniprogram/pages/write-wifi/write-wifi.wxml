@@ -4,13 +4,8 @@
     <view class="field">
         <view class="label">WLAN</view>
         <view class="box box--select" bindtap="handleOpenPicker">
-            <view class="box__main">
-                <view class="box__value {{selectedSsid ? '' : 'box__value--placeholder'}}">
-                    {{selectedSsid || '选择 WLAN'}}
-                </view>
-                <view class="box__meta" wx:if="{{currentWifi && currentWifi.SSID && selectedSsid === currentWifi.SSID}}">
-                    当前网络
-                </view>
+            <view class="box__value {{selectedSsid ? '' : 'box__value--placeholder'}}">
+                {{selectedSsid || '选择 WLAN'}}
             </view>
             <view class="box__arrow {{pickerVisible ? 'box__arrow--open' : ''}}">▶</view>
         </view>
@@ -18,14 +13,23 @@
 
     <view class="field">
         <view class="label">密码</view>
-        <input
-            class="box box--input {{selectedSsid ? '' : 'box--disabled'}}"
-            password="{{true}}"
-            value="{{wifiPassword}}"
-            placeholder="{{selectedSsid ? '输入 WLAN 密码' : '先选择 WLAN'}}"
-            disabled="{{!selectedSsid}}"
-            bindinput="handlePasswordInput"
-        />
+        <view class="box password-box {{selectedSsid ? '' : 'box--disabled'}}">
+            <input
+                class="password-box__input"
+                password="{{!showPassword}}"
+                value="{{wifiPassword}}"
+                placeholder="{{selectedSsid ? '输入 WLAN 密码' : '先选择 WLAN'}}"
+                disabled="{{!selectedSsid}}"
+                bindinput="handlePasswordInput"
+            />
+            <button
+                class="password-box__toggle"
+                disabled="{{!selectedSsid}}"
+                bindtap="handleTogglePassword"
+            >
+                <pixel-icon name="{{showPassword ? 'eye-off' : 'eye'}}" size="18" />
+            </button>
+        </view>
     </view>
 
     <button
@@ -73,12 +77,6 @@
             >
                 <view class="picker-preview__item-main">
                     <view class="picker-preview__ssid">{{item.SSID}}</view>
-                    <view class="picker-preview__meta">
-                        <view class="picker-preview__badge" wx:if="{{item.isCurrent}}">当前</view>
-                        <view class="picker-preview__signal" wx:if="{{item.signalLabel}}">
-                            {{item.signalLabel}}
-                        </view>
-                    </view>
                 </view>
             </view>
 

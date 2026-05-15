@@ -26,12 +26,8 @@ function buildPickerWifiList(currentWifi = null, nearbyWifiList = [], activeSsid
     const combinedList = [];
 
     if (currentSsid) {
-        const currentMatch = nearbyBySsid.get(currentSsid);
-
         combinedList.push({
             SSID: currentSsid,
-            signalStrength: currentMatch ? currentMatch.signalStrength : 0,
-            isCurrent: true,
         });
     }
 
@@ -41,8 +37,7 @@ function buildPickerWifiList(currentWifi = null, nearbyWifiList = [], activeSsid
         }
 
         combinedList.push({
-            ...item,
-            isCurrent: false,
+            SSID: item.SSID,
         });
     });
 
@@ -51,9 +46,6 @@ function buildPickerWifiList(currentWifi = null, nearbyWifiList = [], activeSsid
         className: item.SSID === activeSsid
             ? 'picker-preview__item picker-preview__item--active'
             : 'picker-preview__item',
-        signalLabel: Number.isFinite(item.signalStrength) && item.signalStrength > 0
-            ? `信号 ${item.signalStrength}`
-            : '',
     }));
 }
 
@@ -70,6 +62,7 @@ Page({
         pickerWifiList: [],
         nearbyWifiList: [],
         wifiPassword: '',
+        showPassword: false,
         scanVisible: false,
         records: [],
         scanningNearbyWifi: false,
@@ -127,11 +120,7 @@ Page({
             }
 
             this.setData(nextState, () => {
-                this.syncPickerWifiList(
-                    hasManualSelection
-                        ? undefined
-                        : selectedSsid
-                );
+                this.syncPickerWifiList(hasManualSelection ? undefined : selectedSsid);
             });
         } catch (error) {
             this.setData({
@@ -235,6 +224,9 @@ Page({
     handleConfirmWifiSelection() {
         const selectedSsid = (this.data.pendingSelectedSsid || '').trim();
         const previousSelectedSsid = (this.data.selectedSsid || '').trim();
+        const shouldResetSensitiveInput = Boolean(
+            previousSelectedSsid && previousSelectedSsid !== selectedSsid
+        );
 
         if (!selectedSsid) {
             this.setData({
@@ -246,9 +238,8 @@ Page({
         this.setData({
             selectedSsid,
             pickerVisible: false,
-            wifiPassword: previousSelectedSsid && previousSelectedSsid !== selectedSsid
-                ? ''
-                : this.data.wifiPassword,
+            wifiPassword: shouldResetSensitiveInput ? '' : this.data.wifiPassword,
+            showPassword: shouldResetSensitiveInput ? false : this.data.showPassword,
             formMessage: '',
         }, () => {
             this.syncPickerWifiList(selectedSsid);
@@ -283,6 +274,16 @@ Page({
         this.setData({
             wifiPassword,
             formMessage: '',
+        });
+    },
+
+    handleTogglePassword() {
+        if (!this.data.selectedSsid) {
+            return;
+        }
+
+        this.setData({
+            showPassword: !this.data.showPassword,
         });
     },
 
@@ -328,6 +329,7 @@ Page({
             scanVisible: false,
             records: [],
             wifiPassword: '',
+            showPassword: false,
         });
     },
 });

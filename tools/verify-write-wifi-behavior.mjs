@@ -135,4 +135,58 @@ function createPageHarness(stubs = {}) {
   assert.equal(page.data.wifiPassword, '');
 }
 
+{
+  const createPage = createPageHarness({
+    getNavMetrics: () => ({ navHeight: 64 }),
+    describeWifiError: () => 'error',
+    getConnectedWifiInfo: async () => null,
+    getWifiRuntime: () => ({ platform: 'android' }),
+    initWifiModule: async () => {},
+    openWifiAppAuthorizeSetting: async () => true,
+    readWifiScanIssue: () => null,
+    scanNearbyWifi: async () => [],
+    WIFI_WSC_MIME_TYPE: 'application/vnd.wfa.wsc',
+    buildWifiConfigPayload: () => new Uint8Array(),
+  });
+  const page = createPage();
+
+  assert.equal(page.data.showPassword, false);
+  page.setData({
+    selectedSsid: 'Wifi-A',
+  });
+
+  page.handleTogglePassword();
+  assert.equal(page.data.showPassword, true);
+
+  page.handleTogglePassword();
+  assert.equal(page.data.showPassword, false);
+}
+
+{
+  const createPage = createPageHarness({
+    getNavMetrics: () => ({ navHeight: 64 }),
+    describeWifiError: () => 'error',
+    getConnectedWifiInfo: async () => null,
+    getWifiRuntime: () => ({ platform: 'android' }),
+    initWifiModule: async () => {},
+    openWifiAppAuthorizeSetting: async () => true,
+    readWifiScanIssue: () => null,
+    scanNearbyWifi: async () => [],
+    WIFI_WSC_MIME_TYPE: 'application/vnd.wfa.wsc',
+    buildWifiConfigPayload: () => new Uint8Array(),
+  });
+  const page = createPage();
+
+  page.setData({
+    selectedSsid: 'Wifi-A',
+    pendingSelectedSsid: 'Wifi-B',
+    wifiPassword: 'old-password',
+    showPassword: true,
+    pickerVisible: true,
+  });
+  page.handleConfirmWifiSelection();
+
+  assert.equal(page.data.showPassword, false);
+}
+
 console.log('PASS verify-write-wifi-behavior');
