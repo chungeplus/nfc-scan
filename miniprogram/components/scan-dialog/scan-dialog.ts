@@ -1,4 +1,92 @@
-import { string2ArrayBuffer, encodeNdefUriPayload } from '../../utils/convert';
+import { string2ArrayBuffer, encodeNdefUriPayload, hexToArrayBuffer } from '../../utils/convert';
+
+interface LegacyRecordInput {
+    id?: unknown;
+    payload?: unknown;
+    tnf?: number;
+    type?: unknown;
+}
+
+interface DocumentedRecordInput {
+    idHex?: string;
+    payloadHex?: string;
+    typeHex?: string;
+}
+
+interface WriteRequest {
+    recordStrategy?: string;
+    records?: DocumentedRecordInput[] | null;
+}
+
+type ScanStatus = 'waiting' | 'writing' | 'success' | 'error';
+type NfcDiscoveredResult = Parameters<WechatMiniprogram.OnDiscoveredCallback>[0] & {
+    stopDefault?: () => void;
+};
+
+function isArrayBufferValue(value: unknown): value is ArrayBuffer {
+    return value instanceof ArrayBuffer || Object.prototype.toString.call(value) === '[object ArrayBuffer]';
+}
+
+function normalizeBinaryValue(value: unknown): ArrayBuffer | null {
+    if (isArrayBufferValue(value)) {
+        return value;
+    }
+
+    if (ArrayBuffer.isView(value)) {
+        return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength) as ArrayBuffer;
+    }
+
+    return null;
+}
+
+function toRecordBuffer(value: unknown): ArrayBuffer {
+    const binaryValue = normalizeBinaryValue(value);
+
+    if (binaryValue) {
+        return binaryValue;
+    }
+
+    return string2ArrayBuffer(typeof value === 'string' ? value : '');
+}
+
+function buildRecordPayload(recordItem: LegacyRecordInput): ArrayBuffer {
+    const binaryValue = normalizeBinaryValue(recordItem ? recordItem.payload : null);
+
+    if (binaryValue) {
+        return binaryValue;
+    }
+
+    if (recordItem && recordItem.tnf === 1 && recordItem.type === 'U') {
+        return encodeNdefUriPayload(typeof recordItem.payload === 'string' ? recordItem.payload : '');
+    }
+
+    return toRecordBuffer(recordItem ? recordItem.payload : '');
+}
+
+function buildDocumentedRecords(writeRequest: WriteRequest | null | undefined) {
+    if (!writeRequest || writeRequest.recordStrategy !== 'documented-records') {
+        return null;
+    }
+
+    if (!Array.isArray(writeRequest.records) || writeRequest.records.length === 0) {
+        throw new Error('INVALID_DOCUMENTED_RECORDS');
+    }
+
+    return writeRequest.records.map((recordItem) => ({
+        id: hexToArrayBuffer(recordItem.idHex || ''),
+        type: hexToArrayBuffer(recordItem.typeHex || ''),
+        payload: hexToArrayBuffer(recordItem.payloadHex || ''),
+    }));
+}
+
+function buildLegacyRecord(recordItem: LegacyRecordInput) {
+    return {
+        tnf: recordItem.tnf,
+        id: toRecordBuffer(recordItem.id),
+        type: toRecordBuffer(recordItem.type),
+        payload: buildRecordPayload(recordItem),
+    };
+}
 
 Component({
     properties: {
@@ -9,6 +97,10 @@ Component({
         records: {
             type: Array,
             value: [],
+        },
+        writeRequest: {
+            type: Object,
+            value: null,
         },
         successMessage: {
             type: String,
@@ -29,12 +121,12 @@ Component({
     },
 
     data: {
-        scanStatus: 'waiting',
+        scanStatus: 'waiting' as ScanStatus,
         errorMessage: '',
-        baseNfcAdapter: null,
-        runNfcAdapter: null,
-        handleDiscoveredWrap: null,
-        resetTimer: null,
+        baseNfcAdapter: null as WechatMiniprogram.NFCAdapter | null,
+        runNfcAdapter: null as ReturnType<WechatMiniprogram.NFCAdapter['getNdef']> | null,
+        handleDiscoveredWrap: null as ((res: NfcDiscoveredResult) => void) | null,
+        resetTimer: null as ReturnType<typeof setTimeout> | null,
         writingLock: false,
     },
 
@@ -82,8 +174,11 @@ Component({
 
             baseNfcAdapter.startDiscovery({
                 success: () => {
-                    baseNfcAdapter.offDiscovered(this.data.handleDiscoveredWrap);
-                    baseNfcAdapter.onDiscovered(this.data.handleDiscoveredWrap);
+                    const handleDiscoveredWrap = this.data.handleDiscoveredWrap;
+                    if (handleDiscoveredWrap) {
+                        baseNfcAdapter.offDiscovered(handleDiscoveredWrap);
+                        baseNfcAdapter.onDiscovered(handleDiscoveredWrap);
+                    }
                 },
                 fail: () => {
                     this.setData({
@@ -101,13 +196,18 @@ Component({
                 clearTimeout(this.data.resetTimer);
             }
 
-            if (this.data.runNfcAdapter) {
-                this.data.runNfcAdapter.close();
+            const runNfcAdapter = this.data.runNfcAdapter as { close?: () => void } | null;
+            if (runNfcAdapter?.close) {
+                runNfcAdapter.close();
             }
 
-            if (this.data.baseNfcAdapter) {
-                this.data.baseNfcAdapter.offDiscovered(this.data.handleDiscoveredWrap);
-                this.data.baseNfcAdapter.stopDiscovery();
+            const baseNfcAdapter = this.data.baseNfcAdapter;
+            const handleDiscoveredWrap = this.data.handleDiscoveredWrap;
+            if (baseNfcAdapter) {
+                if (handleDiscoveredWrap) {
+                    baseNfcAdapter.offDiscovered(handleDiscoveredWrap);
+                }
+                baseNfcAdapter.stopDiscovery();
             }
 
             const resetTimer = setTimeout(() => {
@@ -126,7 +226,7 @@ Component({
             });
         },
 
-        handleDiscovered(res) {
+        handleDiscovered(res: NfcDiscoveredResult) {
             if (this.data.writingLock) {
                 return;
             }
@@ -155,28 +255,42 @@ Component({
         },
 
         ndefAdapterWrite() {
-            const runNfcAdapter = this.data.baseNfcAdapter.getNdef();
+            const runNfcAdapter = this.data.baseNfcAdapter?.getNdef();
+
+            if (!runNfcAdapter) {
+                this.setData({
+                    scanStatus: 'error',
+                    errorMessage: 'NFC 写入适配器不可用',
+                    writingLock: false,
+                });
+                return;
+            }
 
             this.setData({
                 runNfcAdapter,
             });
 
-            const writeRecords = () => {
-                runNfcAdapter.writeNdefMessage({
-                    records: this.properties.records.map((recordItem) => {
-                        const payload = recordItem.payload instanceof ArrayBuffer
-                            ? recordItem.payload
-                            : recordItem.tnf === 1 && recordItem.type === 'U'
-                                ? encodeNdefUriPayload(recordItem.payload)
-                                : string2ArrayBuffer(recordItem.payload);
+            const handleWriteRequestError = () => {
+                this.setData({
+                    scanStatus: 'error',
+                    errorMessage: '鏍囩鍐欏叆鏁版嵁鏍煎紡鏃犳晥锛岃杩斿洖鍚庨噸璇?',
+                    writingLock: false,
+                });
+            };
 
-                        return {
-                            tnf: recordItem.tnf,
-                            id: string2ArrayBuffer(recordItem.id),
-                            type: string2ArrayBuffer(recordItem.type),
-                            payload,
-                        };
-                    }),
+            const writeRecords = () => {
+                let records = null;
+
+                try {
+                    const strictRecords = buildDocumentedRecords(this.properties.writeRequest as WriteRequest | null);
+                    records = strictRecords || (this.properties.records as LegacyRecordInput[]).map(buildLegacyRecord);
+                } catch {
+                    handleWriteRequestError();
+                    return;
+                }
+
+                runNfcAdapter.writeNdefMessage({
+                    records,
                     success: () => {
                         this.setData({
                             scanStatus: 'success',
@@ -195,7 +309,7 @@ Component({
 
             runNfcAdapter.connect({
                 success: writeRecords,
-                fail: (error) => {
+                fail: (error: { errCode?: number; errMsg?: string }) => {
                     const errCode = error ? error.errCode : undefined;
                     const errMsg = error ? error.errMsg || '' : '';
                     const alreadyConnected = errCode === 13022 || /already\s+co?connected/i.test(errMsg);

@@ -18,7 +18,7 @@ Component({
     },
 
     methods: {
-        handleSwitchTab(event) {
+        handleSwitchTab(event: WechatMiniprogram.BaseEvent) {
             const index = Number(
                 event && event.currentTarget && event.currentTarget.dataset
                     ? event.currentTarget.dataset.index || 0

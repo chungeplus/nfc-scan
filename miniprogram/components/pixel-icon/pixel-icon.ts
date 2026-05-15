@@ -15,7 +15,7 @@ Component({
     },
 
     data: {
-        pixels: [],
+        pixels: [] as string[],
         pixelSize: 3,
         containerSize: 48,
     },
@@ -41,7 +41,7 @@ Component({
             const size = Number(this.data.size) || 48;
             const pixelSize = Math.max(2, Math.round(size / 8));
             const containerSize = pixelSize * 8;
-            const iconColorMap = {
+            const iconColorMap: Record<string, string> = {
                 home: '#2d2d2d',
                 back: '#2d2d2d',
                 app: '#6ea85e',
@@ -64,13 +64,13 @@ Component({
             };
             const iconColor = iconColorMap[this.data.name] || '#2d2d2d';
 
-            const palette = {
+            const palette: Record<string, string> = {
                 '0': 'transparent',
                 '1': iconColor,
             };
 
             const icon = this.getIcon(this.data.name);
-            const pixels = [];
+            const pixels: string[] = [];
             for (let y = 0; y < 8; y++) {
                 const row = icon[y] || '';
                 for (let x = 0; x < 8; x++) {
@@ -91,7 +91,7 @@ Component({
          * @param {string} name - 图标名称
          * @returns {string[]} 图标像素数据
          */
-        getIcon(name) {
+        getIcon(name: string) {
             const icons = {
                 home: [
                     '00111000',
@@ -285,7 +285,7 @@ Component({
                 ],
             };
 
-            return icons[name] || icons.app;
+            return icons[name as keyof typeof icons] || icons.app;
         },
     },
 });

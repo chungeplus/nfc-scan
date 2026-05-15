@@ -26,4 +26,17 @@ for (const relativePath of sharedTsFiles) {
   assert.match(source, /export /, `${relativePath} should export typed symbols`);
 }
 
+const uiTsFiles = [
+  'miniprogram/custom-tab-bar/index.ts',
+  'miniprogram/components/pixel-icon/pixel-icon.ts',
+  'miniprogram/components/pixel-navbar/pixel-navbar.ts',
+  'miniprogram/components/pixel-toast/pixel-toast.ts',
+  'miniprogram/components/scan-dialog/scan-dialog.ts',
+];
+
+for (const relativePath of uiTsFiles) {
+  const source = await read(relativePath);
+  assert.match(source, /(Component|Page)\(/, `${relativePath} should remain a mini program runtime module`);
+}
+
 console.log('PASS verify-miniprogram-typescript-migration task1');
