@@ -50,8 +50,8 @@ nfc-scan/
 
 ## Repository Tooling
 
-- 仓库根目录当前不作为 `npm run lint`、`npm run typecheck`、`npm run build` 的入口
-- 代码检查、类型检查和构建请分别在独立项目目录下执行
+- 仓库根目录的 `npm run lint`、`npm run typecheck`、`npm run build` 仍是迁移中的遗留脚本，当前还保留在 `package.json` 中，后续仓库重构时会移除
+- 当前贡献代码时，请分别在 `wx-app/miniprogram`、`wx-app/cloudfunctions/media-share-service` 和 `web-service` 内执行对应的代码检查、类型检查和构建命令
 
 ## Modernization Rules
 
