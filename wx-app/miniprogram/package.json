@@ -2,9 +2,9 @@
   "name": "@nfc-scan/miniprogram",
   "private": true,
   "scripts": {
-    "lint": "eslint --config ../../eslint.config.mjs \"./**/*.ts\"",
-    "lint:fix": "eslint --config ../../eslint.config.mjs --fix \"./**/*.ts\"",
-    "lint:styles": "stylelint --config ../../stylelint.config.mjs \"./**/*.scss\"",
+    "lint": "eslint \"app.ts\" \"components/**/*.ts\" \"custom-tab-bar/**/*.ts\" \"pages/**/*.ts\" \"utils/**/*.ts\"",
+    "lint:fix": "eslint --fix \"app.ts\" \"components/**/*.ts\" \"custom-tab-bar/**/*.ts\" \"pages/**/*.ts\" \"utils/**/*.ts\"",
+    "lint:styles": "stylelint \"./**/*.scss\"",
     "typecheck": "tsc -p ./tsconfig.json",
     "verify": "npm run lint && npm run lint:styles && npm run typecheck"
   },
