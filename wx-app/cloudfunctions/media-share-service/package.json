@@ -4,13 +4,20 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "lint": "eslint --config eslint.config.mjs \"src/**/*.ts\" \"tools/**/*.mjs\"",
+    "lint:fix": "eslint --config eslint.config.mjs \"src/**/*.ts\" \"tools/**/*.mjs\" --fix",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "verify": "node tools/verify-cloudfunction-modernization.mjs && npm run lint && npm run typecheck && npm run build"
   },
   "dependencies": {
     "wx-server-sdk": "3.0.4"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^24.0.0",
-    "typescript": "^5.9.3"
+    "eslint": "^10.4.0",
+    "globals": "^17.6.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.59.3"
   }
 }
