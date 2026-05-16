@@ -12,26 +12,30 @@
 - `本地音视频` 支持上传微信会话文件、生成播放页并写入 NFC
 - 支持“我的文件”查看、复用、复制链接和删除媒体写卡记录
 
-## 项目结构
+## 仓库导航
 
 ```text
 nfc-scan/
-├─ miniprogram/         # 微信小程序
-├─ cloudfunctions/      # 云函数
-├─ play-web-service/    # 云托管服务与播放页
-├─ tools/               # 本地校验脚本
-├─ docs/                # 功能说明与原型
+├─ wx-app/                                # 微信开发者工具打开目录
+│  ├─ miniprogram/                        # 小程序源码
+│  └─ cloudfunctions/media-share-service/ # 云函数源码
+├─ web-service/                           # CloudBase 云托管 Web 服务源码
+├─ tools/                                 # 本地校验脚本
+├─ docs/                                  # 功能说明与原型
 └─ README.md
 ```
 
-## 关键入口
+## 关键入口与约定
 
-- 小程序首页：`miniprogram/pages/write-menu`
-- WLAN 写卡页：`miniprogram/pages/write-wifi`
-- 本地音视频：`miniprogram/pages/write-local-media`
-- 我的文件：`miniprogram/pages/my-files`
-- 云函数：`cloudfunctions/media-share-service`
-- 云托管：`play-web-service`
+- 微信开发者工具根目录：`wx-app`
+- 小程序源码：`wx-app/miniprogram`
+- 小程序首页：`wx-app/miniprogram/pages/write-menu`
+- WLAN 写卡页：`wx-app/miniprogram/pages/write-wifi`
+- 本地音视频：`wx-app/miniprogram/pages/write-local-media`
+- 我的文件：`wx-app/miniprogram/pages/my-files`
+- 云函数源码：`wx-app/cloudfunctions/media-share-service`
+- CloudBase Web 服务源码：`web-service`
+- `play-web-service` 当前仍仅是 CloudBase 资源名，后续基础设施迁移前不会恢复成仓库目录名
 
 ## 文档
 
@@ -41,15 +45,13 @@ nfc-scan/
 
 ## 版本说明
 
-- 当前实现以 `miniprogram + media-share-service + play-web-service` 的完整联动为准
+- 当前实现以 `wx-app/miniprogram + wx-app/cloudfunctions/media-share-service + web-service` 的完整联动为准
 - 文档默认描述当前 `master` 的真实页面与功能，阅读时建议先看“当前功能说明”，再看“当前版本原型”
 
 ## Repository Tooling
 
-- `npm run lint`: run shared code and style linting
-- `npm run typecheck`: run mini program, web service, and cloud function type checks
-- `npm run build`: build the cloud function and web service outputs
-- `npm run verify`: run the full repository verification gate
+- 仓库根目录当前不作为 `npm run lint`、`npm run typecheck`、`npm run build` 的入口
+- 代码检查、类型检查和构建请分别在独立项目目录下执行
 
 ## Modernization Rules
 

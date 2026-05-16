@@ -24,7 +24,9 @@ Thumbs.db
 
 # 本地依赖
 /node_modules/
-/play-web-service/node_modules/
+/wx-app/miniprogram/node_modules/
+/wx-app/cloudfunctions/**/node_modules/
+/web-service/node_modules/
 
 # 临时文件
 *.bak
