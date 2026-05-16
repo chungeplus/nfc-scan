@@ -14,11 +14,15 @@ document.addEventListener('DOMContentLoaded', function() {
   const videoTimeDisplay = document.getElementById('videoTimeDisplay');
   const videoProgressBar = document.getElementById('videoProgressBar');
   const videoFullscreenBtn = document.getElementById('videoFullscreenBtn');
+  let hideControlsTimer = null;
 
   function resetHideTimer() {
+    if (hideControlsTimer) {
+      clearTimeout(hideControlsTimer);
+    }
     if (videoPlayer && !videoPlayer.paused) {
       videoStage.classList.add('show-controls');
-      setTimeout(function() {
+      hideControlsTimer = setTimeout(function() {
         videoStage.classList.remove('show-controls');
       }, 3000);
     }
@@ -65,6 +69,9 @@ document.addEventListener('DOMContentLoaded', function() {
   videoPlayer.addEventListener('pause', function() {
     videoStage.classList.remove('is-playing');
     videoStage.classList.add('show-controls');
+    if (hideControlsTimer) {
+      clearTimeout(hideControlsTimer);
+    }
   });
 
   videoPlayer.addEventListener('waiting', function() {
