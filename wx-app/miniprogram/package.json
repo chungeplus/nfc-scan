@@ -2,8 +2,8 @@
   "name": "@nfc-scan/miniprogram",
   "private": true,
   "scripts": {
-    "lint": "eslint \"app.ts\" \"components/**/*.ts\" \"custom-tab-bar/**/*.ts\" \"pages/**/*.ts\" \"utils/**/*.ts\"",
-    "lint:fix": "eslint --fix \"app.ts\" \"components/**/*.ts\" \"custom-tab-bar/**/*.ts\" \"pages/**/*.ts\" \"utils/**/*.ts\"",
+    "lint": "eslint \"app.ts\" \"components/**/*.ts\" \"custom-tab-bar/**/*.ts\" \"pages/**/*.ts\" \"utils/**/*.ts\" \"tools/**/*.mjs\"",
+    "lint:fix": "eslint --fix \"app.ts\" \"components/**/*.ts\" \"custom-tab-bar/**/*.ts\" \"pages/**/*.ts\" \"utils/**/*.ts\" \"tools/**/*.mjs\"",
     "lint:styles": "stylelint \"./**/*.scss\"",
     "typecheck": "tsc -p ./tsconfig.json",
     "verify": "node tools/verify-app-config.mjs && node tools/verify-client-platform.mjs && node tools/verify-ios-entry-gating.mjs && node tools/verify-miniprogram-typescript-migration.mjs && node tools/verify-motion-system.mjs && node tools/verify-scan-dialog-behavior.mjs && node tools/verify-wifi-manager.mjs && node tools/verify-wifi-ndef.mjs && node tools/verify-write-app-android-only.mjs && node tools/verify-write-local-media-behavior.mjs && node tools/verify-write-wifi-behavior.mjs && node tools/verify-write-wifi-page.mjs && npm run lint && npm run lint:styles && npm run typecheck"
