@@ -405,6 +405,13 @@ function scanNearbyWifi(): Promise<WifiListEntry[]> {
     );
 }
 
+export type {
+    WifiErrorLike,
+    WifiListEntry,
+    WifiRuntime,
+    WifiScanIssue,
+};
+
 export {
     describeWifiError,
     getConnectedWifiInfo,

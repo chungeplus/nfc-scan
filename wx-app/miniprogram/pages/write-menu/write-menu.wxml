@@ -1,10 +1,10 @@
 <pixel-navbar title="NFC" theme="home" showBack="{{false}}" showHome="{{false}}" />
 <pixel-toast id="pixel-toast" />
 
-<view class="write-menu" style="min-height: calc(100vh - {{navHeight}}px);">
+<view class="write-menu motion-fade" style="min-height: calc(100vh - {{navHeight}}px);">
     <view class="write-menu__content">
         <view class="stack">
-            <view class="card card--orange card--pixel-cut home-main" bindtap="handleWriteApp">
+            <view class="card card--orange card--pixel-cut home-main motion-enter motion-enter--1 motion-pressable" bindtap="handleWriteApp">
                 <view class="card__bite card__bite--tl"></view>
                 <view class="card__bite card__bite--br"></view>
                 <view class="home-deco home-deco--a"></view>
@@ -28,7 +28,7 @@
             </view>
 
             <view class="home-subgrid">
-                <view class="card card--purple card--pixel-cut home-sub" bindtap="handleWriteMusic">
+                <view class="card card--purple card--pixel-cut home-sub motion-enter motion-enter--2 motion-pressable" bindtap="handleWriteMusic">
                     <view class="card__bite card__bite--tl"></view>
                     <view class="row">
                         <view class="home-sub__visual">
@@ -41,7 +41,7 @@
                     </view>
                 </view>
 
-                <view class="card card--cyan card--pixel-cut home-sub" bindtap="handleWriteWeb">
+                <view class="card card--cyan card--pixel-cut home-sub motion-enter motion-enter--3 motion-pressable" bindtap="handleWriteWeb">
                     <view class="card__bite card__bite--br"></view>
                     <view class="row">
                         <view class="home-sub__visual">
@@ -54,7 +54,7 @@
                     </view>
                 </view>
 
-                <view class="card card--blue card--pixel-cut home-sub home-sub--wide" bindtap="handleWriteWifi">
+                <view class="card card--blue card--pixel-cut home-sub home-sub--wide motion-enter motion-enter--4 motion-pressable" bindtap="handleWriteWifi">
                     <view class="card__bite card__bite--tl"></view>
                     <view class="card__bite card__bite--br"></view>
                     <view class="row">
@@ -68,7 +68,7 @@
                     </view>
                 </view>
 
-                <view class="card card--green card--pixel-cut home-sub home-sub--wide" bindtap="handleWriteLocalMedia">
+                <view class="card card--green card--pixel-cut home-sub home-sub--wide motion-enter motion-enter--5 motion-pressable" bindtap="handleWriteLocalMedia">
                     <view class="card__bite card__bite--tl"></view>
                     <view class="card__bite card__bite--br"></view>
                     <view class="row">
@@ -86,12 +86,28 @@
     </view>
 </view>
 
-<button class="fab" open-type="contact">
+<button class="fab motion-pop motion-enter--6 motion-idle-float" open-type="contact">
     <pixel-icon name="question" size="44" />
 </button>
 
-<view wx:if="{{developerPromiseDialogVisible}}" class="overlay">
-    <view class="dialog">
+<view wx:if="{{iosBlockedDialogVisible}}" class="overlay motion-fade">
+    <view class="dialog motion-pop">
+        <view class="dialog__title dialog__title--red">当前设备不支持写卡</view>
+        <view class="dialog__body">
+            <view class="stage">
+                <pixel-icon name="phone" size="64" />
+                <view class="hint hint--center hint--red">苹果手机微信暂不支持 NFC 写卡</view>
+                <view class="hint hint--center hint--red">请使用安卓设备继续操作</view>
+            </view>
+        </view>
+        <view class="dialog__actions dialog__actions--one">
+            <button class="dialog-btn dialog-btn--red" bindtap="handleCloseIosBlockedDialog">我知道了</button>
+        </view>
+    </view>
+</view>
+
+<view wx:if="{{developerPromiseDialogVisible}}" class="overlay motion-fade">
+    <view class="dialog motion-pop">
         <view class="dialog__title">开发者承诺</view>
         <view class="dialog__body">
             <view class="promise">
@@ -106,14 +122,13 @@
     </view>
 </view>
 
-<view wx:if="{{nfcUnsupportedDialogVisible}}" class="overlay">
-    <view class="dialog">
+<view wx:if="{{nfcUnsupportedDialogVisible}}" class="overlay motion-fade">
+    <view class="dialog motion-pop">
         <view class="dialog__title dialog__title--red">NFC 不可用</view>
         <view class="dialog__body">
             <view class="stage">
                 <pixel-icon name="phone" size="64" />
                 <view class="hint hint--center hint--red">当前设备暂不支持 NFC 写入。</view>
-                <view class="hint hint--center hint--red">你仍然可以查看页面和管理云端文件。</view>
             </view>
         </view>
         <view class="dialog__actions dialog__actions--one">

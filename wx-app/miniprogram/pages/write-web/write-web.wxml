@@ -1,8 +1,8 @@
 <pixel-navbar title="写入网页" theme="web" showBack="{{true}}" showHome="{{false}}" />
 <pixel-toast id="pixel-toast" />
 
-<view class="write-web" style="height: calc(100vh - {{navHeight}}px);">
-    <view class="field">
+<view class="write-web motion-fade" style="height: calc(100vh - {{navHeight}}px);">
+    <view class="field motion-enter motion-enter--1">
         <view class="label">网址链接</view>
         <textarea
             class="box box--tall box--textarea"
@@ -14,14 +14,14 @@
         <view class="field__error" wx:if="{{urlError}}">{{urlError}}</view>
     </view>
 
-    <view class="btn-wrap">
-        <button class="btn" bindtap="handlePasteTap">粘贴</button>
+    <view class="btn-wrap motion-enter motion-enter--2">
+        <button class="btn motion-pressable" bindtap="handlePasteTap">粘贴</button>
     </view>
 
-    <button class="primary-btn" disabled="{{!canSubmit}}" bindtap="handleOpenScanDialog">写入 NFC 标签</button>
+    <button class="primary-btn motion-enter motion-enter--3 motion-pressable" disabled="{{!canSubmit}}" bindtap="handleOpenScanDialog">写入 NFC 标签</button>
 </view>
 
-<button class="fab" open-type="contact">
+<button class="fab motion-pop motion-enter--4 motion-idle-float" open-type="contact">
     <pixel-icon name="question" size="44" />
 </button>
 

@@ -1,9 +1,9 @@
 <pixel-navbar title="写入 WLAN" theme="web" showBack="{{true}}" showHome="{{false}}" />
 
-<view class="write-wifi" style="min-height: calc(100vh - {{navHeight}}px);">
-    <view class="field">
+<view class="write-wifi motion-fade" style="min-height: calc(100vh - {{navHeight}}px);">
+    <view class="field motion-enter motion-enter--1">
         <view class="label">WLAN</view>
-        <view class="box box--select" bindtap="handleOpenPicker">
+        <view class="box box--select motion-pressable" bindtap="handleOpenPicker">
             <view class="box__value {{selectedSsid ? '' : 'box__value--placeholder'}}">
                 {{selectedSsid || '选择 WLAN'}}
             </view>
@@ -11,7 +11,7 @@
         </view>
     </view>
 
-    <view class="field">
+    <view class="field motion-enter motion-enter--2">
         <view class="label">密码</view>
         <view class="box password-box {{selectedSsid ? '' : 'box--disabled'}}">
             <input
@@ -23,7 +23,7 @@
                 bindinput="handlePasswordInput"
             />
             <button
-                class="password-box__toggle"
+                class="password-box__toggle motion-pressable"
                 disabled="{{!selectedSsid}}"
                 bindtap="handleTogglePassword"
             >
@@ -33,7 +33,7 @@
     </view>
 
     <button
-        class="primary-btn"
+        class="primary-btn motion-enter motion-enter--3 motion-pressable"
         disabled="{{!selectedSsid || !wifiPassword}}"
         bindtap="handleOpenScanDialog"
     >
@@ -42,12 +42,15 @@
     <view class="field__error field__error--submit" wx:if="{{formMessage}}">{{formMessage}}</view>
 </view>
 
-<view wx:if="{{pickerVisible}}" class="picker-preview" style="top: {{navHeight}}px;" bindtap="handleClosePicker">
-    <view class="picker-preview__card animate-slideUpFromBottom" catchtap="noop">
-        <view class="picker-preview__titlebar">
-            <view class="picker-preview__title">选择 WLAN</view>
+<view wx:if="{{pickerVisible}}" class="picker-preview motion-fade" style="top: {{navHeight}}px;" bindtap="handleClosePicker">
+    <view class="picker-preview__card motion-sheet" catchtap="noop">
+        <view class="picker-preview__titlebar {{scanningNearbyWifi ? 'picker-preview__titlebar--scanning' : ''}}">
+            <view class="picker-preview__title-shell">
+                <view class="picker-preview__title">选择 WLAN</view>
+                <view wx:if="{{scanningNearbyWifi}}" class="picker-preview__title-sweep motion-scan-sweep"></view>
+            </view>
             <button
-                class="picker-preview__refresh"
+                class="picker-preview__refresh motion-pressable {{scanningNearbyWifi ? 'picker-preview__refresh--scanning motion-scan-processing' : ''}}"
                 bindtap="handleRefreshNearbyWifi"
                 loading="{{scanningNearbyWifi}}"
             >
@@ -61,7 +64,7 @@
 
         <button
             wx:if="{{pickerAction === 'open_app_authorize_setting'}}"
-            class="dialog-btn dialog-btn--blue dialog-btn--inline"
+            class="dialog-btn dialog-btn--blue dialog-btn--inline motion-pressable"
             bindtap="handleOpenWechatLocationSetting"
         >
             打开微信定位权限
@@ -71,7 +74,7 @@
             <view
                 wx:for="{{pickerWifiList}}"
                 wx:key="SSID"
-                class="{{item.className}}"
+            class="{{item.className}} motion-pressable"
                 data-ssid="{{item.SSID}}"
                 bindtap="handlePickWifi"
             >
@@ -80,7 +83,7 @@
                 </view>
             </view>
 
-            <view class="picker-preview__empty" wx:if="{{!pickerWifiList.length && scanningNearbyWifi}}">
+            <view class="picker-preview__empty picker-preview__empty--scanning motion-scan-processing" wx:if="{{!pickerWifiList.length && scanningNearbyWifi}}">
                 扫描附近 WLAN...
             </view>
             <view class="picker-preview__empty" wx:elif="{{!pickerWifiList.length}}">
@@ -89,9 +92,9 @@
         </scroll-view>
 
         <view class="picker-preview__actions">
-            <button class="dialog-btn" bindtap="handleClosePicker">取消</button>
+            <button class="dialog-btn motion-pressable" bindtap="handleClosePicker">取消</button>
             <button
-                class="dialog-btn dialog-btn--green"
+                class="dialog-btn dialog-btn--green motion-pressable"
                 disabled="{{!pendingSelectedSsid}}"
                 bindtap="handleConfirmWifiSelection"
             >
@@ -101,4 +104,9 @@
     </view>
 </view>
 
-<scan-dialog visible="{{scanVisible}}" records="{{records}}" bind:close="handleCloseScanDialog" />
+<scan-dialog
+    visible="{{scanVisible}}"
+    records="{{records}}"
+    writeRequest="{{writeRequest}}"
+    bind:close="handleCloseScanDialog"
+/>

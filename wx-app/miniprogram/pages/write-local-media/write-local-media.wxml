@@ -1,17 +1,16 @@
 <pixel-navbar title="写入本地音视频" theme="audio" showBack="{{true}}" showHome="{{false}}" />
 <pixel-toast id="pixel-toast" />
 
-<view class="write-media" style="min-height: calc(100vh - {{navHeight}}px);">
-    <view class="field">
-        <button class="picker-btn" bindtap="handleChooseFile" disabled="{{submitting}}">从微信会话选择文件</button>
-
-        <view wx:if="{{submitting}}" class="loading-card">
-            <view class="loading-card__spinner"></view>
-            <view class="loading-card__content">
-                <view class="loading-card__title">{{submittingText}}</view>
-                <view class="loading-card__desc">请稍候</view>
-            </view>
+<view class="write-media motion-fade" style="min-height: calc(100vh - {{navHeight}}px);">
+    <view wx:if="{{submitting}}" class="loading-overlay motion-fade" style="padding-top: {{navHeight}}px;">
+        <view class="loading-overlay__content motion-pop">
+            <view class="loading-overlay__spinner"></view>
+            <view class="loading-overlay__title">{{submittingText}}</view>
         </view>
+    </view>
+
+    <view class="field motion-enter motion-enter--1">
+        <button class="picker-btn motion-pressable" bindtap="handleChooseFile" disabled="{{submitting}}">从微信会话选择文件</button>
 
         <view wx:if="{{selectedFileName}}" class="upload-card">
             <view class="upload-card__name">{{selectedFileName}}</view>
@@ -19,17 +18,18 @@
                 <view class="pill">{{selectedFileSizeText}}</view>
                 <view class="pill">{{selectedFileTagText}}</view>
             </view>
-            <view wx:if="{{currentShareUrl}}" class="upload-link">{{currentShareUrl}}</view>
         </view>
     </view>
 
-    <view class="field">
+    <view wx:if="{{errorMessage}}" class="inline-error">{{errorMessage}}</view>
+
+    <view class="field motion-enter motion-enter--2">
         <view class="label">播放页风格</view>
         <view class="theme-grid">
             <button
                 wx:for="{{themeOptions}}"
                 wx:key="key"
-                class="theme-btn {{themeKey === item.key ? 'theme-btn--active' : ''}}"
+                class="theme-btn motion-pressable {{themeKey === item.key ? 'theme-btn--active' : ''}}"
                 data-key="{{item.key}}"
                 bindtap="handleSelectTheme"
             >
@@ -38,14 +38,9 @@
         </view>
     </view>
 
-    <view class="field">
-        <view class="label">播放页链接</view>
-        <view class="box box--tall">{{currentShareUrl || linkPreviewText}}</view>
-    </view>
-
     <button
-        class="primary-btn"
-        disabled="{{submitting || (!selectedFileName && !currentRecord)}}"
+        class="primary-btn motion-enter motion-enter--3 motion-pressable"
+        disabled="{{submitting || !canSubmitMedia}}"
         bindtap="handleWriteMedia"
     >
         <text wx:if="{{submitting}}">{{submittingText}}</text>
@@ -53,7 +48,7 @@
     </button>
 </view>
 
-<button class="fab" open-type="contact">
+<button class="fab motion-pop motion-enter--4 motion-idle-float" open-type="contact">
     <pixel-icon name="question" size="44" />
 </button>
 

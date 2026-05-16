@@ -1,5 +1,17 @@
 @import "../styles/variables.scss";
 
+@keyframes motion-tab-bar-rise {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 18rpx, 0);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
 .custom-tab-bar {
     position: fixed;
     left: 16rpx;
@@ -13,6 +25,8 @@
     background: rgba(244, 237, 214, 0.98);
     border: $border-width solid $color-ink;
     box-shadow: 6rpx 6rpx 0 rgba(0, 0, 0, 0.18);
+    animation: motion-tab-bar-rise $motion-duration-medium $motion-ease-out both;
+    backdrop-filter: blur(4px);
 }
 
 .custom-tab-bar__item {
@@ -25,20 +39,40 @@
     background: $color-paper-2;
     border: $border-width-sm solid $color-ink;
     box-shadow: $shadow-sm;
+    transition:
+        transform $motion-duration-press $motion-ease-in-out,
+        box-shadow $motion-duration-fast $motion-ease-out,
+        background-color $motion-duration-fast $motion-ease-out;
+
+    &:active {
+        transform: translate3d(0, 3rpx, 0) scale(0.988);
+        box-shadow: 2rpx 2rpx 0 rgba(0, 0, 0, 0.14);
+    }
 }
 
 .custom-tab-bar__item--active {
     background: $color-yellow;
+    transform: translate3d(0, -2rpx, 0);
 }
 
 .custom-tab-bar__icon {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform $motion-duration-fast $motion-ease-out;
 }
 
 .custom-tab-bar__text {
     font-size: 22rpx;
     font-weight: bold;
     letter-spacing: 2rpx;
+    transition: transform $motion-duration-fast $motion-ease-out;
+}
+
+.custom-tab-bar__item--active .custom-tab-bar__icon {
+    transform: scale(1.06);
+}
+
+.custom-tab-bar__item--active .custom-tab-bar__text {
+    transform: translate3d(0, -1rpx, 0);
 }

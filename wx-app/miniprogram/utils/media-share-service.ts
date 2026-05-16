@@ -38,8 +38,13 @@ function callMediaShareService<T = Record<string, unknown>>(
     });
 }
 
-export const createMediaFile = (payload: Record<string, unknown>) => callMediaShareService('createFile', payload);
-export const prepareMediaUpload = (payload: Record<string, unknown>) => callMediaShareService('prepareUpload', payload);
-export const createMediaShare = (payload: Record<string, unknown>) => callMediaShareService('createShare', payload);
-export const listMediaFiles = (payload: Record<string, unknown> = {}) => callMediaShareService('listFiles', payload);
-export const deleteMediaFile = (payload: Record<string, unknown>) => callMediaShareService('deleteFile', payload);
+export const createMediaFile = <T = Record<string, unknown>>(payload: Record<string, unknown>) =>
+    callMediaShareService<T>('createFile', payload);
+export const prepareMediaUpload = <T = Record<string, unknown>>(payload: Record<string, unknown>) =>
+    callMediaShareService<T>('prepareUpload', payload);
+export const createMediaShare = <T = Record<string, unknown>>(payload: Record<string, unknown>) =>
+    callMediaShareService<T>('createShare', payload);
+export const listMediaFiles = <T = Record<string, unknown>>(payload: Record<string, unknown> = {}) =>
+    callMediaShareService<T>('listFiles', payload);
+export const deleteMediaFile = <T = Record<string, unknown>>(payload: Record<string, unknown>) =>
+    callMediaShareService<T>('deleteFile', payload);

@@ -369,10 +369,10 @@ Page({
     noop() {},
 
     handleOpenScanDialog() {
-        const selectedSsid = (this.data.selectedSsid || '').trim();
-        const wifiPassword = (this.data.wifiPassword || '').trim();
+        const selectedSsid = this.data.selectedSsid || '';
+        const wifiPassword = this.data.wifiPassword || '';
 
-        if (!selectedSsid || !wifiPassword) {
+        if (!selectedSsid.trim() || !wifiPassword.trim()) {
             this.setData({
                 formMessage: '请先选择 WLAN 并输入密码',
             });

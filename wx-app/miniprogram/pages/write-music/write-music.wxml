@@ -1,8 +1,8 @@
 <pixel-navbar title="写入音乐" theme="music" showBack="{{true}}" showHome="{{false}}" />
 <pixel-toast id="pixel-toast" />
 
-<view class="write-music" style="height: calc(100vh - {{navHeight}}px);">
-    <view class="field">
+<view class="write-music motion-fade" style="height: calc(100vh - {{navHeight}}px);">
+    <view class="field motion-enter motion-enter--1">
         <view class="label">分享链接</view>
         <textarea
             class="box box--tall box--textarea"
@@ -13,17 +13,17 @@
         ></textarea>
     </view>
 
-    <view class="btn-wrap">
-        <button class="btn" bindtap="handlePasteTap">粘贴</button>
+    <view class="btn-wrap motion-enter motion-enter--2">
+        <button class="btn motion-pressable" bindtap="handlePasteTap">粘贴</button>
     </view>
 
-    <button class="primary-btn" disabled="{{!canSubmit || writeStatus !== 'input'}}" bindtap="handleOpenScanDialog">
+    <button class="primary-btn motion-enter motion-enter--3 motion-pressable" disabled="{{!canSubmit || writeStatus !== 'input'}}" bindtap="handleOpenScanDialog">
         <text wx:if="{{writeStatus === 'input'}}">写入 NFC 标签</text>
         <text wx:elif="{{writeStatus === 'parsing'}}">解析中...</text>
     </button>
 </view>
 
-<button class="fab" open-type="contact">
+<button class="fab motion-pop motion-enter--4 motion-idle-float" open-type="contact">
     <pixel-icon name="question" size="44" />
 </button>
 

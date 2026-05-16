@@ -9,27 +9,43 @@
 
         <view class="dialog__body">
             <view class="stage stage--{{scanStatus}}">
-                <view class="detect-scene" wx:if="{{scanStatus === 'waiting'}}">
-                    <view class="nphone nphone--detect">
-                        <pixel-icon name="phone" size="64" />
+                <view wx:if="{{scanStatus === 'waiting'}}" class="stage__waiting">
+                    <view class="stage__waiting-scene">
+                        <view class="stage__phone-shell">
+                            <view class="nphone">
+                                <pixel-icon name="phone" size="64" />
+                            </view>
+                            <view class="stage__phone-halo"></view>
+                        </view>
+                        <view class="stage__beam motion-scan-loop"></view>
+                        <view class="ntag">
+                            <pixel-icon name="nfc" size="32" />
+                            <text>NFC</text>
+                        </view>
                     </view>
-                    <view class="ntag ntag--detect">
-                        <pixel-icon name="nfc" size="32" />
-                        <text>NFC</text>
-                    </view>
+                    <view class="hint hint--center">请将 NFC 标签贴近手机感应区</view>
                 </view>
-                <view class="hint hint--center" wx:if="{{scanStatus === 'waiting'}}">请将 NFC 标签贴近手机感应区</view>
 
-                <view class="spin" wx:if="{{scanStatus === 'writing'}}"></view>
-                <view class="hint hint--center hint--green" wx:if="{{scanStatus === 'writing'}}">正在写入，请勿移动标签</view>
+                <view wx:elif="{{scanStatus === 'writing'}}" class="stage__writing">
+                    <view class="stage__process-core motion-scan-processing"></view>
+                    <view class="hint hint--center hint--green">正在写入，请勿移动标签</view>
+                </view>
 
-                <pixel-icon name="check" size="64" wx:if="{{scanStatus === 'success'}}" />
-                <view class="hint hint--center hint--green" wx:if="{{scanStatus === 'success'}}">{{successMessage}}</view>
-                <view class="hint hint--center hint--green" wx:if="{{scanStatus === 'success'}}">{{successSubMessage}}</view>
+                <view wx:elif="{{scanStatus === 'success'}}" class="stage__result">
+                    <view class="stage__icon-wrap motion-scan-complete">
+                        <pixel-icon name="check" size="64" />
+                    </view>
+                    <view class="hint hint--center hint--green">{{successMessage}}</view>
+                    <view class="hint hint--center hint--green">{{successSubMessage}}</view>
+                </view>
 
-                <pixel-icon name="error" size="64" wx:if="{{scanStatus === 'error'}}" />
-                <view class="hint hint--center hint--red" wx:if="{{scanStatus === 'error' && errorMessage}}">{{errorMessage}}</view>
-                <view class="hint hint--center hint--red" wx:if="{{scanStatus === 'error' && !errorMessage}}">标签可能已损坏或容量不足，请更换标签后重试</view>
+                <view wx:else class="stage__result">
+                    <view class="stage__icon-wrap motion-scan-alert">
+                        <pixel-icon name="error" size="64" />
+                    </view>
+                    <view class="hint hint--center hint--red" wx:if="{{errorMessage}}">{{errorMessage}}</view>
+                    <view class="hint hint--center hint--red" wx:if="{{!errorMessage}}">标签可能已损坏或容量不足，请更换标签后重试</view>
+                </view>
             </view>
         </view>
 

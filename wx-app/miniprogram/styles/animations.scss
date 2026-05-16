@@ -162,6 +162,131 @@
     }
 }
 
+@keyframes motionFadeLift {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 24rpx, 0) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+}
+
+@keyframes motionFade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes motionScaleIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+
+    70% {
+        opacity: 1;
+        transform: scale(1.015);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes motionSheetIn {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 56rpx, 0);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes motionFloatTiny {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+        transform: translate3d(0, -4rpx, 0);
+    }
+}
+
+@keyframes motionScanSweep {
+    0% {
+        transform: translate3d(-140%, 0, 0) skewX(-18deg);
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 0.78;
+    }
+
+    100% {
+        transform: translate3d(220%, 0, 0) skewX(-18deg);
+        opacity: 0;
+    }
+}
+
+@keyframes motionScanProcessing {
+    0%,
+    100% {
+        transform: scale(0.94);
+        opacity: 0.72;
+        box-shadow: 0 0 0 0 rgba(111, 135, 212, 0.18);
+    }
+
+    50% {
+        transform: scale(1);
+        opacity: 1;
+        box-shadow: 0 0 0 8rpx rgba(111, 135, 212, 0.08);
+    }
+}
+
+@keyframes motionScanComplete {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.4;
+    }
+
+    70% {
+        transform: scale(1.06);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes motionScanAlert {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    25% {
+        transform: translate3d(-4rpx, 0, 0);
+    }
+
+    75% {
+        transform: translate3d(4rpx, 0, 0);
+    }
+}
+
 .animate-pixelFlicker {
     animation: pixelFlicker 0.1s steps(2) infinite;
 }
@@ -217,4 +342,131 @@
 
 .animate-pixelPop {
     animation: pixelPop $transition-normal steps(5);
+}
+
+.motion-enter {
+    opacity: 0;
+    animation: motionFadeLift $motion-duration-medium $motion-ease-out both;
+    will-change: transform, opacity;
+}
+
+.motion-enter--1 {
+    animation-delay: 40ms;
+}
+
+.motion-enter--2 {
+    animation-delay: 90ms;
+}
+
+.motion-enter--3 {
+    animation-delay: 140ms;
+}
+
+.motion-enter--4 {
+    animation-delay: 190ms;
+}
+
+.motion-enter--5 {
+    animation-delay: 240ms;
+}
+
+.motion-enter--6 {
+    animation-delay: 290ms;
+}
+
+.motion-fade {
+    opacity: 0;
+    animation: motionFade $motion-duration-fast $motion-ease-out both;
+}
+
+.motion-pop {
+    opacity: 0;
+    animation: motionScaleIn $motion-duration-medium $motion-ease-spring both;
+    will-change: transform, opacity;
+}
+
+.motion-sheet {
+    opacity: 0;
+    animation: motionSheetIn $motion-duration-medium $motion-ease-out both;
+    transform-origin: bottom center;
+    will-change: transform, opacity;
+}
+
+.motion-pressable {
+    transition:
+        transform $motion-duration-press $motion-ease-in-out,
+        box-shadow $motion-duration-fast $motion-ease-out,
+        opacity $motion-duration-fast $motion-ease-out,
+        background-color $motion-duration-fast $motion-ease-out,
+        border-color $motion-duration-fast $motion-ease-out;
+    will-change: transform;
+}
+
+.motion-idle-float {
+    animation: motionFloatTiny 2800ms $motion-ease-in-out infinite;
+}
+
+.motion-pop.motion-idle-float {
+    animation:
+        motionScaleIn $motion-duration-medium $motion-ease-spring both,
+        motionFloatTiny 2800ms $motion-ease-in-out 420ms infinite;
+}
+
+.motion-scan-sweep,
+.motion-scan-loop,
+.motion-scan-lock {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.motion-scan-sweep::after,
+.motion-scan-loop::after,
+.motion-scan-lock::after {
+    content: '';
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    left: -36%;
+    width: 34%;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.08) 24%,
+        rgba(255, 255, 255, 0.68) 50%,
+        rgba(255, 255, 255, 0.08) 76%,
+        transparent 100%
+    );
+    pointer-events: none;
+}
+
+.motion-scan-sweep::after {
+    animation: motionScanSweep $motion-duration-scan-sweep $motion-ease-scan both;
+}
+
+.motion-scan-loop::after {
+    animation: motionScanSweep $motion-duration-scan-loop $motion-ease-scan-steady infinite;
+}
+
+.motion-scan-lock {
+    box-shadow: $shadow-sm, inset 0 0 0 3rpx rgba(111, 135, 212, 0.18);
+}
+
+.motion-scan-lock::after {
+    animation: motionScanSweep $motion-duration-scan-sweep $motion-ease-scan both;
+}
+
+.motion-scan-processing {
+    animation: motionScanProcessing $motion-duration-scan-processing $motion-ease-scan-steady infinite;
+    will-change: transform, opacity, box-shadow;
+}
+
+.motion-scan-complete {
+    animation: motionScanComplete $motion-duration-scan-complete $motion-ease-scan both;
+    will-change: transform, opacity;
+}
+
+.motion-scan-alert {
+    animation: motionScanAlert $motion-duration-scan-alert $motion-ease-in-out 1;
+    will-change: transform;
 }

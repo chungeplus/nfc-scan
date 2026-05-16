@@ -64,18 +64,58 @@ function buildRecordPayload(recordItem: LegacyRecordInput): ArrayBuffer {
 }
 
 function buildDocumentedRecords(writeRequest: WriteRequest | null | undefined) {
-    if (!writeRequest || writeRequest.recordStrategy !== 'documented-records') {
+    if (writeRequest == null) {
         return null;
+    }
+
+    if (writeRequest.recordStrategy !== 'documented-records') {
+        throw new Error('INVALID_RECORD_STRATEGY');
     }
 
     if (!Array.isArray(writeRequest.records) || writeRequest.records.length === 0) {
         throw new Error('INVALID_DOCUMENTED_RECORDS');
     }
 
+    const assertHexField = (value: unknown, fieldName: 'typeHex' | 'payloadHex'): string => {
+        if (typeof value !== 'string') {
+            throw new Error(`INVALID_${fieldName.toUpperCase()}`);
+        }
+
+        const normalizedValue = value.trim();
+
+        if (normalizedValue.length === 0) {
+            throw new Error(`INVALID_${fieldName.toUpperCase()}`);
+        }
+
+        return normalizedValue;
+    };
+
     return writeRequest.records.map((recordItem) => ({
-        id: hexToArrayBuffer(recordItem.idHex || ''),
-        type: hexToArrayBuffer(recordItem.typeHex || ''),
-        payload: hexToArrayBuffer(recordItem.payloadHex || ''),
+        ...(function validateRecordShape() {
+            if (!recordItem || typeof recordItem !== 'object' || Array.isArray(recordItem)) {
+                throw new Error('INVALID_DOCUMENTED_RECORD_ITEM');
+            }
+
+            const rawIdHex = recordItem.idHex;
+            const typeHex = assertHexField(recordItem.typeHex, 'typeHex');
+            const payloadHex = assertHexField(recordItem.payloadHex, 'payloadHex');
+
+            if (rawIdHex !== undefined && typeof rawIdHex !== 'string') {
+                throw new Error('INVALID_IDHEX');
+            }
+
+            const idHex = typeof rawIdHex === 'string' ? rawIdHex.trim() : '';
+
+            if (typeof rawIdHex === 'string' && rawIdHex.length > 0 && idHex.length === 0) {
+                throw new Error('INVALID_IDHEX');
+            }
+
+            return {
+                id: hexToArrayBuffer(idHex),
+                type: hexToArrayBuffer(typeHex),
+                payload: hexToArrayBuffer(payloadHex),
+            };
+        }()),
     }));
 }
 
@@ -227,7 +267,7 @@ Component({
         },
 
         handleDiscovered(res: NfcDiscoveredResult) {
-            if (this.data.writingLock) {
+            if (this.data.writingLock || this.data.scanStatus === 'success') {
                 return;
             }
 
@@ -312,7 +352,7 @@ Component({
                 fail: (error: { errCode?: number; errMsg?: string }) => {
                     const errCode = error ? error.errCode : undefined;
                     const errMsg = error ? error.errMsg || '' : '';
-                    const alreadyConnected = errCode === 13022 || /already\s+co?connected/i.test(errMsg);
+                    const alreadyConnected = errCode === 13022 || /already\s+connected/i.test(errMsg);
 
                     if (alreadyConnected) {
                         writeRecords();
