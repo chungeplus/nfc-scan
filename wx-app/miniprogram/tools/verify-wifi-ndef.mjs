@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import ts from 'typescript';
 
 const source = await fs.readFile(
-  new URL('../miniprogram/utils/wifi-ndef.ts', import.meta.url),
+  new URL('../utils/wifi-ndef.ts', import.meta.url),
   'utf8'
 );
 const transpiled = ts.transpileModule(source, {

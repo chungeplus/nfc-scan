@@ -52,8 +52,8 @@ Page({
 
     shouldShowDeveloperPromiseDialog() {
         try {
-            return !Boolean(wx.getStorageSync(DEVELOPER_PROMISE_ACK_KEY));
-        } catch (error) {
+            return !wx.getStorageSync(DEVELOPER_PROMISE_ACK_KEY);
+        } catch {
             return true;
         }
     },
@@ -153,7 +153,8 @@ Page({
     handleCloseDeveloperPromiseDialog() {
         try {
             wx.setStorageSync(DEVELOPER_PROMISE_ACK_KEY, true);
-        } catch (error) {
+        } catch {
+            // Ignore storage persistence failures and still dismiss the dialog.
         }
 
         this.setData({

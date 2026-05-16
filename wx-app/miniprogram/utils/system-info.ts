@@ -16,6 +16,7 @@ function getStatusBarHeight(): number {
             return Number(windowInfo.statusBarHeight) || 20;
         }
     } catch {
+        // Fall back to the default status bar height.
     }
 
     return 20;

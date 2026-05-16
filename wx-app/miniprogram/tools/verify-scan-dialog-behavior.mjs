@@ -3,11 +3,11 @@ import fs from 'node:fs/promises';
 import ts from 'typescript';
 import vm from 'node:vm';
 
-const sourcePath = new URL('../miniprogram/components/scan-dialog/scan-dialog.ts', import.meta.url);
+const sourcePath = new URL('../components/scan-dialog/scan-dialog.ts', import.meta.url);
 const [rawSource, wxmlSource, scssSource] = await Promise.all([
   fs.readFile(sourcePath, 'utf8'),
-  fs.readFile(new URL('../miniprogram/components/scan-dialog/scan-dialog.wxml', import.meta.url), 'utf8'),
-  fs.readFile(new URL('../miniprogram/components/scan-dialog/scan-dialog.scss', import.meta.url), 'utf8'),
+  fs.readFile(new URL('../components/scan-dialog/scan-dialog.wxml', import.meta.url), 'utf8'),
+  fs.readFile(new URL('../components/scan-dialog/scan-dialog.scss', import.meta.url), 'utf8'),
 ]);
 
 assert.match(
@@ -266,9 +266,10 @@ function createAdapterHarness(writeHandler) {
   });
 
   assert.equal(writtenRecords.length, 1);
-  assert.equal(
-    JSON.stringify(Object.keys(writtenRecords[0])),
-    JSON.stringify(['id', 'type', 'payload']),
+  assert.equal(writtenRecords[0].tnf, undefined);
+  assert.deepEqual(
+    new Set(Object.keys(writtenRecords[0])),
+    new Set(['id', 'type', 'payload']),
     'strict WLAN writes should include only documented record keys'
   );
   assert.deepEqual(Array.from(new Uint8Array(writtenRecords[0].id)), []);
@@ -318,6 +319,59 @@ function createAdapterHarness(writeHandler) {
 
   assert.equal(component.data.scanStatus, 'error');
   assert.equal(component.data.writingLock, false);
+}
+
+{
+  let writeCalls = 0;
+  let writtenRecords = null;
+  const runNfcAdapter = {
+    connect({ fail }) {
+      fail({ errMsg: 'already connected' });
+    },
+    writeNdefMessage(options) {
+      writeCalls += 1;
+      writtenRecords = options.records;
+      options.success();
+    },
+    close() {},
+  };
+  const baseNfcAdapter = {
+    startDiscovery({ success }) {
+      success();
+    },
+    stopDiscovery() {},
+    onDiscovered() {},
+    offDiscovered() {},
+    getNdef() {
+      return runNfcAdapter;
+    },
+  };
+  const createComponent = createComponentHarness({
+    wx: {
+      getNFCAdapter: () => baseNfcAdapter,
+    },
+    string2ArrayBuffer: (value) => `ab:${value}`,
+    encodeNdefUriPayload: (value) => `uri:${value}`,
+    hexToArrayBuffer: (value) => value,
+    clearTimeout,
+    setTimeout,
+  });
+  const component = createComponent();
+
+  component.properties.records = [
+    { tnf: 1, id: 'web', type: 'U', payload: 'https://example.com' },
+  ];
+  component.onShow();
+  component.handleDiscovered({
+    techs: ['NDEF'],
+    stopDefault() {},
+  });
+
+  assert.equal(writeCalls, 1);
+  assert.equal(component.data.scanStatus, 'success');
+  assert.equal(component.data.writingLock, false);
+  assert.equal(writtenRecords.length, 1);
+  assert.equal(writtenRecords[0].tnf, 1);
 }
 
 {
@@ -396,6 +450,257 @@ function createAdapterHarness(writeHandler) {
   ];
   component.properties.writeRequest = {
     recordStrategy: 'documented-records',
+    records: [{ idHex: '' }],
+  };
+  component.onShow();
+  component.handleDiscovered({
+    techs: ['NDEF'],
+    stopDefault() {},
+  });
+
+  assert.equal(writeCalls, 0);
+  assert.equal(component.data.scanStatus, 'error');
+  assert.equal(component.data.writingLock, false);
+}
+
+{
+  let writeCalls = 0;
+  const adapterHarness = createAdapterHarness(({ success }) => {
+    writeCalls += 1;
+    success();
+  });
+  const createComponent = createComponentHarness({
+    wx: {
+      getNFCAdapter: () => adapterHarness.baseNfcAdapter,
+    },
+    string2ArrayBuffer: (value) => value,
+    encodeNdefUriPayload: (value) => value,
+    hexToArrayBuffer: (value) => value,
+    clearTimeout,
+    setTimeout,
+  });
+  const component = createComponent();
+
+  component.properties.records = [
+    { tnf: 1, id: 'web', type: 'U', payload: 'https://example.com' },
+  ];
+  component.properties.writeRequest = {
+    recordStrategy: 'documented-records',
+    records: [{ idHex: '   ', typeHex: '6170', payloadHex: '100e' }],
+  };
+  component.onShow();
+  component.handleDiscovered({
+    techs: ['NDEF'],
+    stopDefault() {},
+  });
+
+  assert.equal(writeCalls, 0);
+  assert.equal(component.data.scanStatus, 'error');
+  assert.equal(component.data.writingLock, false);
+}
+
+{
+  let writeCalls = 0;
+  const adapterHarness = createAdapterHarness(({ success }) => {
+    writeCalls += 1;
+    success();
+  });
+  const createComponent = createComponentHarness({
+    wx: {
+      getNFCAdapter: () => adapterHarness.baseNfcAdapter,
+    },
+    string2ArrayBuffer: (value) => value,
+    encodeNdefUriPayload: (value) => value,
+    hexToArrayBuffer: (value) => value,
+    clearTimeout,
+    setTimeout,
+  });
+  const component = createComponent();
+
+  component.properties.records = [
+    { tnf: 1, id: 'web', type: 'U', payload: 'https://example.com' },
+  ];
+  component.properties.writeRequest = {
+    recordStrategy: 'documented-records',
+    records: [{ typeHex: '   ', payloadHex: '100e' }],
+  };
+  component.onShow();
+  component.handleDiscovered({
+    techs: ['NDEF'],
+    stopDefault() {},
+  });
+
+  assert.equal(writeCalls, 0);
+  assert.equal(component.data.scanStatus, 'error');
+  assert.equal(component.data.writingLock, false);
+}
+
+{
+  let writeCalls = 0;
+  const adapterHarness = createAdapterHarness(({ success }) => {
+    writeCalls += 1;
+    success();
+  });
+  const createComponent = createComponentHarness({
+    wx: {
+      getNFCAdapter: () => adapterHarness.baseNfcAdapter,
+    },
+    string2ArrayBuffer: (value) => value,
+    encodeNdefUriPayload: (value) => value,
+    hexToArrayBuffer: (value) => value,
+    clearTimeout,
+    setTimeout,
+  });
+  const component = createComponent();
+
+  component.properties.records = [
+    { tnf: 1, id: 'web', type: 'U', payload: 'https://example.com' },
+  ];
+  component.properties.writeRequest = {
+    recordStrategy: 'documented-records',
+    records: [{ typeHex: '6170', payloadHex: '   ' }],
+  };
+  component.onShow();
+  component.handleDiscovered({
+    techs: ['NDEF'],
+    stopDefault() {},
+  });
+
+  assert.equal(writeCalls, 0);
+  assert.equal(component.data.scanStatus, 'error');
+  assert.equal(component.data.writingLock, false);
+}
+
+{
+  let writeCalls = 0;
+  const adapterHarness = createAdapterHarness(({ success }) => {
+    writeCalls += 1;
+    success();
+  });
+  const createComponent = createComponentHarness({
+    wx: {
+      getNFCAdapter: () => adapterHarness.baseNfcAdapter,
+    },
+    string2ArrayBuffer: (value) => value,
+    encodeNdefUriPayload: (value) => value,
+    hexToArrayBuffer: (value) => value,
+    clearTimeout,
+    setTimeout,
+  });
+  const component = createComponent();
+
+  component.properties.records = [
+    { tnf: 1, id: 'web', type: 'U', payload: 'https://example.com' },
+  ];
+  component.properties.writeRequest = {
+    records: [{ typeHex: '6170', payloadHex: '100e' }],
+  };
+  component.onShow();
+  component.handleDiscovered({
+    techs: ['NDEF'],
+    stopDefault() {},
+  });
+
+  assert.equal(writeCalls, 0);
+  assert.equal(component.data.scanStatus, 'error');
+  assert.equal(component.data.writingLock, false);
+}
+
+{
+  let writeCalls = 0;
+  const adapterHarness = createAdapterHarness(({ success }) => {
+    writeCalls += 1;
+    success();
+  });
+  const createComponent = createComponentHarness({
+    wx: {
+      getNFCAdapter: () => adapterHarness.baseNfcAdapter,
+    },
+    string2ArrayBuffer: (value) => value,
+    encodeNdefUriPayload: (value) => value,
+    hexToArrayBuffer: (value) => value,
+    clearTimeout,
+    setTimeout,
+  });
+  const component = createComponent();
+
+  component.properties.records = [
+    { tnf: 1, id: 'web', type: 'U', payload: 'https://example.com' },
+  ];
+  component.properties.writeRequest = {
+    recordStrategy: 'legacy',
+    records: [{ typeHex: '6170', payloadHex: '100e' }],
+  };
+  component.onShow();
+  component.handleDiscovered({
+    techs: ['NDEF'],
+    stopDefault() {},
+  });
+
+  assert.equal(writeCalls, 0);
+  assert.equal(component.data.scanStatus, 'error');
+  assert.equal(component.data.writingLock, false);
+}
+
+{
+  let writeCalls = 0;
+  const adapterHarness = createAdapterHarness(({ success }) => {
+    writeCalls += 1;
+    success();
+  });
+  const createComponent = createComponentHarness({
+    wx: {
+      getNFCAdapter: () => adapterHarness.baseNfcAdapter,
+    },
+    string2ArrayBuffer: (value) => value,
+    encodeNdefUriPayload: (value) => value,
+    hexToArrayBuffer: (value) => value,
+    clearTimeout,
+    setTimeout,
+  });
+  const component = createComponent();
+
+  component.properties.records = [
+    { tnf: 1, id: 'web', type: 'U', payload: 'https://example.com' },
+  ];
+  component.properties.writeRequest = {
+    recordStrategy: 'documented-records',
+    records: [{ typeHex: 123, payloadHex: '100e' }],
+  };
+  component.onShow();
+  component.handleDiscovered({
+    techs: ['NDEF'],
+    stopDefault() {},
+  });
+
+  assert.equal(writeCalls, 0);
+  assert.equal(component.data.scanStatus, 'error');
+  assert.equal(component.data.writingLock, false);
+}
+
+{
+  let writeCalls = 0;
+  const adapterHarness = createAdapterHarness(({ success }) => {
+    writeCalls += 1;
+    success();
+  });
+  const createComponent = createComponentHarness({
+    wx: {
+      getNFCAdapter: () => adapterHarness.baseNfcAdapter,
+    },
+    string2ArrayBuffer: (value) => value,
+    encodeNdefUriPayload: (value) => value,
+    hexToArrayBuffer: (value) => value,
+    clearTimeout,
+    setTimeout,
+  });
+  const component = createComponent();
+
+  component.properties.records = [
+    { tnf: 1, id: 'web', type: 'U', payload: 'https://example.com' },
+  ];
+  component.properties.writeRequest = {
+    recordStrategy: 'documented-records',
     records: [],
   };
   component.onShow();
@@ -447,6 +752,42 @@ function createAdapterHarness(writeHandler) {
   assert.equal(component.data.writingLock, false);
   assert.equal(typeof component.data.errorMessage, 'string');
   assert.notEqual(component.data.errorMessage.length, 0);
+}
+
+{
+  let writeCalls = 0;
+  const adapterHarness = createAdapterHarness(({ success }) => {
+    writeCalls += 1;
+    success();
+  });
+  const createComponent = createComponentHarness({
+    wx: {
+      getNFCAdapter: () => adapterHarness.baseNfcAdapter,
+    },
+    string2ArrayBuffer: (value) => `ab:${value}`,
+    encodeNdefUriPayload: (value) => `uri:${value}`,
+    hexToArrayBuffer: (value) => value,
+    clearTimeout,
+    setTimeout,
+  });
+  const component = createComponent();
+
+  component.properties.records = [
+    { tnf: 1, id: 'web', type: 'U', payload: 'https://example.com' },
+  ];
+  component.onShow();
+  component.handleDiscovered({
+    techs: ['NDEF'],
+    stopDefault() {},
+  });
+  component.handleDiscovered({
+    techs: ['NDEF'],
+    stopDefault() {},
+  });
+
+  assert.equal(writeCalls, 1);
+  assert.equal(component.data.scanStatus, 'success');
+  assert.equal(component.data.writingLock, false);
 }
 
 console.log('PASS verify-scan-dialog-behavior');

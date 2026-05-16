@@ -279,7 +279,7 @@ Component({
             };
 
             const writeRecords = () => {
-                let records = null;
+                let records;
 
                 try {
                     const strictRecords = buildDocumentedRecords(this.properties.writeRequest as WriteRequest | null);

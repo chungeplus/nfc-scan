@@ -3,11 +3,11 @@ import fs from 'node:fs/promises';
 
 const [jsSource, wxmlSource] = await Promise.all([
   fs.readFile(
-    new URL('../miniprogram/pages/write-app/write-app.ts', import.meta.url),
+    new URL('../pages/write-app/write-app.ts', import.meta.url),
     'utf8'
   ),
   fs.readFile(
-    new URL('../miniprogram/pages/write-app/write-app.wxml', import.meta.url),
+    new URL('../pages/write-app/write-app.wxml', import.meta.url),
     'utf8'
   ),
 ]);

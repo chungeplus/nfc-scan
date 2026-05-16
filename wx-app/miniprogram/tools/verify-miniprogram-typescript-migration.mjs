@@ -10,15 +10,15 @@ async function read(relativePath) {
 }
 
 const sharedTsFiles = [
-  'miniprogram/utils/cloud-config.ts',
-  'miniprogram/utils/convert.ts',
-  'miniprogram/utils/extract.ts',
-  'miniprogram/utils/media.ts',
-  'miniprogram/utils/media-share-service.ts',
-  'miniprogram/utils/pixel-toast.ts',
-  'miniprogram/utils/system-info.ts',
-  'miniprogram/utils/wifi-manager.ts',
-  'miniprogram/utils/wifi-ndef.ts',
+  'utils/cloud-config.ts',
+  'utils/convert.ts',
+  'utils/extract.ts',
+  'utils/media.ts',
+  'utils/media-share-service.ts',
+  'utils/pixel-toast.ts',
+  'utils/system-info.ts',
+  'utils/wifi-manager.ts',
+  'utils/wifi-ndef.ts',
 ];
 
 for (const relativePath of sharedTsFiles) {
@@ -27,11 +27,11 @@ for (const relativePath of sharedTsFiles) {
 }
 
 const uiTsFiles = [
-  'miniprogram/custom-tab-bar/index.ts',
-  'miniprogram/components/pixel-icon/pixel-icon.ts',
-  'miniprogram/components/pixel-navbar/pixel-navbar.ts',
-  'miniprogram/components/pixel-toast/pixel-toast.ts',
-  'miniprogram/components/scan-dialog/scan-dialog.ts',
+  'custom-tab-bar/index.ts',
+  'components/pixel-icon/pixel-icon.ts',
+  'components/pixel-navbar/pixel-navbar.ts',
+  'components/pixel-toast/pixel-toast.ts',
+  'components/scan-dialog/scan-dialog.ts',
 ];
 
 for (const relativePath of uiTsFiles) {
@@ -40,14 +40,14 @@ for (const relativePath of uiTsFiles) {
 }
 
 const pageTsFiles = [
-  'miniprogram/app.ts',
-  'miniprogram/pages/my-files/my-files.ts',
-  'miniprogram/pages/write-menu/write-menu.ts',
-  'miniprogram/pages/write-app/write-app.ts',
-  'miniprogram/pages/write-web/write-web.ts',
-  'miniprogram/pages/write-music/write-music.ts',
-  'miniprogram/pages/write-local-media/write-local-media.ts',
-  'miniprogram/pages/write-wifi/write-wifi.ts',
+  'app.ts',
+  'pages/my-files/my-files.ts',
+  'pages/write-menu/write-menu.ts',
+  'pages/write-app/write-app.ts',
+  'pages/write-web/write-web.ts',
+  'pages/write-music/write-music.ts',
+  'pages/write-local-media/write-local-media.ts',
+  'pages/write-wifi/write-wifi.ts',
 ];
 
 for (const relativePath of pageTsFiles) {

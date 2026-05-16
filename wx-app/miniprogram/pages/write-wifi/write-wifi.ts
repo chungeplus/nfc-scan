@@ -201,7 +201,7 @@ Page({
             this.setData(nextState, () => {
                 this.syncPickerWifiList(hasManualSelection ? undefined : selectedSsid);
             });
-        } catch (error: unknown) {
+        } catch {
             this.setData({
                 currentWifi: null,
             }, () => {
@@ -339,7 +339,7 @@ Page({
                     : '当前微信版本不支持直接打开权限设置，请手动允许微信使用定位。',
                 pickerAction: opened ? '' : 'open_app_authorize_setting',
             });
-        } catch (error) {
+        } catch {
             this.setData({
                 pickerMessage: '无法打开微信权限设置，请手动在系统设置中允许微信使用定位。',
                 pickerAction: 'open_app_authorize_setting',

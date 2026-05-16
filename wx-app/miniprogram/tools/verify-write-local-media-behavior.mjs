@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import ts from 'typescript';
 import vm from 'node:vm';
 
-const sourcePath = new URL('../miniprogram/pages/write-local-media/write-local-media.ts', import.meta.url);
+const sourcePath = new URL('../pages/write-local-media/write-local-media.ts', import.meta.url);
 const rawSource = await fs.readFile(sourcePath, 'utf8');
 
 function stripImports(source) {

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 
 const source = await fs.readFile(
-  new URL('../miniprogram/utils/system-info.ts', import.meta.url),
+  new URL('../utils/system-info.ts', import.meta.url),
   'utf8'
 );
 

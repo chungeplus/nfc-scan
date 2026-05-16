@@ -10,7 +10,8 @@ function getNavMetrics() {
                 navHeight: statusBarHeight + 44,
             };
         }
-    } catch (error) {
+    } catch {
+        // Fall back to the default navigation metrics.
     }
 
     return {

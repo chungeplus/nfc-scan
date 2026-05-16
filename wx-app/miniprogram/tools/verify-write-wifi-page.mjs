@@ -3,15 +3,15 @@ import fs from 'node:fs/promises';
 
 const [wxmlSource, jsSource, scssSource] = await Promise.all([
   fs.readFile(
-    new URL('../miniprogram/pages/write-wifi/write-wifi.wxml', import.meta.url),
+    new URL('../pages/write-wifi/write-wifi.wxml', import.meta.url),
     'utf8'
   ),
   fs.readFile(
-    new URL('../miniprogram/pages/write-wifi/write-wifi.ts', import.meta.url),
+    new URL('../pages/write-wifi/write-wifi.ts', import.meta.url),
     'utf8'
   ),
   fs.readFile(
-    new URL('../miniprogram/pages/write-wifi/write-wifi.scss', import.meta.url),
+    new URL('../pages/write-wifi/write-wifi.scss', import.meta.url),
     'utf8'
   ),
 ]);
@@ -23,6 +23,7 @@ assert.match(wxmlSource, /picker-preview__list/);
 assert.match(wxmlSource, /password-box__toggle/);
 assert.match(wxmlSource, /picker-preview__title-sweep\s+motion-scan-sweep/);
 assert.match(wxmlSource, /picker-preview__refresh--scanning\s+motion-scan-processing/);
+assert.match(wxmlSource, /writeRequest="\{\{writeRequest\}\}"/);
 assert.doesNotMatch(wxmlSource, /support-chip/);
 assert.doesNotMatch(wxmlSource, /box__meta/);
 assert.doesNotMatch(wxmlSource, /picker-preview__badge/);

@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import ts from 'typescript';
 import vm from 'node:vm';
 
-const sourcePath = new URL('../miniprogram/pages/write-wifi/write-wifi.ts', import.meta.url);
+const sourcePath = new URL('../pages/write-wifi/write-wifi.ts', import.meta.url);
 const rawSource = await fs.readFile(sourcePath, 'utf8');
 
 function stripImports(source) {
@@ -364,6 +364,57 @@ function createPageHarness(stubs = {}) {
         idHex: '',
         typeHex: 'aabb',
         payloadHex: '200f',
+      },
+    ],
+  });
+}
+
+{
+  const typeBuffer = new Uint8Array([0xaa, 0xbb]).buffer;
+  const payloadBuffer = new Uint8Array([0x30, 0x1f]).buffer;
+  const toHex = (buffer) =>
+    Array.from(new Uint8Array(buffer))
+      .map((byte) => byte.toString(16).padStart(2, '0'))
+      .join('');
+  const capturedPayloadInputs = [];
+  const createPage = createPageHarness({
+    getNavMetrics: () => ({ navHeight: 64 }),
+    describeWifiError: () => 'error',
+    getConnectedWifiInfo: async () => null,
+    getWifiRuntime: () => ({ platform: 'android' }),
+    initWifiModule: async () => {},
+    openWifiAppAuthorizeSetting: async () => true,
+    readWifiScanIssue: () => null,
+    scanNearbyWifi: async () => [],
+    string2ArrayBuffer: () => typeBuffer,
+    arrayBufferToHex: toHex,
+    WIFI_WSC_MIME_TYPE: 'application/vnd.wfa.wsc',
+    buildWifiConfigPayload: ({ ssid, password }) => {
+      capturedPayloadInputs.push({ ssid, password });
+      return payloadBuffer;
+    },
+  });
+  const page = createPage();
+
+  page.setData({
+    selectedSsid: '  Wifi-A  ',
+    wifiPassword: '  Pixel12345678  ',
+  });
+  page.handleOpenScanDialog();
+
+  assert.deepEqual(JSON.parse(JSON.stringify(capturedPayloadInputs)), [
+    {
+      ssid: '  Wifi-A  ',
+      password: '  Pixel12345678  ',
+    },
+  ]);
+  assert.deepEqual(JSON.parse(JSON.stringify(page.data.writeRequest)), {
+    recordStrategy: 'documented-records',
+    records: [
+      {
+        idHex: '',
+        typeHex: 'aabb',
+        payloadHex: '301f',
       },
     ],
   });
