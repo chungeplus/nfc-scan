@@ -2,10 +2,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 
 function assertManagedHideTimer(source, themeName) {
-  assert.match(source, /let\s+hideControlsTimer\s*=\s*null/);
-  assert.match(source, /clearTimeout\(hideControlsTimer\)/);
-  assert.match(source, /hideControlsTimer\s*=\s*setTimeout/);
-  assert.match(source, /if\s*\(hideControlsTimer\)\s*\{\s*clearTimeout\(hideControlsTimer\);/);
+  assert.match(source, /let\s+hideControlsTimer\s*=\s*null/, `${themeName} should declare a hide-controls timer`);
+  assert.match(source, /clearTimeout\(hideControlsTimer\)/, `${themeName} should clear the prior hide-controls timer`);
+  assert.match(source, /hideControlsTimer\s*=\s*setTimeout/, `${themeName} should store the hide-controls timeout handle`);
+  assert.match(
+    source,
+    /if\s*\(hideControlsTimer\)\s*\{\s*clearTimeout\(hideControlsTimer\);/,
+    `${themeName} reset path should clear any pending hide timer`,
+  );
   assert.match(
     source,
     /videoPlayer\.addEventListener\('pause',[\s\S]*clearTimeout\(hideControlsTimer\)/,
@@ -14,15 +18,21 @@ function assertManagedHideTimer(source, themeName) {
 }
 
 async function main() {
-  const [pixelSource, minimalSource, posterSource] = await Promise.all([
+  const [pixelSource, minimalSource, posterSource, verifierSource] = await Promise.all([
     fs.readFile(new URL('../public/play/pixel/app.js', import.meta.url), 'utf8'),
     fs.readFile(new URL('../public/play/minimal/app.js', import.meta.url), 'utf8'),
     fs.readFile(new URL('../public/play/poster/app.js', import.meta.url), 'utf8'),
+    fs.readFile(new URL(import.meta.url), 'utf8'),
   ]);
 
   assertManagedHideTimer(pixelSource, 'pixel');
   assertManagedHideTimer(minimalSource, 'minimal');
-  assert.match(posterSource, /let\s+hideControlsTimer\s*=\s*null/);
+  assertManagedHideTimer(posterSource, 'poster');
+  assert.doesNotMatch(
+    verifierSource,
+    /\.\.\/play-web-service\//,
+    'theme-controls verifier should not point back to the old project path',
+  );
 
   console.log('PASS verify-play-theme-controls');
 }
