@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import vm from 'node:vm';
 
 function assertManagedHideTimer(source, themeName) {
   assert.match(source, /let\s+hideControlsTimer\s*=\s*null/, `${themeName} should declare a hide-controls timer`);
@@ -28,6 +29,9 @@ async function main() {
   assertManagedHideTimer(pixelSource, 'pixel');
   assertManagedHideTimer(minimalSource, 'minimal');
   assertManagedHideTimer(posterSource, 'poster');
+  assert.doesNotThrow(() => new vm.Script(pixelSource), 'pixel player script should be syntactically valid');
+  assert.doesNotThrow(() => new vm.Script(minimalSource), 'minimal player script should be syntactically valid');
+  assert.doesNotThrow(() => new vm.Script(posterSource), 'poster player script should be syntactically valid');
   assert.doesNotMatch(
     verifierSource,
     /\.\.\/play-web-service\//,

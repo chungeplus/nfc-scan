@@ -7,7 +7,7 @@
     "lint": "eslint --config eslint.config.mjs \"src/**/*.ts\" \"tools/**/*.mjs\"",
     "lint:fix": "eslint --config eslint.config.mjs \"src/**/*.ts\" \"tools/**/*.mjs\" --fix",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "verify": "node tools/verify-cloudfunction-modernization.mjs && npm run lint && npm run typecheck && npm run build"
+    "verify": "node tools/verify-cloudfunction-modernization.mjs && npm run lint && npm run typecheck && npm run build && git diff --exit-code -- index.js contracts.js"
   },
   "dependencies": {
     "wx-server-sdk": "3.0.4"

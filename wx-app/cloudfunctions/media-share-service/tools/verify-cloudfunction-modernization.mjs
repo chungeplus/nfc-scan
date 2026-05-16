@@ -14,7 +14,15 @@ const packageJson = await readJson('package.json')
 assert.equal(packageJson.main, 'index.js')
 assert.equal(packageJson.scripts.build, 'tsc -p tsconfig.json')
 assert.equal(packageJson.scripts.lint, 'eslint --config eslint.config.mjs "src/**/*.ts" "tools/**/*.mjs"')
-assert.equal(packageJson.scripts.verify, 'node tools/verify-cloudfunction-modernization.mjs && npm run lint && npm run typecheck && npm run build')
+assert.match(packageJson.scripts.verify, /node tools\/verify-cloudfunction-modernization\.mjs/, 'verify should execute the local cloud function verifier')
+assert.match(packageJson.scripts.verify, /npm run lint/, 'verify should include the local lint step')
+assert.match(packageJson.scripts.verify, /npm run typecheck/, 'verify should include the local typecheck step')
+assert.match(packageJson.scripts.verify, /npm run build/, 'verify should include the local build step')
+assert.match(
+  packageJson.scripts.verify,
+  /git diff --exit-code -- index\.js contracts\.js/,
+  'verify should fail if regenerated runtime outputs are not committed',
+)
 
 const tsconfig = await readJson('tsconfig.json')
 assert.equal(tsconfig.compilerOptions.rootDir, 'src')
