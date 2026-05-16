@@ -1,0 +1,21 @@
+{
+  "name": "@nfc-scan/miniprogram",
+  "private": true,
+  "scripts": {
+    "lint": "eslint --config ../../eslint.config.mjs \"./**/*.ts\"",
+    "lint:fix": "eslint --config ../../eslint.config.mjs --fix \"./**/*.ts\"",
+    "lint:styles": "stylelint --config ../../stylelint.config.mjs \"./**/*.scss\"",
+    "typecheck": "tsc -p ./tsconfig.json",
+    "verify": "npm run lint && npm run lint:styles && npm run typecheck"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.0",
+    "globals": "^17.6.0",
+    "miniprogram-api-typings": "^5.2.1",
+    "stylelint": "^17.11.1",
+    "stylelint-config-standard-scss": "^17.0.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.59.3"
+  }
+}
