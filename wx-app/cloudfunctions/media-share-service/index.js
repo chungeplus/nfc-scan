@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.main = main;
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const cloud = require('wx-server-sdk');
 cloud.init({
     env: cloud.DYNAMIC_CURRENT_ENV,
@@ -39,6 +40,7 @@ async function main(event = {}) {
             default:
                 throw new Error(`不支持的操作类型: ${action || '空'}`);
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }
     catch (error) {
         console.error('[media-share-service] 执行错误:', error);
@@ -157,6 +159,7 @@ async function createMediaShare(payload, openid) {
 }
 async function listMediaFiles(payload, openid) {
     const limit = normalizeLimit(payload.limit);
+    // eslint-disable-next-line no-useless-assignment
     let fileRecords = [];
     try {
         const orderedResult = await mediaFiles
@@ -166,7 +169,7 @@ async function listMediaFiles(payload, openid) {
             .get();
         fileRecords = Array.isArray(orderedResult.data) ? orderedResult.data : [];
     }
-    catch (error) {
+    catch {
         const fallbackResult = await mediaFiles
             .where({ openid })
             .limit(limit * 4)
@@ -270,7 +273,7 @@ async function listSharesByFileIds(fileRecordIds = [], openid = '') {
                 .limit(pageSize)
                 .get();
         }
-        catch (error) {
+        catch {
             result = await mediaShares
                 .where(query)
                 .skip(skip)
