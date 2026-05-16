@@ -1,12 +1,20 @@
-import rootConfig from '../eslint.config.mjs';
+import antfu from '@antfu/eslint-config'
 
-export default [
-  ...rootConfig,
+export default antfu(
   {
-    files: ['src/**/*.ts'],
+    typescript: true,
+    lessOpinionated: true,
+    ignores: [
+      'dist/**',
+      'public/**',
+      'node_modules/**',
+    ],
+  },
+  {
+    files: ['src/**/*.ts', 'tools/**/*.mjs'],
     rules: {
       'no-console': 'off',
-      '@typescript-eslint/no-misused-promises': 'off',
+      'ts/no-misused-promises': 'off',
     },
   },
-];
+)
